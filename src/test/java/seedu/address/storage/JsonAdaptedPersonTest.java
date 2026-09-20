@@ -59,6 +59,11 @@ public class JsonAdaptedPersonTest {
     }
 
     @Test
+    public void toModelType_defaultOutstandingAmountRoundTrip_returnsPerson() throws Exception {
+        assertEquals(BENSON, new JsonAdaptedPerson(BENSON).toModelType());
+    }
+
+    @Test
     public void toModelType_invalidOutstandingAmount_throwsIllegalValueException() {
         JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
                 INVALID_OUTSTANDING_AMOUNT, VALID_TAGS);

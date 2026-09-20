@@ -116,7 +116,7 @@ class JsonAdaptedPerson {
         final Set<Tag> modelTags = new HashSet<>(personTags);
         final OutstandingAmount modelOutstandingAmount;
         try {
-            modelOutstandingAmount = outstandingAmount == null
+            modelOutstandingAmount = outstandingAmount == null || outstandingAmount.equals("0.00")
                     ? new OutstandingAmount() : new OutstandingAmount(outstandingAmount);
         } catch (IllegalArgumentException exception) {
             throw new IllegalValueException(OutstandingAmount.MESSAGE_CONSTRAINTS);
