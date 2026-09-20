@@ -27,6 +27,7 @@ import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_ADDRESS;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_EMAIL;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_OUTSTANDING_AMOUNT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
@@ -128,6 +129,10 @@ public class AddCommandParserTest {
         // invalid address
         assertParseFailure(parser, validExpectedPersonString + INVALID_ADDRESS_DESC,
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_ADDRESS));
+
+        // multiple outstanding amounts
+        assertParseFailure(parser, validExpectedPersonString + " o/10.00 o/20.00",
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_OUTSTANDING_AMOUNT));
     }
 
     @Test
@@ -143,6 +148,11 @@ public class AddCommandParserTest {
         Person expectedPerson = new PersonBuilder(BOB).withOutstandingAmount("S$1,250.00").withTags().build();
         assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB + " "
                 + "o/S$1,250.00", new AddCommand(expectedPerson));
+
+        Person expectedPersonWithDollarPrefix = new PersonBuilder(BOB).withOutstandingAmount("$10.50")
+                .withTags().build();
+        assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB + " "
+                + "o/$10.50", new AddCommand(expectedPersonWithDollarPrefix));
     }
 
     @Test
