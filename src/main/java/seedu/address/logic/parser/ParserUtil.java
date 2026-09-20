@@ -12,6 +12,7 @@ import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Name;
+import seedu.address.model.person.OutstandingAmount;
 import seedu.address.model.person.Phone;
 import seedu.address.model.tag.Tag;
 
@@ -120,5 +121,15 @@ public class ParserUtil {
             tagSet.add(parseTag(tagName));
         }
         return tagSet;
+    }
+
+    /** Parses an outstanding amount. */
+    public static OutstandingAmount parseOutstandingAmount(String amount) throws ParseException {
+        requireNonNull(amount);
+        try {
+            return new OutstandingAmount(amount);
+        } catch (IllegalArgumentException exception) {
+            throw new ParseException(OutstandingAmount.MESSAGE_CONSTRAINTS);
+        }
     }
 }

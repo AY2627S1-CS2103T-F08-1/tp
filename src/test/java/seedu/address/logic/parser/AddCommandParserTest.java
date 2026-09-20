@@ -40,6 +40,7 @@ import seedu.address.logic.commands.AddCommand;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Name;
+import seedu.address.model.person.OutstandingAmount;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
 import seedu.address.model.tag.Tag;
@@ -135,6 +136,21 @@ public class AddCommandParserTest {
         Person expectedPerson = new PersonBuilder(AMY).withTags().build();
         assertParseSuccess(parser, NAME_DESC_AMY + PHONE_DESC_AMY + EMAIL_DESC_AMY + ADDRESS_DESC_AMY,
                 new AddCommand(expectedPerson));
+    }
+
+    @Test
+    public void parse_outstandingAmount_success() {
+        Person expectedPerson = new PersonBuilder(BOB).withOutstandingAmount("S$1,250.00").withTags().build();
+        assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB + " "
+                + "o/S$1,250.00", new AddCommand(expectedPerson));
+    }
+
+    @Test
+    public void parse_invalidOutstandingAmount_failure() {
+        assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB + " "
+                + "o/-1.00", OutstandingAmount.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB + " "
+                + "o/10.123", OutstandingAmount.MESSAGE_CONSTRAINTS);
     }
 
     @Test
