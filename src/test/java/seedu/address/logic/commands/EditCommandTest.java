@@ -71,6 +71,23 @@ public class EditCommandTest {
     }
 
     @Test
+    public void execute_otherFieldsEdited_preservesOutstandingAmount() {
+        Person debtor = new PersonBuilder().withOutstandingAmount("1,250.00").build();
+        Model debtorModel = new ModelManager(new AddressBook(), new UserPrefs());
+        debtorModel.addPerson(debtor);
+
+        Person editedPerson = new PersonBuilder(debtor).withName(VALID_NAME_BOB).build();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
+                new EditPersonDescriptorBuilder().withName(VALID_NAME_BOB).build());
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson));
+
+        Model expectedModel = new ModelManager(new AddressBook(debtorModel.getAddressBook()), new UserPrefs());
+        expectedModel.setPerson(debtor, editedPerson);
+
+        assertCommandSuccess(editCommand, debtorModel, expectedMessage, expectedModel);
+    }
+
+    @Test
     public void execute_noFieldSpecifiedUnfilteredList_success() {
         EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON, new EditPersonDescriptor());
         Person editedPerson = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
