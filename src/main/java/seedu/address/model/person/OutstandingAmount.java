@@ -14,7 +14,7 @@ import java.util.Locale;
 public final class OutstandingAmount {
 
     public static final String MESSAGE_CONSTRAINTS =
-            "Amount must be a non-negative number with at most two decimal places.";
+            "Amount must be a positive number with at most two decimal places.";
 
     private final BigDecimal value;
 
@@ -29,7 +29,7 @@ public final class OutstandingAmount {
         }
         try {
             BigDecimal parsed = new BigDecimal(trimmedAmount);
-            if (parsed.signum() < 0 || parsed.scale() > 2) {
+            if (parsed.signum() <= 0 || parsed.scale() > 2) {
                 throw new NumberFormatException();
             }
             value = parsed.setScale(2, RoundingMode.UNNECESSARY);

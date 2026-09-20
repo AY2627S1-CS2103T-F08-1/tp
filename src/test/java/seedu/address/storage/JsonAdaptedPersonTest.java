@@ -16,7 +16,9 @@ import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.OutstandingAmount;
+import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.testutil.PersonBuilder;
 
 public class JsonAdaptedPersonTest {
     private static final String INVALID_NAME = "R@chel";
@@ -47,6 +49,13 @@ public class JsonAdaptedPersonTest {
                 VALID_OUTSTANDING_AMOUNT, VALID_TAGS);
 
         assertEquals(VALID_OUTSTANDING_AMOUNT, person.toModelType().getOutstandingAmount().toString());
+    }
+
+    @Test
+    public void toModelType_nonzeroOutstandingAmountRoundTrip_returnsPerson() throws Exception {
+        Person debtor = new PersonBuilder(BENSON).withOutstandingAmount(VALID_OUTSTANDING_AMOUNT).build();
+
+        assertEquals(debtor, new JsonAdaptedPerson(debtor).toModelType());
     }
 
     @Test

@@ -19,12 +19,14 @@ public class OutstandingAmountTest {
 
     @Test
     public void constructor_invalidAmounts_throwsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, OutstandingAmount.MESSAGE_CONSTRAINTS,
-                () -> new OutstandingAmount("-1.00"));
-        assertThrows(IllegalArgumentException.class, OutstandingAmount.MESSAGE_CONSTRAINTS,
-                () -> new OutstandingAmount("10.123"));
-        assertThrows(IllegalArgumentException.class, OutstandingAmount.MESSAGE_CONSTRAINTS,
-                () -> new OutstandingAmount("not an amount"));
+        assertThrows(IllegalArgumentException.class, OutstandingAmount.MESSAGE_CONSTRAINTS, () ->
+                new OutstandingAmount("0.00"));
+        assertThrows(IllegalArgumentException.class, OutstandingAmount.MESSAGE_CONSTRAINTS, () ->
+                new OutstandingAmount("-1.00"));
+        assertThrows(IllegalArgumentException.class, OutstandingAmount.MESSAGE_CONSTRAINTS, () ->
+                new OutstandingAmount("10.123"));
+        assertThrows(IllegalArgumentException.class, OutstandingAmount.MESSAGE_CONSTRAINTS, () ->
+                new OutstandingAmount("not an amount"));
     }
 
     @Test
