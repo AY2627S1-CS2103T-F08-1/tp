@@ -47,12 +47,12 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 * Role: Developer
 * Responsibilities: Dev Ops + Threading
 
-### James Doe
+### Ngui Jianjia, Edison
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/nje14.png" width="200px">
 
-[[github](http://github.com/johndoe)]
+[[github](http://github.com/nje14)]
 [[portfolio](team/johndoe.md)]
 
-* Role: Developer
-* Responsibilities: UI
+* Role: \[todo\]
+* Responsibilities: \[todo\]
