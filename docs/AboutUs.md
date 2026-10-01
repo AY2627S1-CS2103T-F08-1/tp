@@ -56,5 +56,5 @@ Photo by [The Roving Rokibul](https://commons.wikimedia.org/wiki/File:Domestic_c
 
 [[github](https://github.com/ewonglh)]
 
-* Role: Student Developer
-* Responsibilities: Feature implementation, UI, testing, and documentation
+* Role: Developer
+* Responsibilities: Model, storage, data integrity, and documentation
