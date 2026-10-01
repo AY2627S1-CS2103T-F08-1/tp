@@ -316,16 +316,38 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 ### Non-Functional Requirements
 
-1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
-2.  Should be able to hold up to 1000 persons without noticeable sluggishness in performance for typical usage.
-3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
+The following requirements describe qualities of OSPS rather than individual commands.
+Unless otherwise stated, response-time measurements use a supported desktop machine
+with a representative dataset of 1,000 debtor records.
 
-*{More to be added}*
+1. **NFR-Portability**: OSPS must run on Windows, Linux, and macOS systems with
+   Java `25` installed. The documented setup procedure must be sufficient to launch
+   OSPS and complete a basic debtor-listing workflow on each operating system.
+2. **NFR-Capacity and responsiveness**: OSPS must retain at least 1,000 debtor
+   records, including balances, repayment statuses, dates, and interaction notes.
+   With that dataset, listing debtors and opening one debtor's profile must each
+   complete within 2 seconds.
+3. **NFR-Persistence**: After a successful change, restarting OSPS must reproduce
+   every changed debtor field and interaction note exactly as before shutdown. This
+   is verified with a save--restart--compare test.
+4. **NFR-Input integrity**: Invalid commands or field values must not change existing
+   debtor records. OSPS must return a message identifying the invalid input so the
+   agent can correct it; this is verified with invalid-input tests before and after
+   persistence.
+5. **NFR-Keyboard workflow**: The documented primary workflows---adding a debtor,
+   listing debtors, viewing a debtor profile, and recording an interaction note---must
+   be completable through the CLI without mouse input after launch.
 
 ### Glossary
 
-* **Mainstream OS**: Windows, Linux, Unix, or macOS
-* **Private contact detail**: A contact detail that is not meant to be shared with others
+* **Debt recovery agent**: An OSPS user who manages debtor records and follows up on outstanding balances.
+* **Debtor**: A person or organisation with an outstanding payment obligation recorded in OSPS.
+* **Follow-up date**: The date on which an agent next plans to contact or review a debtor's case.
+* **Interaction history**: The collection of interaction notes associated with a debtor.
+* **Interaction note**: A dated record of a contact or other relevant interaction with a debtor.
+* **Outstanding balance**: The amount that remains to be paid under a debtor's payment scheme.
+* **Payment scheme**: The agreed plan describing how and when an outstanding balance is repaid.
+* **Repayment status**: An indicator of the current progress of a debtor's payment scheme.
 
 --------------------------------------------------------------------------------------------------------------------
 
