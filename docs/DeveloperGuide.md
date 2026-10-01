@@ -287,32 +287,129 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 ### Use cases
 
-(For all use cases below, the **System** is the `AddressBook` and the **Actor** is the `user`, unless specified otherwise)
+(For all use cases below, the **System** is `OSPS` and the **Actor** is the `debt recovery agent`, unless
+specified otherwise)
 
-**Use case: Delete a person**
+**Use case: Add a debtor**
 
 **MSS**
 
-1.  User requests to list persons
-2.  AddressBook shows a list of persons
-3.  User requests to delete a specific person in the list
-4.  AddressBook deletes the person
+1.  Debt recovery agent requests to add a new debtor with the required debtor details.
+2.  OSPS validates the provided debtor details.
+3.  OSPS adds the debtor record.
+4.  OSPS confirms that the debtor record has been added.
 
     Use case ends.
 
 **Extensions**
 
-* 2a. The list is empty.
+* 1a. Debt recovery agent omits a required debtor detail.
 
-  Use case ends.
+    * 1a1. OSPS shows an error message explaining which required detail is missing.
 
-* 3a. The given index is invalid.
+      Use case resumes at step 1.
 
-    * 3a1. AddressBook shows an error message.
+* 2a. The provided debtor details are invalid.
+
+    * 2a1. OSPS shows an error message explaining the invalid detail.
+
+      Use case resumes at step 1.
+
+**Use case: List debtors**
+
+**MSS**
+
+1.  Debt recovery agent requests to view all debtor records.
+2.  OSPS shows a list of debtor records with summary information.
+
+    Use case ends.
+
+**Extensions**
+
+* 2a. There are no debtor records.
+
+    * 2a1. OSPS informs the debt recovery agent that no debtor records are available.
+
+      Use case ends.
+
+**Use case: View debtor profile**
+
+**MSS**
+
+1.  Debt recovery agent requests to view the list of debtor records.
+2.  OSPS shows a list of debtor records with summary information.
+3.  Debt recovery agent selects a debtor record to view in detail.
+4.  OSPS shows the selected debtor's profile, including debtor details, outstanding balance, repayment status,
+    payment dates, and interaction notes where available.
+
+    Use case ends.
+
+**Extensions**
+
+* 2a. There are no debtor records.
+
+    * 2a1. OSPS informs the debt recovery agent that no debtor records are available.
+
+      Use case ends.
+
+* 3a. The selected debtor record does not exist.
+
+    * 3a1. OSPS shows an error message.
 
       Use case resumes at step 2.
 
-*{More to be added}*
+**Use case: Add an interaction note**
+
+**MSS**
+
+1.  Debt recovery agent requests to view a debtor profile.
+2.  OSPS shows the selected debtor's profile.
+3.  Debt recovery agent requests to add an interaction note to the debtor profile.
+4.  OSPS validates the interaction note.
+5.  OSPS adds the interaction note to the debtor profile.
+6.  OSPS confirms that the interaction note has been added.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. The selected debtor record does not exist.
+
+    * 1a1. OSPS shows an error message.
+
+      Use case ends.
+
+* 4a. The interaction note is empty or invalid.
+
+    * 4a1. OSPS shows an error message explaining why the note cannot be added.
+
+      Use case resumes at step 3.
+
+**Use case: Delete a debtor**
+
+**MSS**
+
+1.  Debt recovery agent requests to view all debtor records.
+2.  OSPS shows a list of debtor records with summary information.
+3.  Debt recovery agent selects a debtor record to delete.
+4.  OSPS deletes the selected debtor record.
+5.  OSPS confirms that the debtor record has been deleted.
+
+    Use case ends.
+
+**Extensions**
+
+* 2a. There are no debtor records.
+
+    * 2a1. OSPS informs the debt recovery agent that no debtor records are available.
+
+      Use case ends.
+
+* 3a. The selected debtor record does not exist.
+
+    * 3a1. OSPS shows an error message.
+
+      Use case resumes at step 2.
 
 ### Non-Functional Requirements
 
