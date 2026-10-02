@@ -261,13 +261,13 @@ _{Explain here how the data archiving feature will be implemented}_
 
 **Target user profile**:
 
-* has a need to manage a significant number of contacts
-* prefers desktop apps over other types of applications
-* can type fast
-* prefers typing to mouse interactions
-* is reasonably comfortable using CLI apps
+* works in debt collection or recovery
+* manages numerous debtor contacts, repayment commitments, outstanding amounts, and follow-ups
+* is comfortable with desktop applications
+* can type quickly and prefers keyboard commands to mouse-heavy workflows
+* needs efficient access to accurate debtor contact and case information
 
-**Value proposition**: Manage contacts faster than with a typical mouse-driven GUI application.
+**Value proposition**: OSPS aims to help fast-typing debt recovery employees organize debtor details, repayment status, payment dates, and interaction notes in one place through keyboard-driven search and update workflows, reducing administrative work, lowering the risk of missed follow-ups, and helping users prioritize cases while keeping contact management as the application's core focus.
 
 
 ### User stories
