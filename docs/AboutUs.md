@@ -18,15 +18,14 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 * Role: Student Developer
 * Responsibilities: Feature implementation, testing, and documentation
 
-### Jane Doe
+### Prakash
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/chocohacks33.png" width="200px" alt="Profile image for Prakash">
 
-[[github](http://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
+[[github](https://github.com/chocoHacks33)]
 
-* Role: Team Lead
-* Responsibilities: UI
+* Role: Developer
+* Responsibilities: DevOps, continuous integration, testing, and documentation
 
 ### Johnny Doe
 
