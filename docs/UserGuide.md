@@ -75,7 +75,7 @@ Format: `help`
 
 ### Adding a debtor: `add`
 
-Adds a debtor to the address book. The outstanding amount is optional and defaults to `S$0.00`.
+Adds a debtor to the address book. The outstanding amount is optional, may be zero, and defaults to `S$0.00`.
 
 Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [o/OUTSTANDING_AMOUNT] [t/TAG]…​`
 

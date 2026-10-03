@@ -37,7 +37,8 @@ public class AddCommand extends Command {
             + PREFIX_OUTSTANDING_AMOUNT + "S$1,250.00";
 
     public static final String MESSAGE_SUCCESS = "New debtor added: %1$s";
-    public static final String MESSAGE_DUPLICATE_PERSON = "This person already exists in the address book.";
+    public static final String MESSAGE_DUPLICATE_PERSON =
+            "A debtor with the same phone number or email address already exists.";
 
     private final Person toAdd;
 

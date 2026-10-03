@@ -153,6 +153,10 @@ public class AddCommandParserTest {
                 .withTags().build();
         assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB + " "
                 + "o/$10.50", new AddCommand(expectedPersonWithDollarPrefix));
+
+        Person expectedPersonWithZeroAmount = new PersonBuilder(BOB).withOutstandingAmount("0").withTags().build();
+        assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB + " "
+                + "o/0", new AddCommand(expectedPersonWithZeroAmount));
     }
 
     @Test
