@@ -5,8 +5,6 @@ title: About Us
 
 We are a team based in the [School of Computing, National University of Singapore](https://www.comp.nus.edu.sg).
 
-You can reach us at the email `seer[at]comp.nus.edu.sg`
-
 ## Project team
 
 ### Ho Boon How
@@ -27,14 +25,14 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 * Role: Developer
 * Responsibilities: DevOps, continuous integration, testing, and documentation
 
-### Johnny Doe
+### Ngui Jianjia, Edison
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/nje14.png" width="200px" alt="Privacy placeholder for Ngui Jianjia, Edison">
 
-[[github](http://github.com/johndoe)] [[portfolio](team/johndoe.md)]
+[[github](https://github.com/nje14)]
 
 * Role: Developer
-* Responsibilities: Data
+* Responsibilities: User stories, documentation, and testing
 
 ### Alfred
 
