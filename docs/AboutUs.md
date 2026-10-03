@@ -5,8 +5,6 @@ title: About Us
 
 We are a team based in the [School of Computing, National University of Singapore](https://www.comp.nus.edu.sg).
 
-You can reach us at the email `seer[at]comp.nus.edu.sg`
-
 ## Project team
 
 ### Ho Boon How
@@ -18,41 +16,40 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 * Role: Student Developer
 * Responsibilities: Feature implementation, testing, and documentation
 
-### Jane Doe
+### Prakash
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/chocohacks33.png" width="200px" alt="Profile image for Prakash">
 
-[[github](http://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
-
-* Role: Team Lead
-* Responsibilities: UI
-
-### Johnny Doe
-
-<img src="images/johndoe.png" width="200px">
-
-[[github](http://github.com/johndoe)] [[portfolio](team/johndoe.md)]
+[[github](https://github.com/chocoHacks33)]
 
 * Role: Developer
-* Responsibilities: Data
-
-### Jean Doe
-
-<img src="images/johndoe.png" width="200px">
-
-[[github](http://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
-
-* Role: Developer
-* Responsibilities: Dev Ops + Threading
+* Responsibilities: DevOps, continuous integration, testing, and documentation
 
 ### Ngui Jianjia, Edison
 
-<img src="images/nje14.png" width="200px">
+<img src="images/nje14.png" width="200px" alt="Privacy placeholder for Ngui Jianjia, Edison">
 
-[[github](http://github.com/nje14)]
-[[portfolio](team/johndoe.md)]
+[[github](https://github.com/nje14)]
 
-* Role: \[todo\]
-* Responsibilities: \[todo\]
+* Role: Developer
+* Responsibilities: User stories, documentation, and testing
+
+### Alfred
+
+<img src="images/alfred051201.png" width="200px" alt="Profile photo of Alfred">
+
+[[github](https://github.com/Alfred051201)]
+
+* Role: Developer
+* Responsibilities: Logic, command parsing, use cases, and documentation
+
+### Edmund Wong
+
+<img src="images/ewonglh.png" width="200px" alt="Cat portrait for Edmund Wong">
+
+Photo by [The Roving Rokibul](https://commons.wikimedia.org/wiki/File:Domestic_cat_portrait.jpg), licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0).
+
+[[github](https://github.com/ewonglh)]
+
+* Role: Developer
+* Responsibilities: Model, storage, data integrity, and documentation
