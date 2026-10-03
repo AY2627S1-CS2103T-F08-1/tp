@@ -277,22 +277,22 @@ Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (could
 | Priority | As a …​ | I want to …​ | So that I can …​ |
 | -------- | ------ | ------------ | ---------------- |
 | `* * *` | debt recovery agent | add a new debtor with their contact details and outstanding amount | officially register their case and begin tracking it |
-| `* * *` | fast-typing employee | use GNU-style keyboard commands to execute all actions | maintain my productivity without needing to reach for the mouse |
 | `* * *` | debt recovery agent | append interaction notes to a debtor's profile | keep an accurate, chronological history of call discussions |
-| `* * *` | busy debt collector | quickly search for a debtor by name or phone number | instantly pull up their case details when they unexpectedly call |
-| `* * *` | debt recovery agent | set a follow-up deadline and promised payment date for a debtor | avoid missing critical contact windows |
 | `* * *` | debt recovery agent | view all active cases sorted by the closest follow-up date | identify and prioritise people to call today |
-| `* * *` | debt recovery agent | update a debtor's outstanding amount | ensure the system reflects partial repayments accurately |
 | `* * *` | debt recovery agent | mark a debtor's case as settled or delete it | keep the active dashboard uncluttered after recovery |
-| `* * *` | careful employee | undo the most recent command | recover quickly after an accidental deletion or incorrect amount |
-| `* * *` | new team member | view a help menu summarising all available commands | learn the application's syntax without external documentation |
+| `* * *` | debt recovery agent | view a debtor's complete profile | see their contact details, debt, deadlines, status, and notes together |
+| `* *` | fast-typing employee | use GNU-style keyboard commands to execute all actions | maintain my productivity without needing to reach for the mouse |
+| `* *` | busy debt collector | quickly search for a debtor by name or phone number | instantly pull up their case details when they unexpectedly call |
+| `* *` | debt recovery agent | set a follow-up deadline and promised payment date for a debtor | avoid missing critical contact windows |
+| `* *` | debt recovery agent | update a debtor's outstanding amount | ensure the system reflects partial repayments accurately |
+| `* *` | new team member | view a help menu summarising all available commands | learn the application's syntax without external documentation |
 | `* *` | debt recovery agent | edit a debtor's contact details | keep their phone number, email address, and postal address current |
-| `* *` | debt recovery agent | view a debtor's complete profile | see their contact details, debt, deadlines, status, and notes together |
 | `* *` | considerate debt collector | record a debtor's preferred contact method and contactable hours | contact them through an appropriate channel at a suitable time |
 | `* *` | debt recovery agent | record the outcome of each contact attempt | track whether the debtor answered, requested a callback, or was unreachable |
 | `* *` | debt recovery agent | assign a recovery stage to a debtor | distinguish new, contacted, negotiating, disputed, and broken-promise cases |
 | `* *` | busy debt collector | list debtors whose follow-ups are due or overdue | immediately identify cases requiring attention |
 | `* *` | debt recovery agent | filter debtor contacts by recovery stage | focus on a category of cases without scanning the entire list |
+| `*` | careful employee | undo the most recent command | recover quickly after an accidental deletion or incorrect amount |
 | `*` | fast-typing employee | find debtors using partial or slightly misspelled names | retrieve the right contact without remembering the exact spelling |
 | `*` | careful employee | preview an update or deletion command | verify the affected debtor and changes before committing a risky action |
 | `*` | compliance-conscious debt recovery agent | export a debtor's profile and interaction history | provide a case record for auditing or authorised handover |
