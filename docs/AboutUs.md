@@ -36,15 +36,14 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 * Role: Developer
 * Responsibilities: Data
 
-### Jean Doe
+### Alfred
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/alfred051201.png" width="200px" alt="Profile photo of Alfred">
 
-[[github](http://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
+[[github](https://github.com/Alfred051201)]
 
 * Role: Developer
-* Responsibilities: Dev Ops + Threading
+* Responsibilities: Logic, command parsing, use cases, and documentation
 
 ### James Doe
 
