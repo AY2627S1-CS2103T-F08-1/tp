@@ -6,7 +6,7 @@
 
 OSPS is a desktop application for debt recovery agents to manage debtor details, outstanding balances, and interaction histories. It combines a graphical interface with a command-line interface so users can manage debtor cases efficiently using the keyboard.
 
-The minimum viable product supports the following essential tasks:
+The planned minimum viable product covers the following essential tasks:
 
 * Add a debtor.
 * List active debtors.
