@@ -45,12 +45,13 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 * Role: Developer
 * Responsibilities: Logic, command parsing, use cases, and documentation
 
-### James Doe
+### Edmund Wong
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/ewonglh.png" width="200px" alt="Cat portrait for Edmund Wong">
 
-[[github](http://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
+Photo by [The Roving Rokibul](https://commons.wikimedia.org/wiki/File:Domestic_cat_portrait.jpg), licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0).
+
+[[github](https://github.com/ewonglh)]
 
 * Role: Developer
-* Responsibilities: UI
+* Responsibilities: Model, storage, data integrity, and documentation
