@@ -26,6 +26,12 @@ public class RemarkCommand extends Command {
     private final Index index;
     private final Remark remark;
 
+    /**
+     * Creates a command to replace the remark of the person at {@code index}.
+     *
+     * @param index index of the person in the filtered list
+     * @param remark replacement remark
+     */
     public RemarkCommand(Index index, Remark remark) {
         this.index = requireNonNull(index);
         this.remark = requireNonNull(remark);

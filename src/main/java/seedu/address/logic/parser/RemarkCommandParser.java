@@ -15,12 +15,13 @@ public class RemarkCommandParser implements Parser<RemarkCommand> {
     public RemarkCommand parse(String args) throws ParseException {
         requireNonNull(args);
         ArgumentMultimap map = ArgumentTokenizer.tokenize(args, PREFIX_REMARK);
+        map.verifyNoDuplicatePrefixesFor(PREFIX_REMARK);
         try {
-            map.verifyNoDuplicatePrefixesFor(PREFIX_REMARK);
             Index index = ParserUtil.parseIndex(map.getPreamble());
             return new RemarkCommand(index, new Remark(map.getValue(PREFIX_REMARK).orElse("")));
         } catch (ParseException exception) {
-            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, RemarkCommand.MESSAGE_USAGE), exception);
+            throw new ParseException(
+                    String.format(MESSAGE_INVALID_COMMAND_FORMAT, RemarkCommand.MESSAGE_USAGE), exception);
         }
     }
 }
