@@ -94,14 +94,14 @@ public class JsonAddressBookStorageTest {
         AddressBook original = new AddressBook();
         original.addPerson(new PersonBuilder().withName("Alice").build());
         Person secondPerson = original.addPerson(
-                new PersonBuilder().withName("Bob").withPhone("91234567").build());
+                new PersonBuilder().withName("Bob").withPhone("91234567").withEmail("bob@example.com").build());
         original.removePerson(secondPerson);
 
         JsonAddressBookStorage storage = new JsonAddressBookStorage(filePath);
         storage.saveAddressBook(original, filePath);
         AddressBook restored = new AddressBook(storage.readAddressBook(filePath).get());
         Person addedPerson = restored.addPerson(
-                new PersonBuilder().withName("Carol").withPhone("92345678").build());
+                new PersonBuilder().withName("Carol").withPhone("92345678").withEmail("carol@example.com").build());
 
         assertEquals(3, addedPerson.getDebtorId());
     }

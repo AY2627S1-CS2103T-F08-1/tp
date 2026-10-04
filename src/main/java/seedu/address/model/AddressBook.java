@@ -2,9 +2,9 @@ package seedu.address.model;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javafx.collections.ObservableList;

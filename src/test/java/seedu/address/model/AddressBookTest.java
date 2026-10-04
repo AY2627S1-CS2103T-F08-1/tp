@@ -79,8 +79,10 @@ public class AddressBookTest {
     @Test
     public void addPerson_assignsIncreasingIdsWithoutReuse() {
         Person firstPerson = new PersonBuilder().withName("Alice").build();
-        Person secondPerson = new PersonBuilder().withName("Bob").withPhone("91234567").build();
-        Person thirdPerson = new PersonBuilder().withName("Carol").withPhone("92345678").build();
+        Person secondPerson = new PersonBuilder().withName("Bob").withPhone("91234567")
+                .withEmail("bob@example.com").build();
+        Person thirdPerson = new PersonBuilder().withName("Carol").withPhone("92345678")
+                .withEmail("carol@example.com").build();
 
         Person addedFirstPerson = addressBook.addPerson(firstPerson);
         Person addedSecondPerson = addressBook.addPerson(secondPerson);
