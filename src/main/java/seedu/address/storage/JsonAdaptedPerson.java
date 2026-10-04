@@ -30,6 +30,7 @@ class JsonAdaptedPerson {
     private final String phone;
     private final String email;
     private final String address;
+    private final Integer debtorId;
     private final String outstandingAmount;
     private final String remark;
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
@@ -40,12 +41,14 @@ class JsonAdaptedPerson {
     @JsonCreator
     public JsonAdaptedPerson(@JsonProperty("name") String name, @JsonProperty("phone") String phone,
             @JsonProperty("email") String email, @JsonProperty("address") String address,
+            @JsonProperty("debtorId") Integer debtorId,
             @JsonProperty("outstandingAmount") String outstandingAmount,
             @JsonProperty("remark") String remark, @JsonProperty("tags") List<JsonAdaptedTag> tags) {
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
+        this.debtorId = debtorId;
         this.outstandingAmount = outstandingAmount;
         this.remark = remark;
         if (tags != null) {
@@ -56,13 +59,13 @@ class JsonAdaptedPerson {
     /** Backwards-compatible constructor for data and tests that do not specify an amount. */
     public JsonAdaptedPerson(String name, String phone, String email, String address,
             List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, null, null, tags);
+        this(name, phone, email, address, null, null, null, tags);
     }
 
     /** Backwards-compatible constructor for callers specifying an amount but no remark. */
     public JsonAdaptedPerson(String name, String phone, String email, String address,
             String outstandingAmount, List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, outstandingAmount, null, tags);
+        this(name, phone, email, address, null, outstandingAmount, null, tags);
     }
 
     /**
@@ -73,6 +76,7 @@ class JsonAdaptedPerson {
         phone = source.getPhone().value;
         email = source.getEmail().value;
         address = source.getAddress().value;
+        debtorId = source.getDebtorId() == 0 ? null : source.getDebtorId();
         outstandingAmount = source.getOutstandingAmount().toString();
         remark = source.getRemark().toString();
         tags.addAll(source.getTags().stream()
@@ -133,7 +137,7 @@ class JsonAdaptedPerson {
         }
         Remark modelRemark = new Remark(remark == null ? "" : remark);
         return new Person(modelName, modelPhone, modelEmail, modelAddress,
-                modelOutstandingAmount, modelRemark, modelTags);
+                debtorId == null ? 0 : debtorId, modelOutstandingAmount, modelRemark, modelTags);
     }
 
 }

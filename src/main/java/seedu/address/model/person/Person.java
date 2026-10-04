@@ -23,6 +23,7 @@ public class Person {
 
     // Data fields
     private final Address address;
+    private final int debtorId;
     private final OutstandingAmount outstandingAmount;
     private final Remark remark;
     private final Set<Tag> tags = new HashSet<>();
@@ -31,23 +32,33 @@ public class Person {
      * Every field must be present and not null.
      */
     public Person(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
-        this(name, phone, email, address, new OutstandingAmount(), new Remark(""), tags);
+        this(name, phone, email, address, 0, new OutstandingAmount(), new Remark(""), tags);
     }
 
     /** Creates a person with the supplied outstanding amount. */
     public Person(Name name, Phone phone, Email email, Address address,
             OutstandingAmount outstandingAmount, Set<Tag> tags) {
-        this(name, phone, email, address, outstandingAmount, new Remark(""), tags);
+        this(name, phone, email, address, 0, outstandingAmount, new Remark(""), tags);
     }
 
     /** Creates a person with the supplied outstanding amount and remark. */
     public Person(Name name, Phone phone, Email email, Address address,
             OutstandingAmount outstandingAmount, Remark remark, Set<Tag> tags) {
+        this(name, phone, email, address, 0, outstandingAmount, remark, tags);
+    }
+
+    /** Creates a person with a persistent debtor ID, outstanding amount and remark. */
+    public Person(Name name, Phone phone, Email email, Address address, int debtorId,
+            OutstandingAmount outstandingAmount, Remark remark, Set<Tag> tags) {
         requireAllNonNull(name, phone, email, address, outstandingAmount, remark, tags);
+        if (debtorId < 0) {
+            throw new IllegalArgumentException("Debtor ID cannot be negative.");
+        }
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
+        this.debtorId = debtorId;
         this.outstandingAmount = outstandingAmount;
         this.remark = remark;
         this.tags.addAll(tags);
@@ -67,6 +78,16 @@ public class Person {
 
     public Address getAddress() {
         return address;
+    }
+
+    /** Returns this person's persistent debtor ID, or 0 before the person is added. */
+    public int getDebtorId() {
+        return debtorId;
+    }
+
+    /** Returns a copy of this person with the supplied persistent debtor ID. */
+    public Person withDebtorId(int newDebtorId) {
+        return new Person(name, phone, email, address, newDebtorId, outstandingAmount, remark, tags);
     }
 
     public OutstandingAmount getOutstandingAmount() {
@@ -117,6 +138,7 @@ public class Person {
                 && phone.equals(otherPerson.phone)
                 && email.equals(otherPerson.email)
                 && address.equals(otherPerson.address)
+                && debtorId == otherPerson.debtorId
                 && outstandingAmount.equals(otherPerson.outstandingAmount)
                 && remark.equals(otherPerson.remark)
                 && tags.equals(otherPerson.tags);
@@ -125,7 +147,7 @@ public class Person {
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, outstandingAmount, remark, tags);
+        return Objects.hash(name, phone, email, address, debtorId, outstandingAmount, remark, tags);
     }
 
     @Override
@@ -135,6 +157,7 @@ public class Person {
                 .add("phone", phone)
                 .add("email", email)
                 .add("address", address)
+                .add("debtorId", debtorId)
                 .add("outstandingAmount", outstandingAmount)
                 .add("remark", remark)
                 .add("tags", tags)

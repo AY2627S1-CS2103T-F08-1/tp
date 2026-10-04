@@ -3,6 +3,9 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.util.ToStringBuilder;
@@ -16,6 +19,7 @@ import seedu.address.model.person.UniquePersonList;
 public class AddressBook implements ReadOnlyAddressBook {
 
     private final UniquePersonList persons = new UniquePersonList();
+    private int nextDebtorId = 1;
 
     public AddressBook() {}
 
@@ -34,7 +38,18 @@ public class AddressBook implements ReadOnlyAddressBook {
      * {@code persons} must not contain duplicate persons.
      */
     public void setPersons(List<Person> persons) {
-        this.persons.setPersons(persons);
+        nextDebtorId = 1;
+        List<Person> assignedPersons = new ArrayList<>();
+        Set<Integer> usedDebtorIds = new HashSet<>();
+        for (Person person : persons) {
+            Person assignedPerson = person.getDebtorId() == 0 ? person.withDebtorId(nextDebtorId++) : person;
+            if (!usedDebtorIds.add(assignedPerson.getDebtorId())) {
+                throw new IllegalArgumentException("Debtor ID must be unique.");
+            }
+            nextDebtorId = Math.max(nextDebtorId, assignedPerson.getDebtorId() + 1);
+            assignedPersons.add(assignedPerson);
+        }
+        this.persons.setPersons(assignedPersons);
     }
 
     /**
@@ -44,6 +59,7 @@ public class AddressBook implements ReadOnlyAddressBook {
         requireNonNull(newData);
 
         setPersons(newData.getPersonList());
+        nextDebtorId = Math.max(nextDebtorId, newData.getNextDebtorId());
     }
 
     //// person-level operations
@@ -61,8 +77,10 @@ public class AddressBook implements ReadOnlyAddressBook {
      * Adds a person to the address book.
      * The person must not already exist in the address book.
      */
-    public void addPerson(Person p) {
-        persons.add(p);
+    public Person addPerson(Person p) {
+        Person assignedPerson = assignDebtorId(p);
+        persons.add(assignedPerson);
+        return assignedPerson;
     }
 
     /**
@@ -96,6 +114,33 @@ public class AddressBook implements ReadOnlyAddressBook {
     @Override
     public ObservableList<Person> getPersonList() {
         return persons.asUnmodifiableObservableList();
+    }
+
+    @Override
+    public int getNextDebtorId() {
+        return nextDebtorId;
+    }
+
+    /** Restores the next persistent debtor ID after loading saved data. */
+    public void setNextDebtorId(int nextDebtorId) {
+        if (nextDebtorId < this.nextDebtorId) {
+            throw new IllegalArgumentException("Next debtor ID cannot be reused.");
+        }
+        this.nextDebtorId = nextDebtorId;
+    }
+
+    private Person assignDebtorId(Person person) {
+        if (person.getDebtorId() == 0) {
+            Person assignedPerson = person.withDebtorId(nextDebtorId);
+            nextDebtorId++;
+            return assignedPerson;
+        }
+        if (persons.asUnmodifiableObservableList().stream()
+                .anyMatch(existingPerson -> existingPerson.getDebtorId() == person.getDebtorId())) {
+            throw new IllegalArgumentException("Debtor ID must be unique.");
+        }
+        nextDebtorId = Math.max(nextDebtorId, person.getDebtorId() + 1);
+        return person;
     }
 
     @Override

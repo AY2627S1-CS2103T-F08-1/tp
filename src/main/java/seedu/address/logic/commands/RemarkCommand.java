@@ -46,7 +46,7 @@ public class RemarkCommand extends Command {
         }
         Person original = persons.get(index.getZeroBased());
         Person edited = new Person(original.getName(), original.getPhone(), original.getEmail(), original.getAddress(),
-                original.getOutstandingAmount(), remark, original.getTags());
+                original.getDebtorId(), original.getOutstandingAmount(), remark, original.getTags());
         model.setPerson(original, edited);
         model.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
         String message = remark.value.isEmpty() ? MESSAGE_DELETE_REMARK_SUCCESS : MESSAGE_ADD_REMARK_SUCCESS;
