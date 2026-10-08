@@ -1,7 +1,6 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static seedu.address.logic.Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.commands.CommandTestUtil.ADDRESS_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
@@ -9,10 +8,13 @@ import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.AMY;
+import static seedu.address.testutil.TypicalPersons.BOB;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,7 +63,37 @@ public class LogicManagerTest {
     @Test
     public void execute_commandExecutionError_throwsCommandException() {
         String deleteCommand = "delete 9";
-        assertCommandException(deleteCommand, MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+        assertCommandException(deleteCommand, Messages.getInvalidPersonDisplayedIndexMessage(0));
+    }
+
+    @Test
+    public void execute_deleteCommand_persistsAndReloadsRemainingPersons() throws Exception {
+        model.addPerson(AMY);
+        model.addPerson(BOB);
+
+        logic.execute("delete 1");
+
+        JsonAddressBookStorage savedStorage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        ReadOnlyAddressBook reloadedAddressBook = savedStorage.readAddressBook().get();
+        assertEquals(List.of(BOB), reloadedAddressBook.getPersonList());
+    }
+
+    @Test
+    public void execute_invalidDeleteCommand_doesNotChangeSavedData() throws Exception {
+        model.addPerson(AMY);
+        model.addPerson(BOB);
+        logic.execute(ListCommand.COMMAND_WORD);
+
+        Path savedAddressBookPath = temporaryFolder.resolve("addressBook.json");
+        String originalSavedData = Files.readString(savedAddressBookPath);
+        assertCommandException("delete 3", Messages.getInvalidPersonDisplayedIndexMessage(2));
+        assertEquals(originalSavedData, Files.readString(savedAddressBookPath));
+        assertCommandException("delete " + "9".repeat(100), Messages.getInvalidPersonDisplayedIndexMessage(2));
+        assertEquals(originalSavedData, Files.readString(savedAddressBookPath));
+
+        ReadOnlyAddressBook reloadedAddressBook =
+                new JsonAddressBookStorage(savedAddressBookPath).readAddressBook().get();
+        assertEquals(List.of(AMY, BOB), reloadedAddressBook.getPersonList());
     }
 
     @Test
@@ -74,6 +106,25 @@ public class LogicManagerTest {
     public void execute_storageThrowsIoException_throwsCommandException() {
         assertCommandFailureForExceptionFromStorage(DUMMY_IO_EXCEPTION, String.format(
                 LogicManager.FILE_OPS_ERROR_FORMAT, DUMMY_IO_EXCEPTION.getMessage()));
+    }
+
+    @Test
+    public void execute_deleteStorageThrowsIoException_reportsFailureWithoutRollback() {
+        model.addPerson(AMY);
+        Path failingAddressBookPath = temporaryFolder.resolve("failingAddressBook.json");
+        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(failingAddressBookPath) {
+            @Override
+            public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+                throw DUMMY_IO_EXCEPTION;
+            }
+        };
+        JsonUserPrefsStorage userPrefsStorage =
+                new JsonUserPrefsStorage(temporaryFolder.resolve("failingUserPrefs.json"));
+        logic = new LogicManager(model, new StorageManager(addressBookStorage, userPrefsStorage));
+
+        ModelManager expectedModel = new ModelManager();
+        assertCommandFailure("delete 1", CommandException.class,
+                String.format(LogicManager.FILE_OPS_ERROR_FORMAT, DUMMY_IO_EXCEPTION.getMessage()), expectedModel);
     }
 
     @Test

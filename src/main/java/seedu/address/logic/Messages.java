@@ -19,6 +19,11 @@ public class Messages {
     public static final String MESSAGE_DUPLICATE_FIELDS =
                 "Multiple values specified for the following single-valued field(s): ";
 
+    private static final String MESSAGE_NO_PERSONS_DISPLAYED_FOR_DELETE =
+            "No people are displayed. Run the list command or adjust your find query before deleting.";
+    private static final String MESSAGE_INVALID_PERSON_DISPLAYED_INDEX_RANGE =
+            "The displayed list has %1$d %2$s. Use an index from 1 to %1$d.";
+
     /**
      * Returns an error message indicating the duplicate prefixes.
      */
@@ -29,6 +34,18 @@ public class Messages {
                 Stream.of(duplicatePrefixes).map(Prefix::toString).collect(Collectors.toSet());
 
         return MESSAGE_DUPLICATE_FIELDS + String.join(" ", duplicateFields);
+    }
+
+    /**
+     * Returns an actionable error message for an index outside the currently displayed person list.
+     */
+    public static String getInvalidPersonDisplayedIndexMessage(int displayedPersonCount) {
+        if (displayedPersonCount == 0) {
+            return MESSAGE_NO_PERSONS_DISPLAYED_FOR_DELETE;
+        }
+
+        String personNoun = displayedPersonCount == 1 ? "person" : "people";
+        return String.format(MESSAGE_INVALID_PERSON_DISPLAYED_INDEX_RANGE, displayedPersonCount, personNoun);
     }
 
     /**

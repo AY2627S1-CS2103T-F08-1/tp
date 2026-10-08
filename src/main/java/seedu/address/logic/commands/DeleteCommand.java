@@ -2,6 +2,7 @@ package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
 
+import java.math.BigInteger;
 import java.util.List;
 
 import seedu.address.commons.core.index.Index;
@@ -25,10 +26,27 @@ public class DeleteCommand extends Command {
 
     public static final String MESSAGE_DELETE_PERSON_SUCCESS = "Deleted person: %1$s";
 
-    private final Index targetIndex;
+    private static final BigInteger MAX_INDEX = BigInteger.valueOf(Integer.MAX_VALUE);
+
+    private final BigInteger targetIndex;
 
     public DeleteCommand(Index targetIndex) {
+        this(BigInteger.valueOf(requireNonNull(targetIndex).getOneBased()));
+    }
+
+    private DeleteCommand(BigInteger targetIndex) {
+        requireNonNull(targetIndex);
+        if (targetIndex.signum() <= 0) {
+            throw new IllegalArgumentException("Target index must be positive.");
+        }
         this.targetIndex = targetIndex;
+    }
+
+    /**
+     * Creates a command from a positive one-based index that may be larger than an {@code int}.
+     */
+    public static DeleteCommand fromOneBased(BigInteger targetIndex) {
+        return new DeleteCommand(targetIndex);
     }
 
     @Override
@@ -36,11 +54,11 @@ public class DeleteCommand extends Command {
         requireNonNull(model);
         List<Person> lastShownList = model.getFilteredPersonList();
 
-        if (targetIndex.getZeroBased() >= lastShownList.size()) {
-            throw new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+        if (targetIndex.compareTo(BigInteger.valueOf(lastShownList.size())) > 0) {
+            throw new CommandException(Messages.getInvalidPersonDisplayedIndexMessage(lastShownList.size()));
         }
 
-        Person personToDelete = lastShownList.get(targetIndex.getZeroBased());
+        Person personToDelete = lastShownList.get(targetIndex.intValueExact() - 1);
         model.deletePerson(personToDelete);
         return new CommandResult(String.format(MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(personToDelete)));
     }
@@ -62,7 +80,8 @@ public class DeleteCommand extends Command {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-                .add("targetIndex", targetIndex)
+                .add("targetIndex", targetIndex.compareTo(MAX_INDEX) <= 0
+                        ? Index.fromOneBased(targetIndex.intValueExact()) : targetIndex)
                 .toString();
     }
 }

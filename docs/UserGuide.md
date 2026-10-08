@@ -133,8 +133,11 @@ Deletes the specified person from the address book.
 Format: `delete INDEX`
 
 * Deletes the person at the specified `INDEX`.
-* The index refers to the index number shown in the displayed person list.
+* The index refers to the one-based position in the currently displayed person list, including `find` results.
+* After deletion, the list refreshes and the current filter remains active.
 * The index **must be a positive integer** 1, 2, 3, …​
+* For an index outside the displayed list, the error gives the displayed count and valid range. If no people are shown,
+  run `list` or adjust the `find` query.
 
 Examples:
 * `list` followed by `delete 2` deletes the 2nd person in the address book.

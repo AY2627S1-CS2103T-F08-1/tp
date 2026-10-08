@@ -8,7 +8,12 @@ import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
+import static seedu.address.testutil.TypicalPersons.AMY;
+import static seedu.address.testutil.TypicalPersons.BENSON;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
+
+import java.math.BigInteger;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +22,7 @@ import seedu.address.logic.Messages;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.Person;
 
 /**
@@ -42,11 +48,52 @@ public class DeleteCommandTest {
     }
 
     @Test
+    public void execute_validIndexMiddleOfUnfilteredList_success() {
+        Index middleIndex = Index.fromOneBased(model.getFilteredPersonList().size() / 2 + 1);
+        Person personToDelete = model.getFilteredPersonList().get(middleIndex.getZeroBased());
+        DeleteCommand deleteCommand = new DeleteCommand(middleIndex);
+
+        String expectedMessage = String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS,
+                Messages.format(personToDelete));
+        ModelManager expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        expectedModel.deletePerson(personToDelete);
+
+        assertCommandSuccess(deleteCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_validIndexLastInUnfilteredList_success() {
+        Index lastIndex = Index.fromOneBased(model.getFilteredPersonList().size());
+        Person personToDelete = model.getFilteredPersonList().get(lastIndex.getZeroBased());
+        DeleteCommand deleteCommand = new DeleteCommand(lastIndex);
+
+        String expectedMessage = String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS,
+                Messages.format(personToDelete));
+        ModelManager expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        expectedModel.deletePerson(personToDelete);
+
+        assertCommandSuccess(deleteCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_validIndexOnlyPerson_success() {
+        ModelManager onePersonModel = new ModelManager();
+        onePersonModel.addPerson(AMY);
+        DeleteCommand deleteCommand = new DeleteCommand(INDEX_FIRST_PERSON);
+
+        String expectedMessage = String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(AMY));
+        ModelManager expectedModel = new ModelManager();
+
+        assertCommandSuccess(deleteCommand, onePersonModel, expectedMessage, expectedModel);
+    }
+
+    @Test
     public void execute_invalidIndexUnfilteredList_throwsCommandException() {
         Index outOfBoundIndex = Index.fromOneBased(model.getFilteredPersonList().size() + 1);
         DeleteCommand deleteCommand = new DeleteCommand(outOfBoundIndex);
 
-        assertCommandFailure(deleteCommand, model, Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+        assertCommandFailure(deleteCommand, model,
+                Messages.getInvalidPersonDisplayedIndexMessage(model.getFilteredPersonList().size()));
     }
 
     @Test
@@ -67,6 +114,25 @@ public class DeleteCommandTest {
     }
 
     @Test
+    public void execute_validIndexFilteredListWithRemainingMatches_success() {
+        NameContainsKeywordsPredicate meierPredicate = new NameContainsKeywordsPredicate(List.of("Meier"));
+        model.updateFilteredPersonList(meierPredicate);
+        assertEquals(2, model.getFilteredPersonList().size());
+
+        Person personToDelete = model.getFilteredPersonList().get(1);
+        DeleteCommand deleteCommand = new DeleteCommand(Index.fromOneBased(2));
+        String expectedMessage = String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS,
+                Messages.format(personToDelete));
+
+        ModelManager expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        expectedModel.deletePerson(personToDelete);
+        expectedModel.updateFilteredPersonList(meierPredicate);
+
+        assertCommandSuccess(deleteCommand, model, expectedMessage, expectedModel);
+        assertEquals(List.of(BENSON), model.getFilteredPersonList());
+    }
+
+    @Test
     public void execute_invalidIndexFilteredList_throwsCommandException() {
         showPersonAtIndex(model, INDEX_FIRST_PERSON);
 
@@ -76,7 +142,25 @@ public class DeleteCommandTest {
 
         DeleteCommand deleteCommand = new DeleteCommand(outOfBoundIndex);
 
-        assertCommandFailure(deleteCommand, model, Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+        assertCommandFailure(deleteCommand, model,
+                Messages.getInvalidPersonDisplayedIndexMessage(model.getFilteredPersonList().size()));
+    }
+
+    @Test
+    public void execute_invalidIndexEmptyList_showsListHint() {
+        Model emptyModel = new ModelManager(getTypicalAddressBook(), new UserPrefs());
+        emptyModel.updateFilteredPersonList(person -> false);
+        DeleteCommand deleteCommand = new DeleteCommand(INDEX_FIRST_PERSON);
+
+        assertCommandFailure(deleteCommand, emptyModel, Messages.getInvalidPersonDisplayedIndexMessage(0));
+    }
+
+    @Test
+    public void execute_positiveIndexBeyondIntegerRange_showsDisplayedRange() {
+        DeleteCommand deleteCommand = DeleteCommand.fromOneBased(new BigInteger("9".repeat(100)));
+
+        assertCommandFailure(deleteCommand, model,
+                Messages.getInvalidPersonDisplayedIndexMessage(model.getFilteredPersonList().size()));
     }
 
     @Test
