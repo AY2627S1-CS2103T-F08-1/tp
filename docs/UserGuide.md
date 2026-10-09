@@ -94,8 +94,9 @@ Examples:
 
 ### Listing all debtors: `list`
 
-Shows every active debtor in the order in which the profiles are stored. The result reports the number of debtors
-shown and displays a helpful message when there are no debtors.
+Shows every active debtor in ascending debtor ID order. Each debtor card shows the ID, name, phone number,
+outstanding amount, email address, address, remark, and tags. The result reports the active-debtor count and displays
+a helpful message when there are no active debtors.
 
 Format: `list`
 
