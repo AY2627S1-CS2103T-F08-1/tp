@@ -30,6 +30,8 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 
    * `add n/Olaf Go p/91234567 e/olaf.letnonego@example.com a/H4M8+3J3, Kunlun Station, Antarctica o/S$1,250.00` : Adds a debtor named `Olaf Go` to the Address Book.
 
+   * `note --id 1 --text Called debtor, promised payment on Friday.` : Adds an interaction note to debtor ID 1.
+
    * `delete 3` : Deletes the 3rd contact shown in the current list.
 
    * `clear` : Deletes all contacts.
@@ -95,6 +97,19 @@ Examples:
 Shows a list of all persons in the address book.
 
 Format: `list`
+
+### Adding an interaction note: `note`
+
+Adds a timestamped interaction note to the debtor identified by debtor ID.
+
+Format: `note --id DEBTOR_ID --text NOTE_TEXT`
+
+* `DEBTOR_ID` must be a positive integer shown as the debtor's ID in the person list.
+* `NOTE_TEXT` must not be blank. Ordinary punctuation is allowed.
+* The note is saved with the debtor and is preserved after restarting the application.
+
+Example:
+* `note --id 1 --text Called debtor, promised payment on Friday.`
 
 ### Editing a person: `edit`
 
@@ -198,4 +213,5 @@ Action | Format, Examples
 **Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List** | `list`
+**Note** | `note --id DEBTOR_ID --text NOTE_TEXT`<br> e.g., `note --id 1 --text Called debtor, promised payment on Friday.`
 **Help** | `help`
