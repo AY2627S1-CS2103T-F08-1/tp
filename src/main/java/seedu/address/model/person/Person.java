@@ -23,17 +23,36 @@ public class Person {
 
     // Data fields
     private final Address address;
+    private final int debtorId;
+    private final OutstandingAmount outstandingAmount;
     private final Set<Tag> tags = new HashSet<>();
 
     /**
      * Every field must be present and not null.
      */
     public Person(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
-        requireAllNonNull(name, phone, email, address, tags);
+        this(name, phone, email, address, 0, new OutstandingAmount(), tags);
+    }
+
+    /** Creates a person with the supplied outstanding amount. */
+    public Person(Name name, Phone phone, Email email, Address address,
+            OutstandingAmount outstandingAmount, Set<Tag> tags) {
+        this(name, phone, email, address, 0, outstandingAmount, tags);
+    }
+
+    /** Creates a person with a persistent debtor ID and outstanding amount. */
+    public Person(Name name, Phone phone, Email email, Address address, int debtorId,
+            OutstandingAmount outstandingAmount, Set<Tag> tags) {
+        requireAllNonNull(name, phone, email, address, outstandingAmount, tags);
+        if (debtorId < 0) {
+            throw new IllegalArgumentException("Debtor ID cannot be negative.");
+        }
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
+        this.debtorId = debtorId;
+        this.outstandingAmount = outstandingAmount;
         this.tags.addAll(tags);
     }
 
@@ -53,6 +72,20 @@ public class Person {
         return address;
     }
 
+    /** Returns this person's persistent debtor ID, or 0 before the person is added. */
+    public int getDebtorId() {
+        return debtorId;
+    }
+
+    /** Returns a copy of this person with the supplied persistent debtor ID. */
+    public Person withDebtorId(int newDebtorId) {
+        return new Person(name, phone, email, address, newDebtorId, outstandingAmount, tags);
+    }
+
+    public OutstandingAmount getOutstandingAmount() {
+        return outstandingAmount;
+    }
+
     /**
      * Returns an immutable tag set, which throws {@code UnsupportedOperationException}
      * if modification is attempted.
@@ -62,7 +95,7 @@ public class Person {
     }
 
     /**
-     * Returns true if both persons have the same name.
+     * Returns true if both persons have the same phone number or email address.
      * This defines a weaker notion of equality between two persons.
      */
     public boolean isSamePerson(Person otherPerson) {
@@ -71,7 +104,7 @@ public class Person {
         }
 
         return otherPerson != null
-                && otherPerson.getName().equals(getName());
+                && (otherPerson.getPhone().equals(getPhone()) || otherPerson.getEmail().equals(getEmail()));
     }
 
     /**
@@ -93,13 +126,14 @@ public class Person {
                 && phone.equals(otherPerson.phone)
                 && email.equals(otherPerson.email)
                 && address.equals(otherPerson.address)
+                && outstandingAmount.equals(otherPerson.outstandingAmount)
                 && tags.equals(otherPerson.tags);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, tags);
+        return Objects.hash(name, phone, email, address, outstandingAmount, tags);
     }
 
     @Override
@@ -109,6 +143,8 @@ public class Person {
                 .add("phone", phone)
                 .add("email", email)
                 .add("address", address)
+                .add("debtorId", debtorId)
+                .add("outstandingAmount", outstandingAmount)
                 .add("tags", tags)
                 .toString();
     }

@@ -77,6 +77,24 @@ public class AddressBookTest {
     }
 
     @Test
+    public void addPerson_assignsIncreasingIdsWithoutReuse() {
+        Person firstPerson = new PersonBuilder().withName("Alice").build();
+        Person secondPerson = new PersonBuilder().withName("Bob").withPhone("91234567")
+                .withEmail("bob@example.com").build();
+        Person thirdPerson = new PersonBuilder().withName("Carol").withPhone("92345678")
+                .withEmail("carol@example.com").build();
+
+        Person addedFirstPerson = addressBook.addPerson(firstPerson);
+        Person addedSecondPerson = addressBook.addPerson(secondPerson);
+        addressBook.removePerson(addedSecondPerson);
+        Person addedThirdPerson = addressBook.addPerson(thirdPerson);
+
+        assertEquals(1, addedFirstPerson.getDebtorId());
+        assertEquals(2, addedSecondPerson.getDebtorId());
+        assertEquals(3, addedThirdPerson.getDebtorId());
+    }
+
+    @Test
     public void getPersonList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> addressBook.getPersonList().remove(0));
     }

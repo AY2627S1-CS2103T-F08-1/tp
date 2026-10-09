@@ -37,14 +37,15 @@ public class EditCommandTest {
 
     @Test
     public void execute_allFieldsSpecifiedUnfilteredList_success() {
-        Person editedPerson = new PersonBuilder().build();
+        Person personToEdit = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        Person editedPerson = new PersonBuilder().withDebtorId(personToEdit.getDebtorId()).build();
         EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder(editedPerson).build();
         EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON, descriptor);
 
         String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson));
 
         Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
-        expectedModel.setPerson(model.getFilteredPersonList().get(0), editedPerson);
+        expectedModel.setPerson(personToEdit, editedPerson);
 
         assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
     }
@@ -68,6 +69,24 @@ public class EditCommandTest {
         expectedModel.setPerson(lastPerson, editedPerson);
 
         assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_otherFieldsEdited_preservesOutstandingAmount() {
+        Person debtor = new PersonBuilder().withOutstandingAmount("1,250.00").build();
+        Model debtorModel = new ModelManager(new AddressBook(), new UserPrefs());
+        debtorModel.addPerson(debtor);
+        Person debtorInModel = debtorModel.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+
+        Person editedPerson = new PersonBuilder(debtorInModel).withName(VALID_NAME_BOB).build();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
+                new EditPersonDescriptorBuilder().withName(VALID_NAME_BOB).build());
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson));
+
+        Model expectedModel = new ModelManager(new AddressBook(debtorModel.getAddressBook()), new UserPrefs());
+        expectedModel.setPerson(debtorInModel, editedPerson);
+
+        assertCommandSuccess(editCommand, debtorModel, expectedMessage, expectedModel);
     }
 
     @Test
@@ -118,6 +137,28 @@ public class EditCommandTest {
                 new EditPersonDescriptorBuilder(personInList).build());
 
         assertCommandFailure(editCommand, model, EditCommand.MESSAGE_DUPLICATE_PERSON);
+    }
+
+    @Test
+    public void execute_duplicatePhoneDuringPartialEdit_failure() {
+        Person firstPerson = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        Person secondPerson = model.getFilteredPersonList().get(INDEX_SECOND_PERSON.getZeroBased());
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
+                new EditPersonDescriptorBuilder().withPhone(secondPerson.getPhone().value).build());
+
+        assertCommandFailure(editCommand, model, EditCommand.MESSAGE_DUPLICATE_PERSON);
+        assertEquals(firstPerson, model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased()));
+    }
+
+    @Test
+    public void execute_duplicateEmailDuringPartialEdit_failure() {
+        Person firstPerson = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        Person secondPerson = model.getFilteredPersonList().get(INDEX_SECOND_PERSON.getZeroBased());
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
+                new EditPersonDescriptorBuilder().withEmail(secondPerson.getEmail().value).build());
+
+        assertCommandFailure(editCommand, model, EditCommand.MESSAGE_DUPLICATE_PERSON);
+        assertEquals(firstPerson, model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased()));
     }
 
     @Test

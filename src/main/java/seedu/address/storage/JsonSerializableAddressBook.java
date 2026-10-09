@@ -22,13 +22,16 @@ class JsonSerializableAddressBook {
     public static final String MESSAGE_DUPLICATE_PERSON = "Persons list contains duplicate person(s).";
 
     private final List<JsonAdaptedPerson> persons = new ArrayList<>();
+    private final Integer nextDebtorId;
 
     /**
      * Constructs a {@code JsonSerializableAddressBook} with the given persons.
      */
     @JsonCreator
-    public JsonSerializableAddressBook(@JsonProperty("persons") List<JsonAdaptedPerson> persons) {
+    public JsonSerializableAddressBook(@JsonProperty("persons") List<JsonAdaptedPerson> persons,
+            @JsonProperty("nextDebtorId") Integer nextDebtorId) {
         this.persons.addAll(persons);
+        this.nextDebtorId = nextDebtorId;
     }
 
     /**
@@ -38,6 +41,7 @@ class JsonSerializableAddressBook {
      */
     public JsonSerializableAddressBook(ReadOnlyAddressBook source) {
         persons.addAll(source.getPersonList().stream().map(JsonAdaptedPerson::new).collect(Collectors.toList()));
+        nextDebtorId = source.getNextDebtorId();
     }
 
     /**
@@ -53,6 +57,13 @@ class JsonSerializableAddressBook {
                 throw new IllegalValueException(MESSAGE_DUPLICATE_PERSON);
             }
             addressBook.addPerson(person);
+        }
+        if (nextDebtorId != null) {
+            try {
+                addressBook.setNextDebtorId(nextDebtorId);
+            } catch (IllegalArgumentException exception) {
+                throw new IllegalValueException(exception.getMessage());
+            }
         }
         return addressBook;
     }

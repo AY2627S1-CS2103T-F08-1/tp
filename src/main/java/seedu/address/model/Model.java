@@ -37,7 +37,8 @@ public interface Model {
     ReadOnlyAddressBook getAddressBook();
 
     /**
-     * Returns true if a person with the same identity as {@code person} exists in the address book.
+     * Returns true if a person with the same phone number or email address as {@code person} exists in the
+     * address book.
      */
     boolean hasPerson(Person person);
 
@@ -51,7 +52,7 @@ public interface Model {
      * Adds the given person.
      * {@code person} must not already exist in the address book.
      */
-    void addPerson(Person person);
+    Person addPerson(Person person);
 
     /**
      * Replaces the given person {@code target} with {@code editedPerson}.
