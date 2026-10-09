@@ -76,7 +76,8 @@ Format: `help`
 ### Adding a debtor: `add`
 
 Adds a debtor to the address book. The outstanding amount is optional, may be zero, and defaults to `S$0.00`.
-Each debtor is assigned a unique ID, which is shown in the person list and is never reused.
+Each debtor is assigned a unique ID, which is shown in the person list. IDs are assigned from 1 again after
+using `clear`.
 
 Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [o/OUTSTANDING_AMOUNT] [t/TAG]…​`
 

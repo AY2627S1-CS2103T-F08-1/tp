@@ -26,6 +26,14 @@ public class OutstandingAmountTest {
         assertThrows(IllegalArgumentException.class, OutstandingAmount.MESSAGE_CONSTRAINTS, () ->
                 new OutstandingAmount("10.123"));
         assertThrows(IllegalArgumentException.class, OutstandingAmount.MESSAGE_CONSTRAINTS, () ->
+                new OutstandingAmount("1,25.00"));
+        assertThrows(IllegalArgumentException.class, OutstandingAmount.MESSAGE_CONSTRAINTS, () ->
+                new OutstandingAmount("1e3"));
+        assertThrows(IllegalArgumentException.class, OutstandingAmount.MESSAGE_CONSTRAINTS, () ->
+                new OutstandingAmount("12,34.56"));
+        assertThrows(IllegalArgumentException.class, OutstandingAmount.MESSAGE_CONSTRAINTS, () ->
+                new OutstandingAmount("1,,250.00"));
+        assertThrows(IllegalArgumentException.class, OutstandingAmount.MESSAGE_CONSTRAINTS, () ->
                 new OutstandingAmount("not an amount"));
     }
 

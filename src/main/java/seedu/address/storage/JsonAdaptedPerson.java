@@ -16,7 +16,6 @@ import seedu.address.model.person.Name;
 import seedu.address.model.person.OutstandingAmount;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
-import seedu.address.model.person.Remark;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -32,7 +31,6 @@ class JsonAdaptedPerson {
     private final String address;
     private final Integer debtorId;
     private final String outstandingAmount;
-    private final String remark;
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
 
     /**
@@ -43,14 +41,13 @@ class JsonAdaptedPerson {
             @JsonProperty("email") String email, @JsonProperty("address") String address,
             @JsonProperty("debtorId") Integer debtorId,
             @JsonProperty("outstandingAmount") String outstandingAmount,
-            @JsonProperty("remark") String remark, @JsonProperty("tags") List<JsonAdaptedTag> tags) {
+            @JsonProperty("tags") List<JsonAdaptedTag> tags) {
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
         this.debtorId = debtorId;
         this.outstandingAmount = outstandingAmount;
-        this.remark = remark;
         if (tags != null) {
             this.tags.addAll(tags);
         }
@@ -59,13 +56,13 @@ class JsonAdaptedPerson {
     /** Backwards-compatible constructor for data and tests that do not specify an amount. */
     public JsonAdaptedPerson(String name, String phone, String email, String address,
             List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, null, null, null, tags);
+        this(name, phone, email, address, null, null, tags);
     }
 
     /** Backwards-compatible constructor for callers specifying an amount but no remark. */
     public JsonAdaptedPerson(String name, String phone, String email, String address,
             String outstandingAmount, List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, null, outstandingAmount, null, tags);
+        this(name, phone, email, address, null, outstandingAmount, tags);
     }
 
     /**
@@ -78,7 +75,6 @@ class JsonAdaptedPerson {
         address = source.getAddress().value;
         debtorId = source.getDebtorId() == 0 ? null : source.getDebtorId();
         outstandingAmount = source.getOutstandingAmount().toString();
-        remark = source.getRemark().toString();
         tags.addAll(source.getTags().stream()
                 .map(JsonAdaptedTag::new)
                 .collect(Collectors.toList()));
@@ -135,9 +131,8 @@ class JsonAdaptedPerson {
         } catch (IllegalArgumentException exception) {
             throw new IllegalValueException(OutstandingAmount.MESSAGE_CONSTRAINTS);
         }
-        Remark modelRemark = new Remark(remark == null ? "" : remark);
         return new Person(modelName, modelPhone, modelEmail, modelAddress,
-                debtorId == null ? 0 : debtorId, modelOutstandingAmount, modelRemark, modelTags);
+                debtorId == null ? 0 : debtorId, modelOutstandingAmount, modelTags);
     }
 
 }
