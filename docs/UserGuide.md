@@ -102,6 +102,11 @@ Format: `list`
 
 The command does not accept any parameters.
 
+Examples of result messages:
+* `No active debtors found (0 active). Add a debtor with the add command.`
+* `1 active debtor listed.`
+* `5 active debtors listed.`
+
 ### Editing a person: `edit`
 
 Edits an existing person in the address book.
