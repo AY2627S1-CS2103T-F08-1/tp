@@ -25,6 +25,7 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.Person;
+import seedu.address.testutil.PersonBuilder;
 
 /**
  * Contains integration tests (interaction with the Model) and unit tests for
@@ -89,12 +90,37 @@ public class DeleteCommandTest {
     }
 
     @Test
+    public void execute_validIndexSimilarPeople_deletesOnlyPersonAtDisplayedIndex() {
+        Person firstAmy = AMY;
+        Person secondAmy = new PersonBuilder(AMY).withName("Amy Bees").withPhone("82223333").build();
+        ModelManager similarPeopleModel = new ModelManager();
+        similarPeopleModel.addPerson(firstAmy);
+        similarPeopleModel.addPerson(secondAmy);
+        assertTrue(secondAmy.getName().toString().startsWith(firstAmy.getName().toString()));
+        assertEquals(2, similarPeopleModel.getFilteredPersonList().size());
+
+        Person personToDelete = similarPeopleModel.getFilteredPersonList().get(1);
+        Person personToKeep = similarPeopleModel.getFilteredPersonList().get(0);
+        DeleteCommand deleteCommand = new DeleteCommand(Index.fromOneBased(2));
+        String expectedMessage = String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS,
+                Messages.format(personToDelete));
+        ModelManager expectedModel = new ModelManager(similarPeopleModel.getAddressBook(), new UserPrefs());
+        expectedModel.deletePerson(personToDelete);
+
+        assertCommandSuccess(deleteCommand, similarPeopleModel, expectedMessage, expectedModel);
+        assertEquals(List.of(personToKeep), similarPeopleModel.getAddressBook().getPersonList());
+    }
+
+    @Test
     public void execute_invalidIndexUnfilteredList_throwsCommandException() {
         Index outOfBoundIndex = Index.fromOneBased(model.getFilteredPersonList().size() + 1);
         DeleteCommand deleteCommand = new DeleteCommand(outOfBoundIndex);
+        int displayedPersonCount = model.getFilteredPersonList().size();
+        String expectedMessage = String.format(
+                "Index %d is out of range. The displayed list has %d people; valid range is 1 to %d.",
+                outOfBoundIndex.getOneBased(), displayedPersonCount, displayedPersonCount);
 
-        assertCommandFailure(deleteCommand, model,
-                Messages.getInvalidPersonDisplayedIndexMessage(model.getFilteredPersonList().size()));
+        assertCommandFailure(deleteCommand, model, expectedMessage);
     }
 
     @Test
@@ -144,7 +170,8 @@ public class DeleteCommandTest {
         DeleteCommand deleteCommand = new DeleteCommand(outOfBoundIndex);
 
         assertCommandFailure(deleteCommand, model,
-                Messages.getInvalidPersonDisplayedIndexMessage(model.getFilteredPersonList().size()));
+                Messages.getInvalidPersonDisplayedIndexMessage(
+                        BigInteger.valueOf(outOfBoundIndex.getOneBased()), model.getFilteredPersonList().size()));
     }
 
     @Test
@@ -153,7 +180,8 @@ public class DeleteCommandTest {
         emptyModel.updateFilteredPersonList(person -> false);
         DeleteCommand deleteCommand = new DeleteCommand(INDEX_FIRST_PERSON);
 
-        assertCommandFailure(deleteCommand, emptyModel, Messages.getInvalidPersonDisplayedIndexMessage(0));
+        assertCommandFailure(deleteCommand, emptyModel, "Index 1 is invalid because the displayed list is empty "
+                + "(0 people; no valid index range). Run the list command or adjust your find query before deleting.");
     }
 
     @Test
@@ -161,7 +189,8 @@ public class DeleteCommandTest {
         DeleteCommand deleteCommand = DeleteCommand.fromOneBased(new BigInteger("9".repeat(100)));
 
         assertCommandFailure(deleteCommand, model,
-                Messages.getInvalidPersonDisplayedIndexMessage(model.getFilteredPersonList().size()));
+                Messages.getInvalidPersonDisplayedIndexMessage(
+                        new BigInteger("9".repeat(100)), model.getFilteredPersonList().size()));
     }
 
     @Test
