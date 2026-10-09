@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * Represents the amount currently owed by a debtor.
@@ -16,18 +17,25 @@ public final class OutstandingAmount {
     public static final String MESSAGE_CONSTRAINTS =
             "Amount must be a non-negative number with at most two decimal places.";
 
+    private static final Pattern VALID_AMOUNT = Pattern.compile(
+            "(?:\\d+|\\d{1,3}(?:,\\d{3})+)(?:\\.\\d{1,2})?");
+
     private final BigDecimal value;
 
     /** Creates an amount from a decimal value. */
     public OutstandingAmount(String amount) {
         requireNonNull(amount);
-        String trimmedAmount = amount.trim().replace(",", "");
+        String trimmedAmount = amount.trim();
         if (trimmedAmount.startsWith("S$")) {
             trimmedAmount = trimmedAmount.substring(2);
         } else if (trimmedAmount.startsWith("$")) {
             trimmedAmount = trimmedAmount.substring(1);
         }
+        if (!VALID_AMOUNT.matcher(trimmedAmount).matches()) {
+            throw new IllegalArgumentException(MESSAGE_CONSTRAINTS);
+        }
         try {
+            trimmedAmount = trimmedAmount.replace(",", "");
             BigDecimal parsed = new BigDecimal(trimmedAmount);
             if (parsed.signum() < 0 || parsed.scale() > 2) {
                 throw new NumberFormatException();

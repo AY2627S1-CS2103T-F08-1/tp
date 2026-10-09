@@ -107,6 +107,21 @@ public class JsonAddressBookStorageTest {
     }
 
     @Test
+    public void readAndSaveAddressBook_nonzeroOutstandingAmountAndDebtorId_roundTrips() throws Exception {
+        Path filePath = testFolder.resolve("OutstandingAmountAddressBook.json");
+        AddressBook original = new AddressBook();
+        Person debtor = original.addPerson(new PersonBuilder().withName("Alice").withPhone("91234567")
+                .withEmail("alice@example.com").withOutstandingAmount("1,250.50").build());
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(filePath);
+
+        storage.saveAddressBook(original, filePath);
+        Person restoredDebtor = storage.readAddressBook(filePath).get().getPersonList().getFirst();
+
+        assertEquals(debtor.getDebtorId(), restoredDebtor.getDebtorId());
+        assertEquals(debtor.getOutstandingAmount(), restoredDebtor.getOutstandingAmount());
+    }
+
+    @Test
     public void saveAddressBook_nullAddressBook_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> saveAddressBook(null, "SomeFile.json"));
     }
