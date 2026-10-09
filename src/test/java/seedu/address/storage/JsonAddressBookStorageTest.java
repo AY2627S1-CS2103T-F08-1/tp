@@ -11,6 +11,7 @@ import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.io.TempDir;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
+import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
 
@@ -119,6 +121,22 @@ public class JsonAddressBookStorageTest {
 
         assertEquals(debtor.getDebtorId(), restoredDebtor.getDebtorId());
         assertEquals(debtor.getOutstandingAmount(), restoredDebtor.getOutstandingAmount());
+    }
+
+    @Test
+    public void readAndSaveAddressBook_interactionNotes_roundTrips() throws Exception {
+        Path filePath = testFolder.resolve("InteractionNotesAddressBook.json");
+        InteractionNote note = InteractionNote.fromStorage("2026-10-09T14:30:00",
+                "Called debtor, promised payment.");
+        AddressBook original = new AddressBook();
+        Person debtor = original.addPerson(new PersonBuilder().withName("Alice").withPhone("91234567")
+                .withEmail("alice@example.com").withInteractionNotes(List.of(note)).build());
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(filePath);
+
+        storage.saveAddressBook(original, filePath);
+        Person restoredDebtor = storage.readAddressBook(filePath).get().getPersonList().getFirst();
+
+        assertEquals(debtor.getInteractionNotes(), restoredDebtor.getInteractionNotes());
     }
 
     @Test
