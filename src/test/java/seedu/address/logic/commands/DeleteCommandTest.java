@@ -2,6 +2,7 @@ package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
@@ -164,6 +165,11 @@ public class DeleteCommandTest {
     }
 
     @Test
+    public void fromOneBased_nonPositiveIndex_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> DeleteCommand.fromOneBased(BigInteger.ZERO));
+    }
+
+    @Test
     public void equals() {
         DeleteCommand deleteFirstCommand = new DeleteCommand(INDEX_FIRST_PERSON);
         DeleteCommand deleteSecondCommand = new DeleteCommand(INDEX_SECOND_PERSON);
@@ -191,6 +197,11 @@ public class DeleteCommandTest {
         DeleteCommand deleteCommand = new DeleteCommand(targetIndex);
         String expected = DeleteCommand.class.getCanonicalName() + "{targetIndex=" + targetIndex + "}";
         assertEquals(expected, deleteCommand.toString());
+
+        BigInteger largeIndex = BigInteger.valueOf(Integer.MAX_VALUE).add(BigInteger.ONE);
+        DeleteCommand largeIndexCommand = DeleteCommand.fromOneBased(largeIndex);
+        String expectedForLargeIndex = DeleteCommand.class.getCanonicalName() + "{targetIndex=" + largeIndex + "}";
+        assertEquals(expectedForLargeIndex, largeIndexCommand.toString());
     }
 
     /**
