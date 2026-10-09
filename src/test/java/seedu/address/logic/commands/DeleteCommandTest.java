@@ -83,7 +83,9 @@ public class DeleteCommandTest {
         onePersonModel.addPerson(AMY);
         DeleteCommand deleteCommand = new DeleteCommand(INDEX_FIRST_PERSON);
 
-        String expectedMessage = String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(AMY));
+        Person personToDelete = onePersonModel.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        String expectedMessage = String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS,
+                Messages.format(personToDelete));
         ModelManager expectedModel = new ModelManager();
 
         assertCommandSuccess(deleteCommand, onePersonModel, expectedMessage, expectedModel);
@@ -92,7 +94,8 @@ public class DeleteCommandTest {
     @Test
     public void execute_validIndexSimilarPeople_deletesOnlyPersonAtDisplayedIndex() {
         Person firstAmy = AMY;
-        Person secondAmy = new PersonBuilder(AMY).withName("Amy Bees").withPhone("82223333").build();
+        Person secondAmy = new PersonBuilder(AMY).withName("Amy Bees")
+                .withPhone("82223333").withEmail("amybees@example.com").build();
         ModelManager similarPeopleModel = new ModelManager();
         similarPeopleModel.addPerson(firstAmy);
         similarPeopleModel.addPerson(secondAmy);
