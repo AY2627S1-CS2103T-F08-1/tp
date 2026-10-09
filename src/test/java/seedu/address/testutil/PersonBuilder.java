@@ -6,8 +6,10 @@ import java.util.Set;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Name;
+import seedu.address.model.person.OutstandingAmount;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.model.person.Remark;
 import seedu.address.model.tag.Tag;
 import seedu.address.model.util.SampleDataUtil;
 
@@ -25,6 +27,9 @@ public class PersonBuilder {
     private Phone phone;
     private Email email;
     private Address address;
+    private OutstandingAmount outstandingAmount;
+    private int debtorId;
+    private Remark remark;
     private Set<Tag> tags;
 
     /**
@@ -35,6 +40,9 @@ public class PersonBuilder {
         phone = new Phone(DEFAULT_PHONE);
         email = new Email(DEFAULT_EMAIL);
         address = new Address(DEFAULT_ADDRESS);
+        outstandingAmount = new OutstandingAmount();
+        debtorId = 0;
+        remark = new Remark("");
         tags = new HashSet<>();
     }
 
@@ -46,6 +54,9 @@ public class PersonBuilder {
         phone = personToCopy.getPhone();
         email = personToCopy.getEmail();
         address = personToCopy.getAddress();
+        outstandingAmount = personToCopy.getOutstandingAmount();
+        debtorId = personToCopy.getDebtorId();
+        remark = personToCopy.getRemark();
         tags = new HashSet<>(personToCopy.getTags());
     }
 
@@ -89,8 +100,26 @@ public class PersonBuilder {
         return this;
     }
 
+    /** Sets the outstanding amount of the person being built. */
+    public PersonBuilder withOutstandingAmount(String amount) {
+        outstandingAmount = new OutstandingAmount(amount);
+        return this;
+    }
+
+    /** Sets the persistent debtor ID of the person being built. */
+    public PersonBuilder withDebtorId(int debtorId) {
+        this.debtorId = debtorId;
+        return this;
+    }
+
+    /** Sets the remark of the person being built. */
+    public PersonBuilder withRemark(String remark) {
+        this.remark = new Remark(remark);
+        return this;
+    }
+
     public Person build() {
-        return new Person(name, phone, email, address, tags);
+        return new Person(name, phone, email, address, debtorId, outstandingAmount, remark, tags);
     }
 
 }

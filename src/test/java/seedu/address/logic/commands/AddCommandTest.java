@@ -35,12 +35,13 @@ public class AddCommandTest {
     public void execute_personAcceptedByModel_addSuccessful() throws Exception {
         ModelStubAcceptingPersonAdded modelStub = new ModelStubAcceptingPersonAdded();
         Person validPerson = new PersonBuilder().build();
+        Person addedPerson = validPerson.withDebtorId(1);
 
         CommandResult commandResult = new AddCommand(validPerson).execute(modelStub);
 
-        assertEquals(String.format(AddCommand.MESSAGE_SUCCESS, Messages.format(validPerson)),
+        assertEquals(String.format(AddCommand.MESSAGE_SUCCESS, Messages.format(addedPerson)),
                 commandResult.getFeedbackToUser());
-        assertEquals(List.of(validPerson), modelStub.personsAdded);
+        assertEquals(List.of(addedPerson), modelStub.personsAdded);
     }
 
     @Test
@@ -103,7 +104,7 @@ public class AddCommandTest {
         }
 
         @Override
-        public void addPerson(Person person) {
+        public Person addPerson(Person person) {
             throw new AssertionError("This method should not be called.");
         }
 
@@ -174,9 +175,11 @@ public class AddCommandTest {
         }
 
         @Override
-        public void addPerson(Person person) {
+        public Person addPerson(Person person) {
             requireNonNull(person);
-            personsAdded.add(person);
+            Person assignedPerson = person.getDebtorId() == 0 ? person.withDebtorId(1) : person;
+            personsAdded.add(assignedPerson);
+            return assignedPerson;
         }
 
         @Override
