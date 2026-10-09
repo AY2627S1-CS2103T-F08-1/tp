@@ -1,14 +1,19 @@
-[![CI Status](https://github.com/se-edu/addressbook-level3/workflows/Java%20CI/badge.svg)](https://github.com/se-edu/addressbook-level3/actions)
+# Orchestration and Scheduling of Payment Scheme (OSPS)
 
-![Ui](docs/images/Ui.png)
+[![Java CI](https://github.com/AY2627S1-CS2103T-F08-1/tp/actions/workflows/gradle.yml/badge.svg)](https://github.com/AY2627S1-CS2103T-F08-1/tp/actions/workflows/gradle.yml)
 
-* This is **a sample project for Software Engineering (SE) students**.<br>
-  Example usages:
-  * as a starting point of a course project (as opposed to writing everything from scratch)
-  * as a case study
-* The project simulates an ongoing software project for a desktop application (called _AddressBook_) used for managing contact details.
-  * It is **written in an object-oriented programming (OOP) style** and provides a **reasonably well-written** codebase of about 6 KLoC. It is **larger** than what students typically write in beginner-level software-engineering modules, without being overwhelming.
-  * It comes with a **reasonable level of user and developer documentation**.
-* It is named `AddressBook Level 3` (`AB3` for short) because it was initially created as a part of a series of `AddressBook` projects (`Level 1`, `Level 2`, `Level 3` ...).
-* For the detailed documentation of this project, see the **[Address Book Product Website](https://se-education.org/addressbook-level3)**.
-* This project is a **part of the se-education.org** initiative. If you would like to contribute code to this project, see [se-education.org](https://se-education.org/#contributing-to-se-edu) for more info.
+![OSPS user interface](docs/images/Ui.png)
+
+OSPS is a desktop application for debt recovery agents to manage debtor details, outstanding balances, and interaction histories. It combines a graphical interface with a command-line interface so users can manage debtor cases efficiently using the keyboard.
+
+The planned minimum viable product covers the following essential tasks:
+
+* Add a debtor.
+* List active debtors.
+* View a debtor's full profile.
+* Append an interaction note to a debtor's history.
+* Delete a debtor record.
+
+For setup and usage instructions, see the [User Guide](https://ay2627s1-cs2103t-f08-1.github.io/tp/UserGuide.html). Developers can refer to the [Developer Guide](https://ay2627s1-cs2103t-f08-1.github.io/tp/DeveloperGuide.html).
+
+This project is based on the AddressBook-Level3 project created by the [SE-EDU initiative](https://se-education.org).
