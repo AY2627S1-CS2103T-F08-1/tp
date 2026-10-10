@@ -102,11 +102,7 @@ public class PersonBuilder {
     }
 
     /**
-
-
      * Sets the outstanding amount of the person being built.
-
-
      */
     public PersonBuilder withOutstandingAmount(String amount) {
         outstandingAmount = new OutstandingAmount(amount);
@@ -114,11 +110,7 @@ public class PersonBuilder {
     }
 
     /**
-
-
      * Sets the persistent debtor ID of the person being built.
-
-
      */
     public PersonBuilder withDebtorId(int debtorId) {
         this.debtorId = debtorId;
@@ -126,11 +118,7 @@ public class PersonBuilder {
     }
 
     /**
-
-
      * Sets the interaction notes of the person being built.
-
-
      */
     public PersonBuilder withInteractionNotes(List<InteractionNote> interactionNotes) {
         this.interactionNotes = List.copyOf(interactionNotes);
