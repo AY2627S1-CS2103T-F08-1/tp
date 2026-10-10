@@ -19,13 +19,13 @@ public class Messages {
 
     public static final String MESSAGE_UNKNOWN_COMMAND = "Unknown command.";
     public static final String MESSAGE_INVALID_COMMAND_FORMAT = "Invalid command format!\n%1$s";
-    public static final String MESSAGE_INVALID_PERSON_DISPLAYED_INDEX = "The person index provided is invalid.";
-    public static final String MESSAGE_PERSONS_LISTED_OVERVIEW = "%1$d person(s) listed!";
+    public static final String MESSAGE_INVALID_PERSON_DISPLAYED_INDEX = "The debtor index provided is invalid.";
+    public static final String MESSAGE_PERSONS_LISTED_OVERVIEW = "%1$d debtor(s) listed!";
     public static final String MESSAGE_DUPLICATE_FIELDS =
                 "Multiple values specified for the following single-valued field(s): ";
 
     private static final String MESSAGE_NO_PERSONS_DISPLAYED_FOR_DELETE =
-            "Index %1$s is invalid because the displayed list is empty (0 people; no valid index range). "
+            "Index %1$s is invalid because the displayed list is empty (0 debtors; no valid index range). "
                     + "Run the list command or adjust your find query before deleting.";
     private static final String MESSAGE_INVALID_PERSON_DISPLAYED_INDEX_RANGE =
             "Index %1$s is out of range. The displayed list has %2$d %3$s; valid range is 1 to %2$d.";
@@ -50,7 +50,7 @@ public class Messages {
             return String.format(MESSAGE_NO_PERSONS_DISPLAYED_FOR_DELETE, requestedIndex);
         }
 
-        String personNoun = displayedPersonCount == 1 ? "person" : "people";
+        String personNoun = displayedPersonCount == 1 ? "debtor" : "debtors";
         return String.format(MESSAGE_INVALID_PERSON_DISPLAYED_INDEX_RANGE,
                 requestedIndex, displayedPersonCount, personNoun);
     }

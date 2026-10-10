@@ -1,19 +1,27 @@
 # Orchestration and Scheduling of Payment Scheme (OSPS)
 
 [![Java CI](https://github.com/AY2627S1-CS2103T-F08-1/tp/actions/workflows/gradle.yml/badge.svg)](https://github.com/AY2627S1-CS2103T-F08-1/tp/actions/workflows/gradle.yml)
+[![codecov](https://codecov.io/gh/AY2627S1-CS2103T-F08-1/tp/branch/master/graph/badge.svg)](https://codecov.io/gh/AY2627S1-CS2103T-F08-1/tp)
 
-![OSPS user interface](docs/images/Ui.png)
+![OSPS interface concept](docs/images/Ui.png)
 
-OSPS is a desktop application for debt recovery agents to manage debtor details, outstanding balances, and interaction histories. It combines a graphical interface with a command-line interface so users can manage debtor cases efficiently using the keyboard.
+> **Release preparation note:** The image above is an interface concept from an earlier iteration. Replace it with a
+> screenshot of the tested v1.3 application before publishing the release.
 
-The planned minimum viable product covers the following essential tasks:
+OSPS v1.3 is a desktop application for debt recovery agents to manage debtor contact details, outstanding balances,
+and interaction histories. It combines a graphical interface with keyboard-driven commands for fast case management.
 
-* Add a debtor.
-* List active debtors.
-* View a debtor's full profile.
-* Append an interaction note to a debtor's history.
-* Delete a debtor record.
+The v1.3 MVP supports these core workflows:
 
-For setup and usage instructions, see the [User Guide](https://ay2627s1-cs2103t-f08-1.github.io/tp/UserGuide.html). Developers can refer to the [Developer Guide](https://ay2627s1-cs2103t-f08-1.github.io/tp/DeveloperGuide.html).
+* Add a debtor with an optional non-negative outstanding amount.
+* List active debtors in ascending persistent debtor-ID order, including their outstanding amounts.
+* View a debtor's complete profile and newest-first interaction history using the persistent debtor ID.
+* Add a timestamped interaction note using the persistent debtor ID.
+* Delete a debtor using the one-based index in the currently displayed list.
 
-This project is based on the AddressBook-Level3 project created by the [SE-EDU initiative](https://se-education.org).
+For setup, exact command syntax, and the distinction between debtor IDs and displayed indexes, see the
+[User Guide](https://ay2627s1-cs2103t-f08-1.github.io/tp/UserGuide.html). Developers can refer to the
+[Developer Guide](https://ay2627s1-cs2103t-f08-1.github.io/tp/DeveloperGuide.html).
+
+OSPS is based on the AddressBook-Level3 project created by the
+[SE-EDU initiative](https://se-education.org).
