@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
-import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.OutstandingAmount;
 import seedu.address.model.person.Person;
@@ -62,15 +61,6 @@ public class JsonAdaptedPersonTest {
     @Test
     public void toModelType_defaultOutstandingAmountRoundTrip_returnsPerson() throws Exception {
         assertEquals(BENSON, new JsonAdaptedPerson(BENSON).toModelType());
-    }
-
-    @Test
-    public void toModelType_interactionNotesRoundTrip_returnsPerson() throws Exception {
-        InteractionNote note = InteractionNote.fromStorage("2026-10-09T14:30:00",
-                "Called debtor, promised payment.");
-        Person debtor = new PersonBuilder(BENSON).withInteractionNotes(List.of(note)).build();
-
-        assertEquals(debtor, new JsonAdaptedPerson(debtor).toModelType());
     }
 
     @Test

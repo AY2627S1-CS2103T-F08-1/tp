@@ -21,7 +21,6 @@ import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListCommand;
-import seedu.address.logic.commands.NoteCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.Person;
@@ -92,13 +91,6 @@ public class AddressBookParserTest {
         assertThrows(ParseException.class,
                 String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListCommand.MESSAGE_USAGE), ()
                     -> parser.parseCommand(ListCommand.COMMAND_WORD + " 3"));
-    }
-
-    @Test
-    public void parseCommand_note() throws Exception {
-        NoteCommand command = (NoteCommand) parser.parseCommand(
-                NoteCommand.COMMAND_WORD + " --id 1 --text Called debtor.");
-        assertEquals(new NoteCommand(1, "Called debtor."), command);
     }
 
     @Test

@@ -1,12 +1,10 @@
 package seedu.address.testutil;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
-import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.OutstandingAmount;
 import seedu.address.model.person.Person;
@@ -29,7 +27,6 @@ public class PersonBuilder {
     private Email email;
     private Address address;
     private OutstandingAmount outstandingAmount;
-    private List<InteractionNote> interactionNotes;
     private int debtorId;
     private Set<Tag> tags;
 
@@ -42,7 +39,6 @@ public class PersonBuilder {
         email = new Email(DEFAULT_EMAIL);
         address = new Address(DEFAULT_ADDRESS);
         outstandingAmount = new OutstandingAmount();
-        interactionNotes = List.of();
         debtorId = 0;
         tags = new HashSet<>();
     }
@@ -56,7 +52,6 @@ public class PersonBuilder {
         email = personToCopy.getEmail();
         address = personToCopy.getAddress();
         outstandingAmount = personToCopy.getOutstandingAmount();
-        interactionNotes = personToCopy.getInteractionNotes();
         debtorId = personToCopy.getDebtorId();
         tags = new HashSet<>(personToCopy.getTags());
     }
@@ -113,14 +108,8 @@ public class PersonBuilder {
         return this;
     }
 
-    /** Sets the interaction notes of the person being built. */
-    public PersonBuilder withInteractionNotes(List<InteractionNote> interactionNotes) {
-        this.interactionNotes = List.copyOf(interactionNotes);
-        return this;
-    }
-
     public Person build() {
-        return new Person(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, tags);
+        return new Person(name, phone, email, address, debtorId, outstandingAmount, tags);
     }
 
 }

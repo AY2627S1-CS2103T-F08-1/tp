@@ -15,9 +15,6 @@ import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.index.Index;
@@ -27,7 +24,6 @@ import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
-import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.EditPersonDescriptorBuilder;
 import seedu.address.testutil.PersonBuilder;
@@ -91,28 +87,6 @@ public class EditCommandTest {
         expectedModel.setPerson(debtorInModel, editedPerson);
 
         assertCommandSuccess(editCommand, debtorModel, expectedMessage, expectedModel);
-    }
-
-    @Test
-    public void execute_otherFieldsEdited_preservesInteractionNotes() {
-        List<InteractionNote> notes = List.of(
-                new InteractionNote(LocalDateTime.of(2026, 10, 9, 14, 30), "Called debtor."),
-                new InteractionNote(LocalDateTime.of(2026, 10, 9, 14, 35), "Sent payment reminder."));
-        Person debtor = new PersonBuilder().withInteractionNotes(notes).build();
-        Model debtorModel = new ModelManager(new AddressBook(), new UserPrefs());
-        debtorModel.addPerson(debtor);
-        Person debtorInModel = debtorModel.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
-
-        Person editedPerson = new PersonBuilder(debtorInModel).withName(VALID_NAME_BOB).build();
-        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
-                new EditPersonDescriptorBuilder().withName(VALID_NAME_BOB).build());
-        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson));
-
-        Model expectedModel = new ModelManager(new AddressBook(debtorModel.getAddressBook()), new UserPrefs());
-        expectedModel.setPerson(debtorInModel, editedPerson);
-
-        assertCommandSuccess(editCommand, debtorModel, expectedMessage, expectedModel);
-        assertEquals(notes, debtorModel.getFilteredPersonList().getFirst().getInteractionNotes());
     }
 
     @Test

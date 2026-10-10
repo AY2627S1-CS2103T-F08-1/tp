@@ -1,12 +1,9 @@
 package seedu.address.model.person;
 
-import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -28,7 +25,6 @@ public class Person {
     private final Address address;
     private final int debtorId;
     private final OutstandingAmount outstandingAmount;
-    private final List<InteractionNote> interactionNotes;
     private final Set<Tag> tags = new HashSet<>();
 
     /**
@@ -47,13 +43,7 @@ public class Person {
     /** Creates a person with a persistent debtor ID and outstanding amount. */
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, Set<Tag> tags) {
-        this(name, phone, email, address, debtorId, outstandingAmount, List.of(), tags);
-    }
-
-    /** Creates a person with all debtor fields, including interaction notes. */
-    public Person(Name name, Phone phone, Email email, Address address, int debtorId,
-            OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes, Set<Tag> tags) {
-        requireAllNonNull(name, phone, email, address, outstandingAmount, interactionNotes, tags);
+        requireAllNonNull(name, phone, email, address, outstandingAmount, tags);
         if (debtorId < 0) {
             throw new IllegalArgumentException("Debtor ID cannot be negative.");
         }
@@ -63,7 +53,6 @@ public class Person {
         this.address = address;
         this.debtorId = debtorId;
         this.outstandingAmount = outstandingAmount;
-        this.interactionNotes = List.copyOf(interactionNotes);
         this.tags.addAll(tags);
     }
 
@@ -90,24 +79,11 @@ public class Person {
 
     /** Returns a copy of this person with the supplied persistent debtor ID. */
     public Person withDebtorId(int newDebtorId) {
-        return new Person(name, phone, email, address, newDebtorId, outstandingAmount, interactionNotes, tags);
+        return new Person(name, phone, email, address, newDebtorId, outstandingAmount, tags);
     }
 
     public OutstandingAmount getOutstandingAmount() {
         return outstandingAmount;
-    }
-
-    /** Returns the chronological interaction history of this debtor. */
-    public List<InteractionNote> getInteractionNotes() {
-        return interactionNotes;
-    }
-
-    /** Returns a copy of this person with {@code note} appended to the interaction history. */
-    public Person withAddedInteractionNote(InteractionNote note) {
-        requireNonNull(note);
-        List<InteractionNote> updatedNotes = new ArrayList<>(interactionNotes);
-        updatedNotes.add(note);
-        return new Person(name, phone, email, address, debtorId, outstandingAmount, updatedNotes, tags);
     }
 
     /**
@@ -151,14 +127,13 @@ public class Person {
                 && email.equals(otherPerson.email)
                 && address.equals(otherPerson.address)
                 && outstandingAmount.equals(otherPerson.outstandingAmount)
-                && interactionNotes.equals(otherPerson.interactionNotes)
                 && tags.equals(otherPerson.tags);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, outstandingAmount, interactionNotes, tags);
+        return Objects.hash(name, phone, email, address, outstandingAmount, tags);
     }
 
     @Override

@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 public class ArgumentTokenizerTest {
 
     private final Prefix unknownPrefix = new Prefix("--u");
-    private final Prefix longId = new Prefix("--id");
     private final Prefix pSlash = new Prefix("p/");
     private final Prefix dashT = new Prefix("-t");
     private final Prefix hatQ = new Prefix("^Q");
@@ -135,26 +134,6 @@ public class ArgumentTokenizerTest {
         assertArgumentAbsent(argMultimap, pSlash);
         assertArgumentPresent(argMultimap, dashT, "not joined^Qjoined");
         assertArgumentAbsent(argMultimap, hatQ);
-    }
-
-    @Test
-    public void tokenize_longOptionPrefixWithoutTrailingBoundary_notRecognized() {
-        String argsString = " --identifier portal";
-
-        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(argsString, longId);
-
-        assertPreamblePresent(argMultimap, "--identifier portal");
-        assertArgumentAbsent(argMultimap, longId);
-    }
-
-    @Test
-    public void tokenize_longOptionPrefixWithTrailingBoundary_recognized() {
-        String argsString = " --id 42";
-
-        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(argsString, longId);
-
-        assertPreambleEmpty(argMultimap);
-        assertArgumentPresent(argMultimap, longId, "42");
     }
 
     @Test
