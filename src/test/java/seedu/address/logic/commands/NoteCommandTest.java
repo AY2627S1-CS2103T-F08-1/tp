@@ -34,6 +34,12 @@ public class NoteCommandTest {
     private final Model model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
 
     @Test
+    public void constructor_nullArguments_throwNullPointerException() {
+        assertThrows(NullPointerException.class, () -> new NoteCommand(1, null));
+        assertThrows(NullPointerException.class, () -> new NoteCommand(1, VALID_NOTE, null));
+    }
+
+    @Test
     public void execute_validDebtorIdUnfilteredList_success() {
         Person debtor = model.getAddressBook().getPersonList().getFirst();
         NoteCommand noteCommand = new NoteCommand(debtor.getDebtorId(), VALID_NOTE, EARLIER_CLOCK);
