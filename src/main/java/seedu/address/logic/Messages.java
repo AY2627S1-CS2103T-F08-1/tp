@@ -70,10 +70,6 @@ public class Messages {
                 .append(person.getOutstandingAmount())
                 .append("; Tags: ");
         person.getTags().forEach(builder::append);
-        if (!person.getInteractionNotes().isEmpty()) {
-            builder.append("; Interaction notes: ");
-            person.getInteractionNotes().forEach(note -> builder.append(note).append(" "));
-        }
         return builder.toString();
     }
 

@@ -65,6 +65,18 @@ public class JsonAddressBookStorageTest {
     }
 
     @Test
+    public void readAddressBook_invalidInteractionNoteTimestamp_throwsDataLoadingException() {
+        String filePath = "invalidInteractionNoteTimestampAddressBook.json";
+        assertThrows(DataLoadingException.class, () -> readAddressBook(filePath));
+    }
+
+    @Test
+    public void readAddressBook_blankInteractionNoteText_throwsDataLoadingException() {
+        String filePath = "blankInteractionNoteTextAddressBook.json";
+        assertThrows(DataLoadingException.class, () -> readAddressBook(filePath));
+    }
+
+    @Test
     public void readAndSaveAddressBook_allInOrder_success() throws Exception {
         Path filePath = testFolder.resolve("TempAddressBook.json");
         AddressBook original = getTypicalAddressBook();
@@ -126,17 +138,18 @@ public class JsonAddressBookStorageTest {
     @Test
     public void readAndSaveAddressBook_interactionNotes_roundTrips() throws Exception {
         Path filePath = testFolder.resolve("InteractionNotesAddressBook.json");
-        InteractionNote note = InteractionNote.fromStorage("2026-10-09T14:30:00",
-                "Called debtor, promised payment.");
+        List<InteractionNote> notes = List.of(
+                InteractionNote.fromStorage("2026-10-09T14:30:00", "Called debtor, promised payment."),
+                InteractionNote.fromStorage("2026-10-09T14:35:00", "Sent payment reminder."));
         AddressBook original = new AddressBook();
-        Person debtor = original.addPerson(new PersonBuilder().withName("Alice").withPhone("91234567")
-                .withEmail("alice@example.com").withInteractionNotes(List.of(note)).build());
+        original.addPerson(new PersonBuilder().withName("Alice").withPhone("91234567")
+                .withEmail("alice@example.com").withInteractionNotes(notes).build());
         JsonAddressBookStorage storage = new JsonAddressBookStorage(filePath);
 
         storage.saveAddressBook(original, filePath);
         Person restoredDebtor = storage.readAddressBook(filePath).get().getPersonList().getFirst();
 
-        assertEquals(debtor.getInteractionNotes(), restoredDebtor.getInteractionNotes());
+        assertEquals(notes, restoredDebtor.getInteractionNotes());
     }
 
     @Test

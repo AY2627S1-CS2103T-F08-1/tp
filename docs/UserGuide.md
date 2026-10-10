@@ -118,6 +118,7 @@ Format: `note --id DEBTOR_ID --text NOTE_TEXT`
 
 * `DEBTOR_ID` must be a positive integer shown as the debtor's ID in the person list.
 * `NOTE_TEXT` must not be blank. Ordinary punctuation is allowed.
+* The `--id` and `--text` parameters can be provided in either order.
 * The note is saved with the debtor and is preserved after restarting the application.
 
 Example:

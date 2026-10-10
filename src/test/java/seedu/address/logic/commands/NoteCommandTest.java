@@ -9,6 +9,7 @@ import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
@@ -22,7 +23,9 @@ import seedu.address.model.person.Person;
 
 public class NoteCommandTest {
 
-    private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2026-10-09T06:30:00Z"),
+    private static final Clock EARLIER_CLOCK = Clock.fixed(Instant.parse("2026-10-09T06:30:00Z"),
+            ZoneId.of("Asia/Singapore"));
+    private static final Clock LATER_CLOCK = Clock.fixed(Instant.parse("2026-10-09T06:35:00Z"),
             ZoneId.of("Asia/Singapore"));
     private static final String VALID_NOTE = "Called debtor, promised payment on Friday.";
 
@@ -31,8 +34,8 @@ public class NoteCommandTest {
     @Test
     public void execute_validDebtorIdUnfilteredList_success() {
         Person debtor = model.getAddressBook().getPersonList().getFirst();
-        NoteCommand noteCommand = new NoteCommand(debtor.getDebtorId(), VALID_NOTE, FIXED_CLOCK);
-        InteractionNote expectedNote = new InteractionNote(java.time.LocalDateTime.of(2026, 10, 9, 14, 30),
+        NoteCommand noteCommand = new NoteCommand(debtor.getDebtorId(), VALID_NOTE, EARLIER_CLOCK);
+        InteractionNote expectedNote = new InteractionNote(LocalDateTime.of(2026, 10, 9, 14, 30),
                 VALID_NOTE);
 
         Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
@@ -47,17 +50,19 @@ public class NoteCommandTest {
     @Test
     public void execute_notesAreAppendedChronologically_success() throws Exception {
         Person debtor = model.getAddressBook().getPersonList().getFirst();
-        new NoteCommand(debtor.getDebtorId(), "First note.", FIXED_CLOCK).execute(model);
-        new NoteCommand(debtor.getDebtorId(), "Second note.", FIXED_CLOCK).execute(model);
+        new NoteCommand(debtor.getDebtorId(), "First note.", EARLIER_CLOCK).execute(model);
+        new NoteCommand(debtor.getDebtorId(), "Second note.", LATER_CLOCK).execute(model);
 
         List<InteractionNote> notes = model.getAddressBook().getPersonList().getFirst().getInteractionNotes();
-        assertEquals("First note.", notes.get(0).getText());
-        assertEquals("Second note.", notes.get(1).getText());
+        assertEquals(List.of(
+                new InteractionNote(LocalDateTime.of(2026, 10, 9, 14, 30), "First note."),
+                new InteractionNote(LocalDateTime.of(2026, 10, 9, 14, 35), "Second note.")), notes);
+        assertTrue(notes.get(0).getTimestamp().isBefore(notes.get(1).getTimestamp()));
     }
 
     @Test
     public void execute_invalidDebtorId_throwsCommandException() {
-        NoteCommand noteCommand = new NoteCommand(999, VALID_NOTE, FIXED_CLOCK);
+        NoteCommand noteCommand = new NoteCommand(999, VALID_NOTE, EARLIER_CLOCK);
 
         assertCommandFailure(noteCommand, model, String.format(NoteCommand.MESSAGE_DEBTOR_NOT_FOUND, 999));
     }

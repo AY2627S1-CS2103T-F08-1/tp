@@ -1,9 +1,8 @@
 package seedu.address.logic.parser;
 
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_DEBTOR_ID;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_NOTE_TEXT;
 
 import seedu.address.logic.commands.NoteCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -16,18 +15,18 @@ public class NoteCommandParser implements Parser<NoteCommand> {
 
     public static final String MESSAGE_INVALID_DEBTOR_ID = "Debtor ID must be a positive integer.";
 
-    private static final Pattern NOTE_COMMAND_FORMAT =
-            Pattern.compile("\\s*--id\\s+(?<debtorId>\\S+)\\s+--text\\s*(?<noteText>.*)", Pattern.DOTALL);
-
     @Override
     public NoteCommand parse(String args) throws ParseException {
-        Matcher matcher = NOTE_COMMAND_FORMAT.matcher(args);
-        if (!matcher.matches()) {
+        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(args, PREFIX_DEBTOR_ID, PREFIX_NOTE_TEXT);
+        if (!argMultimap.getPreamble().isEmpty()
+                || argMultimap.getValue(PREFIX_DEBTOR_ID).isEmpty()
+                || argMultimap.getValue(PREFIX_NOTE_TEXT).isEmpty()) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, NoteCommand.MESSAGE_USAGE));
         }
 
-        int debtorId = parseDebtorId(matcher.group("debtorId"));
-        String noteText = matcher.group("noteText").trim();
+        argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_DEBTOR_ID, PREFIX_NOTE_TEXT);
+        int debtorId = parseDebtorId(argMultimap.getValue(PREFIX_DEBTOR_ID).get());
+        String noteText = argMultimap.getValue(PREFIX_NOTE_TEXT).get();
         if (!InteractionNote.isValidText(noteText)) {
             throw new ParseException(InteractionNote.MESSAGE_CONSTRAINTS);
         }

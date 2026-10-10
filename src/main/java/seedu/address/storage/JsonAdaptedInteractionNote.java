@@ -11,6 +11,9 @@ import seedu.address.model.person.InteractionNote;
  */
 class JsonAdaptedInteractionNote {
 
+    static final String MISSING_TIMESTAMP_MESSAGE = "Interaction note's timestamp field is missing!";
+    static final String MISSING_TEXT_MESSAGE = "Interaction note's text field is missing!";
+
     private final String timestamp;
     private final String text;
 
@@ -36,6 +39,12 @@ class JsonAdaptedInteractionNote {
      * Converts this Jackson-friendly adapted note object into the model's {@code InteractionNote} object.
      */
     public InteractionNote toModelType() throws IllegalValueException {
+        if (timestamp == null) {
+            throw new IllegalValueException(MISSING_TIMESTAMP_MESSAGE);
+        }
+        if (text == null) {
+            throw new IllegalValueException(MISSING_TEXT_MESSAGE);
+        }
         try {
             return InteractionNote.fromStorage(timestamp, text);
         } catch (IllegalArgumentException exception) {
