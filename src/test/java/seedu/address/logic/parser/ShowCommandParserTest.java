@@ -39,6 +39,7 @@ public class ShowCommandParserTest {
         assertParseFailure(parser, " --id zero", ShowCommandParser.MESSAGE_INVALID_DEBTOR_ID);
         assertParseFailure(parser, " --id 0", ShowCommandParser.MESSAGE_INVALID_DEBTOR_ID);
         assertParseFailure(parser, " --id -1", ShowCommandParser.MESSAGE_INVALID_DEBTOR_ID);
+        assertParseFailure(parser, " --id +1", ShowCommandParser.MESSAGE_INVALID_DEBTOR_ID);
         assertParseFailure(parser, " --id 1.5", ShowCommandParser.MESSAGE_INVALID_DEBTOR_ID);
         assertParseFailure(parser, " --id 2147483648", ShowCommandParser.MESSAGE_INVALID_DEBTOR_ID);
     }

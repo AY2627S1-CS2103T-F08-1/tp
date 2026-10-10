@@ -5,6 +5,7 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_DEBTOR_ID;
 
 import java.util.regex.Pattern;
 
+import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.commands.ShowCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 
@@ -39,14 +40,9 @@ public class ShowCommandParser implements Parser<ShowCommand> {
     }
 
     private int parseDebtorId(String idText) throws ParseException {
-        try {
-            int debtorId = Integer.parseInt(idText);
-            if (debtorId <= 0) {
-                throw new NumberFormatException();
-            }
-            return debtorId;
-        } catch (NumberFormatException exception) {
+        if (!StringUtil.isNonZeroUnsignedInteger(idText)) {
             throw new ParseException(MESSAGE_INVALID_DEBTOR_ID);
         }
+        return Integer.parseInt(idText);
     }
 }

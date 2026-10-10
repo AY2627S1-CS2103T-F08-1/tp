@@ -3,7 +3,10 @@ package seedu.address.logic;
 import static java.util.Objects.requireNonNull;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -105,7 +108,9 @@ public class Messages {
             return builder.append("\nNo interaction notes recorded.").toString();
         }
 
-        person.getInteractionNotes().stream()
+        List<InteractionNote> newestFirstNotes = new ArrayList<>(person.getInteractionNotes());
+        Collections.reverse(newestFirstNotes);
+        newestFirstNotes.stream()
                 .sorted(Comparator.comparing(InteractionNote::getTimestamp).reversed())
                 .forEach(note -> builder.append("\n- ").append(note));
         return builder.toString();
