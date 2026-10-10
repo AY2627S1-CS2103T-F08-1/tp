@@ -1,7 +1,6 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static seedu.address.logic.Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.commands.CommandTestUtil.ADDRESS_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
@@ -9,10 +8,14 @@ import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.AMY;
+import static seedu.address.testutil.TypicalPersons.BOB;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +23,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.CommandResult;
+import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -61,19 +65,79 @@ public class LogicManagerTest {
     @Test
     public void execute_commandExecutionError_throwsCommandException() {
         String deleteCommand = "delete 9";
-        assertCommandException(deleteCommand, MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+        assertCommandException(deleteCommand, Messages.getInvalidPersonDisplayedIndexMessage(BigInteger.valueOf(9), 0));
+    }
+
+    @Test
+    public void execute_deleteCommand_persistsAndReloadsRemainingPersons() throws Exception {
+        model.addPerson(AMY);
+        model.addPerson(BOB);
+
+        logic.execute("delete 1");
+
+        JsonAddressBookStorage savedStorage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        ReadOnlyAddressBook reloadedAddressBook = savedStorage.readAddressBook().get();
+        assertEquals(List.of(BOB), reloadedAddressBook.getPersonList());
+    }
+
+    @Test
+    public void execute_invalidDeleteCommands_doNotChangeModelOrSavedData() throws Exception {
+        model.addPerson(AMY);
+        model.addPerson(BOB);
+        logic.execute(ListCommand.COMMAND_WORD);
+
+        Path savedAddressBookPath = temporaryFolder.resolve("addressBook.json");
+        String originalSavedData = Files.readString(savedAddressBookPath);
+        List<Person> originalPersons = List.copyOf(model.getAddressBook().getPersonList());
+        String invalidFormatMessage = String.format(Messages.MESSAGE_INVALID_COMMAND_FORMAT,
+                DeleteCommand.MESSAGE_USAGE);
+
+        for (String invalidFormatCommand : List.of("delete", "delete a", "delete 0", "delete -1")) {
+            assertInvalidDeleteDoesNotChangeState(invalidFormatCommand, ParseException.class, invalidFormatMessage,
+                    originalPersons, savedAddressBookPath, originalSavedData);
+        }
+
+        BigInteger outOfRangeIndex = BigInteger.valueOf(3);
+        assertInvalidDeleteDoesNotChangeState("delete " + outOfRangeIndex, CommandException.class,
+                Messages.getInvalidPersonDisplayedIndexMessage(outOfRangeIndex, originalPersons.size()),
+                originalPersons, savedAddressBookPath, originalSavedData);
+
+        BigInteger veryLongIndex = new BigInteger("9".repeat(100));
+        assertInvalidDeleteDoesNotChangeState("delete " + veryLongIndex, CommandException.class,
+                Messages.getInvalidPersonDisplayedIndexMessage(veryLongIndex, originalPersons.size()),
+                originalPersons, savedAddressBookPath, originalSavedData);
     }
 
     @Test
     public void execute_validCommand_success() throws Exception {
         String listCommand = ListCommand.COMMAND_WORD;
-        assertCommandSuccess(listCommand, ListCommand.MESSAGE_SUCCESS, model);
+        assertCommandSuccess(listCommand,
+                ListCommand.getMessageForDebtorCount(model.getFilteredPersonList().size()), model);
     }
 
     @Test
     public void execute_storageThrowsIoException_throwsCommandException() {
         assertCommandFailureForExceptionFromStorage(DUMMY_IO_EXCEPTION, String.format(
                 LogicManager.FILE_OPS_ERROR_FORMAT, DUMMY_IO_EXCEPTION.getMessage()));
+    }
+
+    @Test
+    public void execute_deleteStorageThrowsIoException_reportsFailureWithoutRollback() {
+        model.addPerson(AMY);
+        Path failingAddressBookPath = temporaryFolder.resolve("failingAddressBook.json");
+        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(failingAddressBookPath) {
+            @Override
+            public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+                throw DUMMY_IO_EXCEPTION;
+            }
+        };
+        JsonUserPrefsStorage userPrefsStorage =
+                new JsonUserPrefsStorage(temporaryFolder.resolve("failingUserPrefs.json"));
+        logic = new LogicManager(model, new StorageManager(addressBookStorage, userPrefsStorage));
+
+        ModelManager expectedModel = new ModelManager();
+        assertCommandFailure("delete 1", CommandException.class,
+                String.format(LogicManager.FILE_OPS_ERROR_FORMAT, DUMMY_IO_EXCEPTION.getMessage()), expectedModel);
     }
 
     @Test
@@ -115,6 +179,15 @@ public class LogicManagerTest {
      */
     private void assertCommandException(String inputCommand, String expectedMessage) {
         assertCommandFailure(inputCommand, CommandException.class, expectedMessage);
+    }
+
+    private void assertInvalidDeleteDoesNotChangeState(String inputCommand,
+            Class<? extends Throwable> expectedException, String expectedMessage,
+            List<Person> originalPersons, Path savedAddressBookPath, String originalSavedData) throws IOException {
+        assertThrows(expectedException, expectedMessage, () -> logic.execute(inputCommand));
+        assertEquals(originalPersons, model.getAddressBook().getPersonList());
+        assertEquals(originalPersons, logic.getFilteredPersonList());
+        assertEquals(originalSavedData, Files.readString(savedAddressBookPath));
     }
 
     /**

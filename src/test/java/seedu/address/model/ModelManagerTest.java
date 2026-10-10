@@ -7,6 +7,7 @@ import static seedu.address.model.Model.PREDICATE_SHOW_ALL_PERSONS;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
+import static seedu.address.testutil.TypicalPersons.CARL;
 
 import java.util.List;
 
@@ -14,7 +15,9 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
+import seedu.address.model.person.Person;
 import seedu.address.testutil.AddressBookBuilder;
+import seedu.address.testutil.PersonBuilder;
 
 public class ModelManagerTest {
 
@@ -71,6 +74,36 @@ public class ModelManagerTest {
     @Test
     public void getFilteredPersonList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> modelManager.getFilteredPersonList().remove(0));
+    }
+
+    @Test
+    public void getFilteredPersonList_mutations_refreshInAscendingDebtorIdOrder() {
+        Person debtorWithIdThree = new PersonBuilder(ALICE).withDebtorId(3).build();
+        Person debtorWithIdOne = new PersonBuilder(BENSON).withDebtorId(1).build();
+        Person debtorWithIdTwo = new PersonBuilder(CARL).withDebtorId(2).build();
+        AddressBook addressBook = new AddressBookBuilder().withPerson(debtorWithIdThree)
+                .withPerson(debtorWithIdOne).withPerson(debtorWithIdTwo).build();
+        modelManager = new ModelManager(addressBook, new UserPrefs());
+
+        assertEquals(List.of(1, 2, 3), getDisplayedDebtorIds(modelManager));
+
+        Person debtorWithIdFour = new PersonBuilder()
+                .withName("Dora Tan").withPhone("81234567").withEmail("dora@example.com")
+                .withDebtorId(4).build();
+        modelManager.addPerson(debtorWithIdFour);
+        assertEquals(List.of(1, 2, 3, 4), getDisplayedDebtorIds(modelManager));
+
+        Person editedDebtorWithIdTwo = new PersonBuilder(debtorWithIdTwo).withName("Carl Tan").build();
+        modelManager.setPerson(debtorWithIdTwo, editedDebtorWithIdTwo);
+        assertEquals(List.of(1, 2, 3, 4), getDisplayedDebtorIds(modelManager));
+        assertEquals("Carl Tan", modelManager.getFilteredPersonList().get(1).getName().fullName);
+
+        modelManager.deletePerson(debtorWithIdOne);
+        assertEquals(List.of(2, 3, 4), getDisplayedDebtorIds(modelManager));
+    }
+
+    private static List<Integer> getDisplayedDebtorIds(ModelManager modelManager) {
+        return modelManager.getFilteredPersonList().stream().map(Person::getDebtorId).toList();
     }
 
     @Test

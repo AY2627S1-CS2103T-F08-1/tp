@@ -60,8 +60,11 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 * Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
-* Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
+* Extraneous parameters for commands that take no parameters, such as `help`, `exit`, and `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
+
+* The `list` command accepts no parameters. Unexpected parameters are rejected with an error message so that typing
+  mistakes are not silently ignored.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </div>
@@ -92,11 +95,20 @@ Examples:
 * `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01`
 * `add n/Betsy Crowe t/friend e/betsycrowe@example.com a/Newgate Prison p/1234567 t/criminal`
 
-### Listing all persons: `list`
+### Listing all debtors: `list`
 
-Shows a list of all persons in the address book.
+Shows every active debtor in ascending debtor ID order. Each debtor card shows the ID, name, phone number,
+outstanding amount, email address, address, and tags. The result reports the active-debtor count and displays
+a helpful message when there are no active debtors.
 
 Format: `list`
+
+The command does not accept any parameters.
+
+Examples of result messages:
+* `No active debtors found (0 active). Add a debtor with the add command.`
+* `1 active debtor listed.`
+* `5 active debtors listed.`
 
 ### Adding an interaction note: `note`
 
@@ -151,8 +163,11 @@ Deletes the specified person from the address book.
 Format: `delete INDEX`
 
 * Deletes the person at the specified `INDEX`.
-* The index refers to the index number shown in the displayed person list.
+* The index refers to the one-based position in the currently displayed person list, including `find` results.
+* After deletion, the list refreshes and the current filter remains active.
 * The index **must be a positive integer** 1, 2, 3, …​
+* For an index outside the displayed list, the error gives the displayed count and valid range. If no people are shown,
+  run `list` or adjust the `find` query.
 
 Examples:
 * `list` followed by `delete 2` deletes the 2nd person in the address book.
