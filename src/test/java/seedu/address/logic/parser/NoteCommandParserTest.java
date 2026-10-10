@@ -71,6 +71,7 @@ public class NoteCommandParserTest {
         assertParseFailure(parser, " --id zero --text Called debtor.", NoteCommandParser.MESSAGE_INVALID_DEBTOR_ID);
         assertParseFailure(parser, " --id 0 --text Called debtor.", NoteCommandParser.MESSAGE_INVALID_DEBTOR_ID);
         assertParseFailure(parser, " --id -1 --text Called debtor.", NoteCommandParser.MESSAGE_INVALID_DEBTOR_ID);
+        assertParseFailure(parser, " --id +1 --text Called debtor.", NoteCommandParser.MESSAGE_INVALID_DEBTOR_ID);
         assertParseFailure(parser, " --id 2147483648 --text Called debtor.",
                 NoteCommandParser.MESSAGE_INVALID_DEBTOR_ID);
     }

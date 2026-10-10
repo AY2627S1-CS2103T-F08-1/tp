@@ -4,6 +4,7 @@ import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_DEBTOR_ID;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NOTE_TEXT;
 
+import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.commands.NoteCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.InteractionNote;
@@ -35,14 +36,9 @@ public class NoteCommandParser implements Parser<NoteCommand> {
     }
 
     private int parseDebtorId(String idText) throws ParseException {
-        try {
-            int debtorId = Integer.parseInt(idText);
-            if (debtorId <= 0) {
-                throw new NumberFormatException();
-            }
-            return debtorId;
-        } catch (NumberFormatException exception) {
+        if (!StringUtil.isNonZeroUnsignedInteger(idText)) {
             throw new ParseException(MESSAGE_INVALID_DEBTOR_ID);
         }
+        return Integer.parseInt(idText);
     }
 }
