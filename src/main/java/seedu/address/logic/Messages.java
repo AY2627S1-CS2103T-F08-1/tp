@@ -1,11 +1,18 @@
 package seedu.address.logic;
 
+import static java.util.Objects.requireNonNull;
+
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import seedu.address.logic.parser.Prefix;
+import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Person;
 
 /**
@@ -70,6 +77,42 @@ public class Messages {
                 .append(person.getOutstandingAmount())
                 .append("; Tags: ");
         person.getTags().forEach(builder::append);
+        return builder.toString();
+    }
+
+    /**
+     * Formats a complete debtor profile for display in the result panel.
+     */
+    public static String formatProfile(Person person) {
+        requireNonNull(person);
+        String formattedTags = person.getTags().stream()
+                .map(Object::toString)
+                .sorted()
+                .collect(Collectors.joining(", "));
+        if (formattedTags.isEmpty()) {
+            formattedTags = "None";
+        }
+
+        StringBuilder builder = new StringBuilder()
+                .append("Debtor profile\n")
+                .append("ID: ").append(person.getDebtorId()).append('\n')
+                .append("Name: ").append(person.getName()).append('\n')
+                .append("Phone: ").append(person.getPhone()).append('\n')
+                .append("Email: ").append(person.getEmail()).append('\n')
+                .append("Address: ").append(person.getAddress()).append('\n')
+                .append("Outstanding: S$").append(person.getOutstandingAmount()).append('\n')
+                .append("Tags: ").append(formattedTags).append('\n')
+                .append("Interaction history (newest first):");
+
+        if (person.getInteractionNotes().isEmpty()) {
+            return builder.append("\nNo interaction notes recorded.").toString();
+        }
+
+        List<InteractionNote> newestFirstNotes = new ArrayList<>(person.getInteractionNotes());
+        Collections.reverse(newestFirstNotes);
+        newestFirstNotes.stream()
+                .sorted(Comparator.comparing(InteractionNote::getTimestamp).reversed())
+                .forEach(note -> builder.append("\n- ").append(note));
         return builder.toString();
     }
 
