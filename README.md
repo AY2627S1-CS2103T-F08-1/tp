@@ -3,10 +3,7 @@
 [![Java CI](https://github.com/AY2627S1-CS2103T-F08-1/tp/actions/workflows/gradle.yml/badge.svg)](https://github.com/AY2627S1-CS2103T-F08-1/tp/actions/workflows/gradle.yml)
 [![codecov](https://codecov.io/gh/AY2627S1-CS2103T-F08-1/tp/branch/master/graph/badge.svg)](https://codecov.io/gh/AY2627S1-CS2103T-F08-1/tp)
 
-![OSPS interface concept](docs/images/Ui.png)
-
-> **Release preparation note:** The image above is an interface concept from an earlier iteration. Replace it with a
-> screenshot of the tested v1.3 application before publishing the release.
+![OSPS interface showing debtor profiles and outstanding amounts](docs/images/Ui.png)
 
 OSPS v1.3 is a desktop application for debt recovery agents to manage debtor contact details, outstanding balances,
 and interaction histories. It combines a graphical interface with keyboard-driven commands for fast case management.

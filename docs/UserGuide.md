@@ -25,12 +25,7 @@ while retaining the benefits of a graphical user interface (GUI).
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar osps.jar`.<br>
    The OSPS window should appear in a few seconds with sample debtor data on a first run.
 
-   <div markdown="span" class="alert alert-warning">
-   The image below is an interface concept from an earlier iteration, not a screenshot of the v1.3 executable. It must
-   be replaced with a current application screenshot before the v1.3 release is published.
-   </div>
-
-   ![OSPS interface concept](images/Ui.png)
+   ![OSPS interface showing debtor profiles and outstanding amounts](images/Ui.png)
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
    Some example commands you can try:
