@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
+import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
+import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
 import java.time.Clock;
@@ -65,6 +67,21 @@ public class NoteCommandTest {
         NoteCommand noteCommand = new NoteCommand(999, VALID_NOTE, EARLIER_CLOCK);
 
         assertCommandFailure(noteCommand, model, String.format(NoteCommand.MESSAGE_DEBTOR_NOT_FOUND, 999));
+    }
+
+    @Test
+    public void execute_debtorFilteredOut_addsNoteByPersistentId() throws Exception {
+        Person debtor = model.getAddressBook().getPersonList().getFirst();
+        showPersonAtIndex(model, INDEX_SECOND_PERSON);
+
+        new NoteCommand(debtor.getDebtorId(), VALID_NOTE, EARLIER_CLOCK).execute(model);
+
+        Person updatedDebtor = model.getAddressBook().getPersonList().stream()
+                .filter(person -> person.getDebtorId() == debtor.getDebtorId())
+                .findFirst()
+                .orElseThrow();
+        assertEquals(VALID_NOTE, updatedDebtor.getInteractionNotes().getFirst().getText());
+        assertFalse(model.getFilteredPersonList().contains(updatedDebtor));
     }
 
     @Test

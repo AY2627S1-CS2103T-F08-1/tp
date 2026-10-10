@@ -29,6 +29,14 @@ public class NoteCommandParserTest {
     }
 
     @Test
+    public void parse_longRealisticText_returnsNoteCommand() {
+        String noteText = "Discussed instalment options; debtor requested a written summary. "
+                + "Follow up after the next payday with the agreed figures and payment reference. ".repeat(8);
+
+        assertParseSuccess(parser, " --id 4 --text " + noteText, new NoteCommand(4, noteText));
+    }
+
+    @Test
     public void parse_textBeforeId_returnsNoteCommand() {
         assertParseSuccess(parser, " --text Called debtor, promised payment on Friday. --id 2",
                 new NoteCommand(2, "Called debtor, promised payment on Friday."));
