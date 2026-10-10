@@ -29,6 +29,12 @@ public class NoteCommandParserTest {
     }
 
     @Test
+    public void parse_textContainingLongOptionPrefixCharacters_returnsNoteCommand() {
+        assertParseSuccess(parser, " --id 4 --text Asked debtor to use the --identifier portal.",
+                new NoteCommand(4, "Asked debtor to use the --identifier portal."));
+    }
+
+    @Test
     public void parse_longRealisticText_returnsNoteCommand() {
         String noteText = "Discussed instalment options; debtor requested a written summary. "
                 + "Follow up after the next payday with the agreed figures and payment reference. ".repeat(8);
@@ -51,6 +57,12 @@ public class NoteCommandParserTest {
     @Test
     public void parse_missingText_throwsParseException() {
         assertParseFailure(parser, " --id 2",
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, NoteCommand.MESSAGE_USAGE));
+    }
+
+    @Test
+    public void parse_malformedLongOptionName_throwsParseException() {
+        assertParseFailure(parser, " --id 2 --textbook Called debtor.",
                 String.format(MESSAGE_INVALID_COMMAND_FORMAT, NoteCommand.MESSAGE_USAGE));
     }
 
