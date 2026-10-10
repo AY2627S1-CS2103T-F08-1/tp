@@ -71,8 +71,18 @@ public class ArgumentTokenizer {
      */
     private static int findPrefixPosition(String argsString, String prefix, int fromIndex) {
         int prefixIndex = argsString.indexOf(" " + prefix, fromIndex);
-        return prefixIndex == -1 ? -1
-                : prefixIndex + 1; // +1 as offset for whitespace
+        while (prefixIndex != -1) {
+            int candidatePosition = prefixIndex + 1; // +1 as offset for whitespace
+            int positionAfterPrefix = candidatePosition + prefix.length();
+            boolean hasValidLongOptionBoundary = !prefix.startsWith("--")
+                    || positionAfterPrefix == argsString.length()
+                    || Character.isWhitespace(argsString.charAt(positionAfterPrefix));
+            if (hasValidLongOptionBoundary) {
+                return candidatePosition;
+            }
+            prefixIndex = argsString.indexOf(" " + prefix, candidatePosition + 1);
+        }
+        return -1;
     }
 
     /**
