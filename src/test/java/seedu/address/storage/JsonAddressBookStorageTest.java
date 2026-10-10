@@ -11,6 +11,7 @@ import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.io.TempDir;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
+import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
 
@@ -60,6 +62,18 @@ public class JsonAddressBookStorageTest {
     @Test
     public void readAddressBook_invalidAndValidPersonAddressBook_throwDataLoadingException() {
         assertThrows(DataLoadingException.class, () -> readAddressBook("invalidAndValidPersonAddressBook.json"));
+    }
+
+    @Test
+    public void readAddressBook_invalidInteractionNoteTimestamp_throwsDataLoadingException() {
+        String filePath = "invalidInteractionNoteTimestampAddressBook.json";
+        assertThrows(DataLoadingException.class, () -> readAddressBook(filePath));
+    }
+
+    @Test
+    public void readAddressBook_blankInteractionNoteText_throwsDataLoadingException() {
+        String filePath = "blankInteractionNoteTextAddressBook.json";
+        assertThrows(DataLoadingException.class, () -> readAddressBook(filePath));
     }
 
     @Test
@@ -119,6 +133,23 @@ public class JsonAddressBookStorageTest {
 
         assertEquals(debtor.getDebtorId(), restoredDebtor.getDebtorId());
         assertEquals(debtor.getOutstandingAmount(), restoredDebtor.getOutstandingAmount());
+    }
+
+    @Test
+    public void readAndSaveAddressBook_interactionNotes_roundTrips() throws Exception {
+        Path filePath = testFolder.resolve("InteractionNotesAddressBook.json");
+        List<InteractionNote> notes = List.of(
+                InteractionNote.fromStorage("2026-10-09T14:30:00", "Called debtor, promised payment."),
+                InteractionNote.fromStorage("2026-10-09T14:35:00", "Sent payment reminder."));
+        AddressBook original = new AddressBook();
+        original.addPerson(new PersonBuilder().withName("Alice").withPhone("91234567")
+                .withEmail("alice@example.com").withInteractionNotes(notes).build());
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(filePath);
+
+        storage.saveAddressBook(original, filePath);
+        Person restoredDebtor = storage.readAddressBook(filePath).get().getPersonList().getFirst();
+
+        assertEquals(notes, restoredDebtor.getInteractionNotes());
     }
 
     @Test
