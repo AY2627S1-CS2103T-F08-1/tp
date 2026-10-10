@@ -60,11 +60,7 @@ class JsonAdaptedPerson {
     }
 
     /**
-
-
      * Backwards-compatible constructor for data and tests that do not specify an amount.
-
-
      */
     public JsonAdaptedPerson(String name, String phone, String email, String address,
             List<JsonAdaptedTag> tags) {
@@ -72,11 +68,7 @@ class JsonAdaptedPerson {
     }
 
     /**
-
-
      * Backwards-compatible constructor for callers specifying an amount but no remark.
-
-
      */
     public JsonAdaptedPerson(String name, String phone, String email, String address,
             String outstandingAmount, List<JsonAdaptedTag> tags) {
