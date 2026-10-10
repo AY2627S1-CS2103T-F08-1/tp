@@ -12,6 +12,9 @@ import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BOB;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import seedu.address.testutil.PersonBuilder;
@@ -88,6 +91,19 @@ public class PersonTest {
         // different tags -> returns false
         editedAlice = new PersonBuilder(ALICE).withTags(VALID_TAG_HUSBAND).build();
         assertFalse(ALICE.equals(editedAlice));
+    }
+
+    @Test
+    public void interactionNotes_affectEqualityAndArePreservedWhenChangingId() {
+        InteractionNote note = new InteractionNote(LocalDateTime.of(2026, 10, 10, 9, 30), "Called debtor.");
+        Person personWithNote = new PersonBuilder(ALICE).withDebtorId(3)
+                .withInteractionNotes(List.of(note)).build();
+        Person personWithoutNote = new PersonBuilder(ALICE).withDebtorId(3).build();
+        Person personWithNewId = personWithNote.withDebtorId(4);
+
+        assertFalse(personWithNote.equals(personWithoutNote));
+        assertEquals(4, personWithNewId.getDebtorId());
+        assertEquals(List.of(note), personWithNewId.getInteractionNotes());
     }
 
     @Test
