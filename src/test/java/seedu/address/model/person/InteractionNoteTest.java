@@ -49,8 +49,8 @@ public class InteractionNoteTest {
 
     @Test
     public void fromStorage_invalidTimestamp_throwsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class,
-                () -> InteractionNote.fromStorage("2026-13-40T14:30:00", "Called debtor."));
+        assertThrows(IllegalArgumentException.class, () ->
+            InteractionNote.fromStorage("2026-13-40T14:30:00", "Called debtor."));
     }
 
     @Test
