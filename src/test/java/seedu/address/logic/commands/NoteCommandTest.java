@@ -85,6 +85,15 @@ public class NoteCommandTest {
     }
 
     @Test
+    public void toStringMethod() {
+        NoteCommand noteCommand = new NoteCommand(7, "  Called debtor.  ");
+        String expected = NoteCommand.class.getCanonicalName()
+                + "{debtorId=7, noteText=Called debtor.}";
+
+        assertEquals(expected, noteCommand.toString());
+    }
+
+    @Test
     public void equals() {
         NoteCommand firstCommand = new NoteCommand(1, "First note.");
         NoteCommand firstCommandCopy = new NoteCommand(1, "First note.");
