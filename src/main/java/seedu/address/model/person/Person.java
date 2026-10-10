@@ -39,11 +39,7 @@ public class Person {
     }
 
     /**
-
-
      * Creates a person with the supplied outstanding amount.
-
-
      */
     public Person(Name name, Phone phone, Email email, Address address,
             OutstandingAmount outstandingAmount, Set<Tag> tags) {
@@ -51,11 +47,7 @@ public class Person {
     }
 
     /**
-
-
      * Creates a person with a persistent debtor ID and outstanding amount.
-
-
      */
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, Set<Tag> tags) {
@@ -63,11 +55,7 @@ public class Person {
     }
 
     /**
-
-
      * Creates a person with all debtor fields, including interaction notes.
-
-
      */
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes, Set<Tag> tags) {
@@ -102,22 +90,14 @@ public class Person {
     }
 
     /**
-
-
      * Returns this person's persistent debtor ID, or 0 before the person is added.
-
-
      */
     public int getDebtorId() {
         return debtorId;
     }
 
     /**
-
-
      * Returns a copy of this person with the supplied persistent debtor ID.
-
-
      */
     public Person withDebtorId(int newDebtorId) {
         return new Person(name, phone, email, address, newDebtorId, outstandingAmount, interactionNotes, tags);
@@ -128,22 +108,14 @@ public class Person {
     }
 
     /**
-
-
      * Returns the chronological interaction history of this debtor.
-
-
      */
     public List<InteractionNote> getInteractionNotes() {
         return interactionNotes;
     }
 
     /**
-
-
      * Returns a copy of this person with {@code note} appended to the interaction history.
-
-
      */
     public Person withAddedInteractionNote(InteractionNote note) {
         requireNonNull(note);
