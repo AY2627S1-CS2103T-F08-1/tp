@@ -1,5 +1,7 @@
 package seedu.address.ui;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.Comparator;
 
 import javafx.fxml.FXML;
@@ -52,11 +54,19 @@ public class PersonCard extends UiPart<Region> {
         id.setText(displayedIndex + ". [ID " + person.getDebtorId() + "] ");
         name.setText(person.getName().fullName);
         phone.setText(person.getPhone().value);
-        outstandingAmount.setText("Outstanding: S$" + person.getOutstandingAmount());
+        outstandingAmount.setText(formatOutstandingAmount(person));
         address.setText(person.getAddress().value);
         email.setText(person.getEmail().value);
         person.getTags().stream()
                 .sorted(Comparator.comparing(tag -> tag.tagName))
                 .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
+    }
+
+    /**
+     * Returns the outstanding-amount text displayed on a debtor card.
+     */
+    static String formatOutstandingAmount(Person person) {
+        requireNonNull(person);
+        return "Outstanding: S$" + person.getOutstandingAmount();
     }
 }
