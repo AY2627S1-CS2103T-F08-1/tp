@@ -1,11 +1,18 @@
 package seedu.address.logic;
 
+import static java.util.Objects.requireNonNull;
+
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import seedu.address.logic.parser.Prefix;
+import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Person;
 
 /**
@@ -15,13 +22,13 @@ public class Messages {
 
     public static final String MESSAGE_UNKNOWN_COMMAND = "Unknown command.";
     public static final String MESSAGE_INVALID_COMMAND_FORMAT = "Invalid command format!\n%1$s";
-    public static final String MESSAGE_INVALID_PERSON_DISPLAYED_INDEX = "The person index provided is invalid.";
-    public static final String MESSAGE_PERSONS_LISTED_OVERVIEW = "%1$d person(s) listed!";
+    public static final String MESSAGE_INVALID_PERSON_DISPLAYED_INDEX = "The debtor index provided is invalid.";
+    public static final String MESSAGE_PERSONS_LISTED_OVERVIEW = "%1$d debtor(s) listed!";
     public static final String MESSAGE_DUPLICATE_FIELDS =
                 "Multiple values specified for the following single-valued field(s): ";
 
     private static final String MESSAGE_NO_PERSONS_DISPLAYED_FOR_DELETE =
-            "Index %1$s is invalid because the displayed list is empty (0 people; no valid index range). "
+            "Index %1$s is invalid because the displayed list is empty (0 debtors; no valid index range). "
                     + "Run the list command or adjust your find query before deleting.";
     private static final String MESSAGE_INVALID_PERSON_DISPLAYED_INDEX_RANGE =
             "Index %1$s is out of range. The displayed list has %2$d %3$s; valid range is 1 to %2$d.";
@@ -46,7 +53,7 @@ public class Messages {
             return String.format(MESSAGE_NO_PERSONS_DISPLAYED_FOR_DELETE, requestedIndex);
         }
 
-        String personNoun = displayedPersonCount == 1 ? "person" : "people";
+        String personNoun = displayedPersonCount == 1 ? "debtor" : "debtors";
         return String.format(MESSAGE_INVALID_PERSON_DISPLAYED_INDEX_RANGE,
                 requestedIndex, displayedPersonCount, personNoun);
     }
@@ -70,6 +77,42 @@ public class Messages {
                 .append(person.getOutstandingAmount())
                 .append("; Tags: ");
         person.getTags().forEach(builder::append);
+        return builder.toString();
+    }
+
+    /**
+     * Formats a complete debtor profile for display in the result panel.
+     */
+    public static String formatProfile(Person person) {
+        requireNonNull(person);
+        String formattedTags = person.getTags().stream()
+                .map(Object::toString)
+                .sorted()
+                .collect(Collectors.joining(", "));
+        if (formattedTags.isEmpty()) {
+            formattedTags = "None";
+        }
+
+        StringBuilder builder = new StringBuilder()
+                .append("Debtor profile\n")
+                .append("ID: ").append(person.getDebtorId()).append('\n')
+                .append("Name: ").append(person.getName()).append('\n')
+                .append("Phone: ").append(person.getPhone()).append('\n')
+                .append("Email: ").append(person.getEmail()).append('\n')
+                .append("Address: ").append(person.getAddress()).append('\n')
+                .append("Outstanding: S$").append(person.getOutstandingAmount()).append('\n')
+                .append("Tags: ").append(formattedTags).append('\n')
+                .append("Interaction history (newest first):");
+
+        if (person.getInteractionNotes().isEmpty()) {
+            return builder.append("\nNo interaction notes recorded.").toString();
+        }
+
+        List<InteractionNote> newestFirstNotes = new ArrayList<>(person.getInteractionNotes());
+        Collections.reverse(newestFirstNotes);
+        newestFirstNotes.stream()
+                .sorted(Comparator.comparing(InteractionNote::getTimestamp).reversed())
+                .forEach(note -> builder.append("\n- ").append(note));
         return builder.toString();
     }
 
