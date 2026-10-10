@@ -59,4 +59,17 @@ public class MessagesTest {
 
         assertTrue(Messages.formatProfile(debtor).contains(longText.trim()));
     }
+
+    @Test
+    public void formatProfile_equalTimestamps_showsLaterInsertedNoteFirst() {
+        LocalDateTime sharedTimestamp = LocalDateTime.of(2026, 10, 10, 10, 0);
+        InteractionNote firstNote = new InteractionNote(sharedTimestamp, "First inserted note.");
+        InteractionNote secondNote = new InteractionNote(sharedTimestamp, "Second inserted note.");
+        Person debtor = new PersonBuilder().withDebtorId(3)
+                .withInteractionNotes(List.of(firstNote, secondNote)).build();
+
+        String profile = Messages.formatProfile(debtor);
+
+        assertTrue(profile.indexOf(secondNote.getText()) < profile.indexOf(firstNote.getText()));
+    }
 }
