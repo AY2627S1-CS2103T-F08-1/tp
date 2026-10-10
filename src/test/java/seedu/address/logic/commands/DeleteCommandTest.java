@@ -120,7 +120,7 @@ public class DeleteCommandTest {
         DeleteCommand deleteCommand = new DeleteCommand(outOfBoundIndex);
         int displayedPersonCount = model.getFilteredPersonList().size();
         String expectedMessage = String.format(
-                "Index %d is out of range. The displayed list has %d people; valid range is 1 to %d.",
+                "Index %d is out of range. The displayed list has %d debtors; valid range is 1 to %d.",
                 outOfBoundIndex.getOneBased(), displayedPersonCount, displayedPersonCount);
 
         assertCommandFailure(deleteCommand, model, expectedMessage);
@@ -184,7 +184,7 @@ public class DeleteCommandTest {
         DeleteCommand deleteCommand = new DeleteCommand(INDEX_FIRST_PERSON);
 
         assertCommandFailure(deleteCommand, emptyModel, "Index 1 is invalid because the displayed list is empty "
-                + "(0 people; no valid index range). Run the list command or adjust your find query before deleting.");
+                + "(0 debtors; no valid index range). Run the list command or adjust your find query before deleting.");
     }
 
     @Test
