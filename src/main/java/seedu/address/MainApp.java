@@ -46,7 +46,7 @@ public class MainApp extends Application {
 
     @Override
     public void init() throws Exception {
-        logger.info("================================[ Initializing OSPS ]================================");
+        logger.info("=============================[ Initializing AddressBook ]===========================");
         super.init();
 
         JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(USER_PREFS_FILE_PATH);
@@ -121,13 +121,13 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        logger.info("Starting " + APP_NAME + " " + VERSION);
+        logger.info("Starting AddressBook " + MainApp.VERSION);
         ui.start(primaryStage);
     }
 
     @Override
     public void stop() {
-        logger.info("================================= [ Stopping OSPS ] ================================");
+        logger.info("============================ [ Stopping AddressBook ] =============================");
         try {
             storage.saveUserPrefs(model.getUserPrefs());
         } catch (IOException e) {

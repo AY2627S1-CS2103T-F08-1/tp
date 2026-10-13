@@ -35,7 +35,6 @@ public class HelpWindow extends UiPart<Stage> {
      */
     public HelpWindow(Stage root) {
         super(FXML, root);
-        root.setTitle("OSPS Help");
         helpMessage.setText(HELP_MESSAGE);
     }
 

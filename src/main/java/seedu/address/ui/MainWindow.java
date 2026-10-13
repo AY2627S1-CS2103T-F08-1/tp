@@ -64,7 +64,6 @@ public class MainWindow extends UiPart<Stage> {
 
         // Set dependencies
         this.primaryStage = primaryStage;
-        this.primaryStage.setTitle(APP_TITLE);
         this.logic = logic;
         this.dataFilePath = dataFilePath;
 
