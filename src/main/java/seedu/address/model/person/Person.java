@@ -38,19 +38,25 @@ public class Person {
         this(name, phone, email, address, 0, new OutstandingAmount(), tags);
     }
 
-    /** Creates a person with the supplied outstanding amount. */
+    /**
+     * Creates a person with the supplied outstanding amount.
+     */
     public Person(Name name, Phone phone, Email email, Address address,
             OutstandingAmount outstandingAmount, Set<Tag> tags) {
         this(name, phone, email, address, 0, outstandingAmount, tags);
     }
 
-    /** Creates a person with a persistent debtor ID and outstanding amount. */
+    /**
+     * Creates a person with a persistent debtor ID and outstanding amount.
+     */
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, Set<Tag> tags) {
         this(name, phone, email, address, debtorId, outstandingAmount, List.of(), tags);
     }
 
-    /** Creates a person with all debtor fields, including interaction notes. */
+    /**
+     * Creates a person with all debtor fields, including interaction notes.
+     */
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes, Set<Tag> tags) {
         requireAllNonNull(name, phone, email, address, outstandingAmount, interactionNotes, tags);
@@ -83,12 +89,16 @@ public class Person {
         return address;
     }
 
-    /** Returns this person's persistent debtor ID, or 0 before the person is added. */
+    /**
+     * Returns this person's persistent debtor ID, or 0 before the person is added.
+     */
     public int getDebtorId() {
         return debtorId;
     }
 
-    /** Returns a copy of this person with the supplied persistent debtor ID. */
+    /**
+     * Returns a copy of this person with the supplied persistent debtor ID.
+     */
     public Person withDebtorId(int newDebtorId) {
         return new Person(name, phone, email, address, newDebtorId, outstandingAmount, interactionNotes, tags);
     }
@@ -97,12 +107,16 @@ public class Person {
         return outstandingAmount;
     }
 
-    /** Returns the chronological interaction history of this debtor. */
+    /**
+     * Returns the chronological interaction history of this debtor.
+     */
     public List<InteractionNote> getInteractionNotes() {
         return interactionNotes;
     }
 
-    /** Returns a copy of this person with {@code note} appended to the interaction history. */
+    /**
+     * Returns a copy of this person with {@code note} appended to the interaction history.
+     */
     public Person withAddedInteractionNote(InteractionNote note) {
         requireNonNull(note);
         List<InteractionNote> updatedNotes = new ArrayList<>(interactionNotes);

@@ -32,6 +32,8 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 
    * `note --id 1 --text Called debtor, promised payment on Friday.` : Adds an interaction note to debtor ID 1.
 
+   * `show --id 1` : Shows the complete profile and interaction history of debtor ID 1.
+
    * `delete 3` : Deletes the 3rd contact shown in the current list.
 
    * `clear` : Deletes all contacts.
@@ -125,6 +127,22 @@ Format: `note --id DEBTOR_ID --text NOTE_TEXT`
 
 Example:
 * `note --id 1 --text Called debtor, promised payment on Friday.`
+
+### Viewing a debtor profile: `show`
+
+Shows the complete profile of the active debtor identified by persistent debtor ID. The profile includes the
+debtor's name, phone number, email address, address, outstanding amount, tags, and interaction history. Interaction
+notes are shown newest first. If the debtor has no notes, the profile states that no interaction notes are recorded.
+
+Format: `show --id DEBTOR_ID`
+
+* `DEBTOR_ID` must be a positive integer shown as the debtor's ID in the person list.
+* Debtor IDs remain associated with the same debtor when the displayed list is filtered or reordered.
+* A deleted debtor cannot be viewed. The command reports that no active debtor with that ID exists.
+* The command accepts exactly one `--id` parameter. For example, `show 3` is not supported.
+
+Example:
+* `show --id 3` shows the complete profile of the active debtor with ID 3.
 
 ### Editing a person: `edit`
 
@@ -232,4 +250,5 @@ Action | Format, Examples
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List** | `list`
 **Note** | `note --id DEBTOR_ID --text NOTE_TEXT`<br> e.g., `note --id 1 --text Called debtor, promised payment on Friday.`
+**Show** | `show --id DEBTOR_ID`<br> e.g., `show --id 3`
 **Help** | `help`

@@ -2,6 +2,7 @@ package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
@@ -32,6 +33,12 @@ public class NoteCommandTest {
     private static final String VALID_NOTE = "Called debtor, promised payment on Friday.";
 
     private final Model model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
+
+    @Test
+    public void constructor_nullArguments_throwNullPointerException() {
+        assertThrows(NullPointerException.class, () -> new NoteCommand(1, null));
+        assertThrows(NullPointerException.class, () -> new NoteCommand(1, VALID_NOTE, null));
+    }
 
     @Test
     public void execute_validDebtorIdUnfilteredList_success() {
@@ -82,6 +89,15 @@ public class NoteCommandTest {
                 .orElseThrow();
         assertEquals(VALID_NOTE, updatedDebtor.getInteractionNotes().getFirst().getText());
         assertFalse(model.getFilteredPersonList().contains(updatedDebtor));
+    }
+
+    @Test
+    public void toStringMethod() {
+        NoteCommand noteCommand = new NoteCommand(7, "  Called debtor.  ");
+        String expected = NoteCommand.class.getCanonicalName()
+                + "{debtorId=7, noteText=Called debtor.}";
+
+        assertEquals(expected, noteCommand.toString());
     }
 
     @Test
