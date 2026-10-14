@@ -73,7 +73,7 @@ dependencies {
 }
 
 shadowJar {
-    archiveFileName = 'addressbook.jar'
+    archiveFileName = 'osps.jar'
 }
 
 defaultTasks 'clean', 'test'
