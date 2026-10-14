@@ -1,6 +1,7 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.commands.CommandTestUtil.ADDRESS_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
@@ -78,6 +79,53 @@ public class LogicManagerTest {
         JsonAddressBookStorage savedStorage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
         ReadOnlyAddressBook reloadedAddressBook = savedStorage.readAddressBook().get();
         assertEquals(List.of(BOB), reloadedAddressBook.getPersonList());
+    }
+
+    @Test
+    public void execute_noteEditReloadShow_preservesNotesNewestFirst() throws Exception {
+        Person debtor = model.addPerson(new PersonBuilder().withName("Alice Tan").build());
+        int debtorId = debtor.getDebtorId();
+        String firstNote = "Called debtor, promised payment.";
+        String secondNote = "Sent follow-up email; reply requested?";
+
+        logic.execute("note --id " + debtorId + " --text " + firstNote);
+        logic.execute("note --text " + secondNote + " --id " + debtorId);
+        logic.execute("edit 1 n/Alice Updated");
+
+        JsonAddressBookStorage savedStorage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        ReadOnlyAddressBook reloadedAddressBook = savedStorage.readAddressBook().get();
+        Model reloadedModel = new ModelManager(reloadedAddressBook, new UserPrefs());
+        Logic reloadedLogic = new LogicManager(reloadedModel,
+                new StorageManager(savedStorage,
+                        new JsonUserPrefsStorage(temporaryFolder.resolve("userPrefs.json"))));
+
+        String profile = reloadedLogic.execute("show --id " + debtorId).getFeedbackToUser();
+
+        assertTrue(profile.contains("ID: " + debtorId));
+        assertTrue(profile.contains("Name: Alice Updated"));
+        assertTrue(profile.contains(firstNote));
+        assertTrue(profile.contains(secondNote));
+        assertTrue(profile.indexOf(secondNote) < profile.indexOf(firstNote));
+        assertEquals(2, reloadedAddressBook.getPersonList().getFirst().getInteractionNotes().size());
+    }
+
+    @Test
+    public void execute_invalidNoteCommands_doNotChangeModelOrSavedData() throws Exception {
+        Person debtor = model.addPerson(new PersonBuilder().withName("Alice Tan").build());
+        logic.execute("note --id " + debtor.getDebtorId() + " --text Existing note.");
+
+        Path savedAddressBookPath = temporaryFolder.resolve("addressBook.json");
+        String originalSavedData = Files.readString(savedAddressBookPath);
+        List<Person> originalPersons = List.copyOf(model.getAddressBook().getPersonList());
+
+        assertThrows(ParseException.class, () -> logic.execute("note --id " + debtor.getDebtorId()
+                + " --text    "));
+        assertEquals(originalPersons, model.getAddressBook().getPersonList());
+        assertEquals(originalSavedData, Files.readString(savedAddressBookPath));
+
+        assertThrows(CommandException.class, () -> logic.execute("note --id 999 --text Should not be saved."));
+        assertEquals(originalPersons, model.getAddressBook().getPersonList());
+        assertEquals(originalSavedData, Files.readString(savedAddressBookPath));
     }
 
     @Test
