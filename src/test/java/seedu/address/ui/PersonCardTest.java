@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,11 +59,32 @@ public class PersonCardTest {
         assertTrue(addressIndex > outstandingAmountIndex);
     }
 
+    @Test
+    public void fxml_longTextLabels_wrapWithinCardWidth() throws IOException {
+        String fxml = readPersonListCardFxml();
+
+        for (String labelId : List.of("name", "phone", "outstandingAmount", "address", "email")) {
+            String labelElement = getLabelElement(fxml, labelId);
+            assertTrue(labelElement.contains("minWidth=\"0.0\""));
+            assertTrue(labelElement.contains("maxWidth=\"1.7976931348623157E308\""));
+            assertTrue(labelElement.contains("wrapText=\"true\""));
+        }
+        assertTrue(getLabelElement(fxml, "name").contains("HBox.hgrow=\"ALWAYS\""));
+    }
+
     private String readPersonListCardFxml() throws IOException {
         try (InputStream inputStream = MainApp.class.getResourceAsStream("/view/PersonListCard.fxml")) {
             assertNotNull(inputStream);
             return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         }
+    }
+
+    private String getLabelElement(String fxml, String labelId) {
+        int startIndex = fxml.indexOf("<Label fx:id=\"" + labelId + "\"");
+        assertTrue(startIndex >= 0);
+        int endIndex = fxml.indexOf("/>", startIndex);
+        assertTrue(endIndex > startIndex);
+        return fxml.substring(startIndex, endIndex);
     }
 
     private String formatCardText(Person person) throws IOException {
