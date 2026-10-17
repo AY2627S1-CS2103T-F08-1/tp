@@ -155,6 +155,21 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### Finding and listing debtors
+
+The `find` command filters the active debtors using one or more search keywords. Each keyword matches either a
+case-insensitive whole word in the debtor's name or the debtor's complete phone number. Matching uses `OR` semantics,
+so a debtor is included when any keyword matches either field.
+
+![Interactions for `find` followed by `list`](images/FindListSequenceDiagram.png)
+
+`FindCommandParser` normalises surrounding and repeated whitespace before constructing a
+`NameContainsKeywordsPredicate`. When `FindCommand` executes, it passes that predicate to
+`ModelManager#updateFilteredPersonList`. The JavaFX `FilteredList` applies the predicate to the active debtors, while
+the existing `SortedList` returned by `ModelManager#getFilteredPersonList` keeps the displayed matches in ascending
+persistent debtor ID order. The second half of the diagram shows how `list` restores all active debtors by replacing
+the search predicate with `Model#PREDICATE_SHOW_ALL_PERSONS`.
+
 ### \[Proposed\] Undo/redo feature
 
 #### Proposed Implementation
