@@ -53,6 +53,17 @@ public class AddressBookTest {
     }
 
     @Test
+    public void resetData_withDuplicateDebtorIds_throwsIllegalArgumentException() {
+        Person firstPerson = new PersonBuilder(ALICE).withDebtorId(1).build();
+        Person secondPerson = new PersonBuilder().withName("Bob").withPhone("91234567")
+                .withEmail("bob@example.com").withDebtorId(1).build();
+        AddressBookStub newData = new AddressBookStub(List.of(firstPerson, secondPerson));
+
+        assertThrows(IllegalArgumentException.class, AddressBook.MESSAGE_DUPLICATE_DEBTOR_ID, () ->
+                addressBook.resetData(newData));
+    }
+
+    @Test
     public void hasPerson_nullPerson_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> addressBook.hasPerson(null));
     }
@@ -92,6 +103,16 @@ public class AddressBookTest {
         assertEquals(1, addedFirstPerson.getDebtorId());
         assertEquals(2, addedSecondPerson.getDebtorId());
         assertEquals(3, addedThirdPerson.getDebtorId());
+    }
+
+    @Test
+    public void addPerson_withDuplicateDebtorId_throwsIllegalArgumentException() {
+        addressBook.addPerson(new PersonBuilder(ALICE).withDebtorId(1).build());
+        Person secondPerson = new PersonBuilder().withName("Bob").withPhone("91234567")
+                .withEmail("bob@example.com").withDebtorId(1).build();
+
+        assertThrows(IllegalArgumentException.class, AddressBook.MESSAGE_DUPLICATE_DEBTOR_ID, () ->
+                addressBook.addPerson(secondPerson));
     }
 
     @Test
