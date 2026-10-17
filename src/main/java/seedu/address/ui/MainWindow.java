@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import seedu.address.MainApp;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.logic.CommandLogFormatter;
 import seedu.address.logic.Logic;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.exceptions.CommandException;
@@ -180,9 +181,10 @@ public class MainWindow extends UiPart<Stage> {
      * @see seedu.address.logic.Logic#execute(String)
      */
     private CommandResult executeCommand(String commandText) throws CommandException, ParseException {
+        String commandWord = CommandLogFormatter.getCommandWord(commandText);
         try {
             CommandResult commandResult = logic.execute(commandText);
-            logger.info("Result: " + commandResult.getFeedbackToUser());
+            logger.info("Command completed successfully: " + commandWord);
             resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
 
             if (commandResult.isShowHelp()) {
@@ -195,7 +197,7 @@ public class MainWindow extends UiPart<Stage> {
 
             return commandResult;
         } catch (CommandException | ParseException e) {
-            logger.info("An error occurred while executing command: " + commandText);
+            logger.info("Command failed: " + commandWord + "; error type: " + e.getClass().getSimpleName());
             resultDisplay.setFeedbackToUser(e.getMessage());
             throw e;
         }
