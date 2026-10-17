@@ -23,7 +23,7 @@ We are a team based in the [School of Computing, National University of Singapor
 [[github](https://github.com/chocoHacks33)]
 
 * Role: Developer
-* Responsibilities: DevOps, continuous integration, testing, and documentation
+* Responsibilities: Privacy-preserving logging, DevOps, continuous integration, automated testing, and documentation
 
 ### Ngui Jianjia, Edison
 

@@ -155,6 +155,47 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### Privacy-preserving logging
+
+OSPS stores debtor records, so its logs must not become a second, less protected copy of those records. The logging
+invariant is:
+
+> Personal data from a debtor record or command must never be written to a log. This includes names, phone numbers,
+> email addresses, postal addresses, and interaction-note text.
+
+The invariant applies to successful commands, rejected commands, startup, and error handling. In particular, developers
+must not log raw command text, command arguments, `Person` objects, the full address book, or user-facing command
+feedback, as each can contain personal data.
+
+OSPS retains useful operational diagnostics without recording command content as follows:
+
+* `CommandLogFormatter` maps input to an allowlisted command category, such as `add`, `find`, or `note`. Arguments are
+  discarded. Blank input becomes `<empty>`, while an unrecognised first token becomes `<unknown>` instead of being
+  repeated in the log, because even that token could contain personal data.
+* `LogicManager` records only the safe command category when execution starts.
+* `MainWindow` records the command category and whether execution succeeded. A failure additionally records the
+  exception class, but not the exception message or command text.
+* `ModelManager` records only aggregate metadata (the number of address-book entries) during initialization, rather than
+  serializing the address book or its people.
+
+This gives developers enough information to identify the command path, outcome, and failure category. Detailed values
+needed to reproduce a defect should be supplied through a controlled test case, not recovered from a user's log file.
+`CommandLoggingTest` enforces the boundary with sentinel personal values and checks that none appear in captured logic,
+parser, or model log records.
+
+#### Design considerations
+
+**Aspect: Amount of command information retained:**
+
+* **Alternative 1 (current choice): Log an allowlisted command category and aggregate metadata.**
+  * Pros: Preserves useful execution context while preventing command arguments, result feedback, and model content from
+    leaking into logs.
+  * Cons: A log cannot reconstruct the exact input that caused a failure.
+* **Alternative 2: Log raw input after pattern-based redaction.**
+  * Pros: Retains more detail for debugging.
+  * Cons: Free-form addresses and notes, malformed commands, and future prefixes make complete redaction unreliable. A
+    missed pattern can expose personal data, so this alternative was rejected.
+
 ### \[Proposed\] Undo/redo feature
 
 #### Proposed Implementation
