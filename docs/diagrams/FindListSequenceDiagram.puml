@@ -22,9 +22,10 @@ end note
 
 [-> LogicManager : execute("find Alice 91234567")
 activate LogicManager
-ref over LogicManager, FindCommand
-Parsing creates f with p
-end ref
+note over LogicManager, FindCommand
+The parser has already created f
+with predicate p.
+end note
 LogicManager -> FindCommand : execute(m)
 activate FindCommand
 FindCommand -> ModelManager : updateFilteredPersonList(p)
@@ -37,7 +38,7 @@ loop for each debtor
     Predicate --> FilteredList : whole-word name match\n(case-insensitive) OR exact phone match
     deactivate Predicate
 end
-FilteredList --> SortedList : change notification
+FilteredList -> SortedList : change notification
 FilteredList --> ModelManager
 deactivate FilteredList
 ModelManager --> FindCommand
@@ -55,16 +56,16 @@ deactivate LogicManager
 
 [-> LogicManager : execute("list")
 activate LogicManager
-ref over LogicManager, ListCommand
-Parsing creates l
-end ref
+note over LogicManager, ListCommand
+The parser has already created l.
+end note
 LogicManager -> ListCommand : execute(m)
 activate ListCommand
 ListCommand -> ModelManager : updateFilteredPersonList(\nPREDICATE_SHOW_ALL_PERSONS)
 activate ModelManager
 ModelManager -> FilteredList : setPredicate(\nPREDICATE_SHOW_ALL_PERSONS)
 activate FilteredList
-FilteredList --> SortedList : change notification
+FilteredList -> SortedList : change notification
 FilteredList --> ModelManager
 deactivate FilteredList
 ModelManager --> ListCommand
