@@ -5,12 +5,14 @@ import static seedu.address.testutil.Assert.assertThrows;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.commons.util.JsonUtil;
 import seedu.address.model.AddressBook;
+import seedu.address.model.person.Person;
 import seedu.address.testutil.TypicalPersons;
 
 public class JsonSerializableAddressBookTest {
@@ -21,6 +23,10 @@ public class JsonSerializableAddressBookTest {
     private static final Path DUPLICATE_PERSON_FILE = TEST_DATA_FOLDER.resolve("duplicatePersonAddressBook.json");
     private static final Path DUPLICATE_DEBTOR_ID_FILE =
             TEST_DATA_FOLDER.resolve("duplicateDebtorIdAddressBook.json");
+    private static final Path LEGACY_AND_EXPLICIT_DUPLICATE_DEBTOR_ID_FILE =
+            TEST_DATA_FOLDER.resolve("legacyAndExplicitDuplicateDebtorIdAddressBook.json");
+    private static final Path LEGACY_ZERO_DEBTOR_ID_FILE =
+            TEST_DATA_FOLDER.resolve("legacyZeroDebtorIdAddressBook.json");
 
     @Test
     public void toModelType_typicalPersonsFile_success() throws Exception {
@@ -29,6 +35,17 @@ public class JsonSerializableAddressBookTest {
         AddressBook addressBookFromFile = dataFromFile.toModelType();
         AddressBook typicalPersonsAddressBook = TypicalPersons.getTypicalAddressBook();
         assertEquals(addressBookFromFile, typicalPersonsAddressBook);
+    }
+
+    @Test
+    public void toModelType_legacyZeroAndMissingDebtorIds_assignsUniqueIds() throws Exception {
+        JsonSerializableAddressBook dataFromFile = JsonUtil.readJsonFile(LEGACY_ZERO_DEBTOR_ID_FILE,
+                JsonSerializableAddressBook.class).get();
+
+        AddressBook addressBookFromFile = dataFromFile.toModelType();
+
+        assertEquals(List.of(1, 2), addressBookFromFile.getPersonList().stream()
+                .map(Person::getDebtorId).toList());
     }
 
     @Test
@@ -50,6 +67,15 @@ public class JsonSerializableAddressBookTest {
     public void toModelType_duplicateDebtorIds_throwsIllegalValueException() throws Exception {
         JsonSerializableAddressBook dataFromFile = JsonUtil.readJsonFile(DUPLICATE_DEBTOR_ID_FILE,
                 JsonSerializableAddressBook.class).get();
+
+        assertThrows(IllegalValueException.class, AddressBook.MESSAGE_DUPLICATE_DEBTOR_ID,
+                dataFromFile::toModelType);
+    }
+
+    @Test
+    public void toModelType_legacyAndExplicitDuplicateDebtorIds_throwsIllegalValueException() throws Exception {
+        JsonSerializableAddressBook dataFromFile = JsonUtil.readJsonFile(
+                LEGACY_AND_EXPLICIT_DUPLICATE_DEBTOR_ID_FILE, JsonSerializableAddressBook.class).get();
 
         assertThrows(IllegalValueException.class, AddressBook.MESSAGE_DUPLICATE_DEBTOR_ID,
                 dataFromFile::toModelType);
