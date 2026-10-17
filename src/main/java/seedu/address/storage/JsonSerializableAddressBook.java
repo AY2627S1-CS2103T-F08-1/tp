@@ -56,7 +56,11 @@ class JsonSerializableAddressBook {
             if (addressBook.hasPerson(person)) {
                 throw new IllegalValueException(MESSAGE_DUPLICATE_PERSON);
             }
-            addressBook.addPerson(person);
+            try {
+                addressBook.addPerson(person);
+            } catch (IllegalArgumentException exception) {
+                throw new IllegalValueException(exception.getMessage(), exception);
+            }
         }
         if (nextDebtorId != null) {
             try {

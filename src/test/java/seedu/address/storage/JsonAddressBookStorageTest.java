@@ -71,6 +71,16 @@ public class JsonAddressBookStorageTest {
     }
 
     @Test
+    public void readAddressBook_negativeDebtorId_throwsDataLoadingException() {
+        assertThrows(DataLoadingException.class, () -> readAddressBook("negativeDebtorIdAddressBook.json"));
+    }
+
+    @Test
+    public void readAddressBook_duplicateDebtorIds_throwsDataLoadingException() {
+        assertThrows(DataLoadingException.class, () -> readAddressBook("duplicateDebtorIdAddressBook.json"));
+    }
+
+    @Test
     public void readAddressBook_blankInteractionNoteText_throwsDataLoadingException() {
         String filePath = "blankInteractionNoteTextAddressBook.json";
         assertThrows(DataLoadingException.class, () -> readAddressBook(filePath));

@@ -27,6 +27,7 @@ public class JsonAdaptedPersonTest {
     private static final String INVALID_ADDRESS = " ";
     private static final String INVALID_EMAIL = "example.com";
     private static final String INVALID_TAG = "#friend";
+    private static final int INVALID_DEBTOR_ID = -1;
 
     private static final String VALID_NAME = BENSON.getName().toString();
     private static final String VALID_PHONE = BENSON.getPhone().toString();
@@ -79,6 +80,14 @@ public class JsonAdaptedPersonTest {
                 INVALID_OUTSTANDING_AMOUNT, VALID_TAGS);
 
         assertThrows(IllegalValueException.class, OutstandingAmount.MESSAGE_CONSTRAINTS, person::toModelType);
+    }
+
+    @Test
+    public void toModelType_negativeDebtorId_throwsIllegalValueException() {
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                INVALID_DEBTOR_ID, VALID_OUTSTANDING_AMOUNT, List.of(), VALID_TAGS);
+
+        assertThrows(IllegalValueException.class, Person.MESSAGE_INVALID_DEBTOR_ID, person::toModelType);
     }
 
     @Test
