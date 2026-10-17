@@ -132,9 +132,9 @@ public class LogicManagerTest {
     public void execute_invalidDeleteCommands_doNotChangeModelOrSavedData() throws Exception {
         model.addPerson(AMY);
         model.addPerson(BOB);
-        logic.execute(ListCommand.COMMAND_WORD);
 
         Path savedAddressBookPath = temporaryFolder.resolve("addressBook.json");
+        new JsonAddressBookStorage(savedAddressBookPath).saveAddressBook(model.getAddressBook());
         String originalSavedData = Files.readString(savedAddressBookPath);
         List<Person> originalPersons = List.copyOf(model.getAddressBook().getPersonList());
         String invalidFormatMessage = String.format(Messages.MESSAGE_INVALID_COMMAND_FORMAT,
@@ -154,6 +154,49 @@ public class LogicManagerTest {
         assertInvalidDeleteDoesNotChangeState("delete " + veryLongIndex, CommandException.class,
                 Messages.getInvalidPersonDisplayedIndexMessage(veryLongIndex, originalPersons.size()),
                 originalPersons, savedAddressBookPath, originalSavedData);
+    }
+
+    @Test
+    public void executeReadOnlyCommands_storageUnavailable_doesNotSave() throws Exception {
+        Model readOnlyModel = new ModelManager();
+        Person debtor = readOnlyModel.addPerson(AMY);
+        SaveTrackingAddressBookStorage addressBookStorage = new SaveTrackingAddressBookStorage(
+                temporaryFolder.resolve("readOnlyAddressBook.json"));
+        Logic readOnlyLogic = createLogic(readOnlyModel, addressBookStorage);
+
+        for (String command : List.of(
+                "find Amy",
+                "list",
+                "show --id " + debtor.getDebtorId(),
+                "help",
+                "exit")) {
+            readOnlyLogic.execute(command);
+        }
+
+        assertEquals(0, addressBookStorage.getSaveAttemptCount());
+    }
+
+    @Test
+    public void executeMutatingCommands_storageUnavailable_attemptsSave() {
+        assertMutatingCommandAttemptsSave(AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
+                + EMAIL_DESC_AMY + ADDRESS_DESC_AMY, new ModelManager());
+
+        Model editModel = new ModelManager();
+        editModel.addPerson(AMY);
+        assertMutatingCommandAttemptsSave("edit 1 n/Amy Edited", editModel);
+
+        Model deleteModel = new ModelManager();
+        deleteModel.addPerson(AMY);
+        assertMutatingCommandAttemptsSave("delete 1", deleteModel);
+
+        Model clearModel = new ModelManager();
+        clearModel.addPerson(AMY);
+        assertMutatingCommandAttemptsSave("clear", clearModel);
+
+        Model noteModel = new ModelManager();
+        Person debtor = noteModel.addPerson(AMY);
+        assertMutatingCommandAttemptsSave(
+                "note --id " + debtor.getDebtorId() + " --text Payment reminder sent.", noteModel);
     }
 
     @Test
@@ -291,5 +334,38 @@ public class LogicManagerTest {
         ModelManager expectedModel = new ModelManager();
         expectedModel.addPerson(expectedPerson);
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
+    }
+
+    private void assertMutatingCommandAttemptsSave(String commandText, Model testModel) {
+        SaveTrackingAddressBookStorage addressBookStorage = new SaveTrackingAddressBookStorage(
+                temporaryFolder.resolve("mutatingAddressBook.json"));
+        Logic testLogic = createLogic(testModel, addressBookStorage);
+
+        assertThrows(CommandException.class, () -> testLogic.execute(commandText));
+        assertEquals(1, addressBookStorage.getSaveAttemptCount());
+    }
+
+    private Logic createLogic(Model testModel, JsonAddressBookStorage addressBookStorage) {
+        JsonUserPrefsStorage userPrefsStorage =
+                new JsonUserPrefsStorage(temporaryFolder.resolve("trackingUserPrefs.json"));
+        return new LogicManager(testModel, new StorageManager(addressBookStorage, userPrefsStorage));
+    }
+
+    private static class SaveTrackingAddressBookStorage extends JsonAddressBookStorage {
+        private int saveAttemptCount;
+
+        SaveTrackingAddressBookStorage(Path filePath) {
+            super(filePath);
+        }
+
+        @Override
+        public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+            saveAttemptCount++;
+            throw DUMMY_IO_EXCEPTION;
+        }
+
+        int getSaveAttemptCount() {
+            return saveAttemptCount;
+        }
     }
 }
