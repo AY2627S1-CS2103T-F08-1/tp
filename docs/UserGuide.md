@@ -110,6 +110,13 @@ A debtor can have any number of tags, including zero.
   and correctly grouped comma separators are accepted; for example, `0`, `S$0.00`, `$1250.5`, and `S$1,250.00`.
 * Negative values, malformed currency, and values with more than two decimal places are rejected.
 * Phone numbers and email addresses must be unique across active debtors. Debtors may share the same name.
+* Leading and trailing spaces around command values are removed. Phone numbers accept digits only (at least
+  three); spaces within a number, hyphens and `+` are rejected. Country codes and leading zeroes are not
+  normalised, so `6591234567` and `91234567` are treated as different numbers.
+* Email duplicate checks are case-sensitive: `Alice@example.com` and `alice@example.com` are treated as
+  different addresses. Aliases such as `alice+work@example.com` are not matched to `alice@example.com`.
+  Check existing records before adding a debtor under a different spelling of the same contact.
+* Deleted IDs are not reused after saving and restarting, even when the last debtor is deleted.
 
 Examples:
 * `add n/Olaf Go p/91234567 e/olaf.letnonego@example.com a/H4M8+3J3, Kunlun Station, Antarctica o/S$1,250.00`
@@ -173,6 +180,9 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`
   The index **must be a positive integer** 1, 2, 3, …​
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
+* The persistent debtor ID, outstanding amount and interaction notes are preserved. Balance editing is not supported.
+* Changing a phone number or email to one already used by another active debtor is rejected, including when
+  that other debtor is hidden by a search. The matching rules and limitations are the same as for `add`.
 * When editing tags, all of the debtor's existing tags are removed; adding tags is not cumulative.
 * To remove all of a debtor's tags, enter `t/` without a tag after it.
 

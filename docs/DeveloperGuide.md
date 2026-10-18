@@ -115,6 +115,20 @@ How the parsing works:
 * All `XYZCommandParser` classes, such as `AddCommandParser` and `DeleteCommandParser`, implement the `Parser` interface so they can be treated similarly where appropriate, for example during testing.
 
 ### Model component
+
+The OSPS debtor model extends the original contact model with persistent IDs, outstanding amounts and
+interaction notes. The following diagram shows the stored debtor data:
+
+<img src="images/DebtorModelDiagram.png" width="850" alt="OSPS debtor model and persistent ID allocation" />
+
+`AddressBook` saves `nextDebtorId` alongside its records so deleting a debtor, including the final debtor,
+does not cause ID reuse after restart. `clear` deliberately resets allocation. Missing IDs in legacy records
+are allocated on load.
+
+`EditCommand` creates a replacement immutable `Person`, preserving its ID, outstanding amount and notes.
+Duplicate checks compare exact phone/email values against all other active debtors, including filtered-out
+records. Email matching is currently case-sensitive; phone country codes are not normalised.
+
 **API** : [`Model.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/model/Model.java)
 
 <img src="images/ModelClassDiagram.png" width="450" />
