@@ -167,18 +167,24 @@ Example:
 
 Edits an existing debtor in OSPS.
 
-Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`
+Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/OUTSTANDING_AMOUNT] [t/TAG]…​`
 
 * Edits the debtor at the specified `INDEX`. The index refers to the index number shown in the displayed debtor list.
   The index **must be a positive integer** 1, 2, 3, …​
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
+* Use `o/OUTSTANDING_AMOUNT` to replace the outstanding amount. It accepts the same non-negative currency values as
+  `add`, such as `o/S$1,250.00` and `o/0`.
+* Phone numbers and email addresses use exact matching for uniqueness. Country codes, leading zeroes, email case,
+  and email aliases are not normalised.
+* The persistent debtor ID and interaction notes are preserved.
 * When editing tags, all of the debtor's existing tags are removed; adding tags is not cumulative.
 * To remove all of a debtor's tags, enter `t/` without a tag after it.
 
 Examples:
 * `edit 1 p/91234567 e/johndoe@example.com` edits the phone number and email address of the 1st displayed debtor.
 * `edit 2 n/Betsy Crower t/` edits the name of the 2nd displayed debtor and clears all existing tags.
+* `edit 2 o/S$500.00` updates only the outstanding amount of the 2nd displayed debtor.
 
 ### Locating debtors by name: `find`
 
