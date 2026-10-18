@@ -203,6 +203,9 @@ Deletes the specified debtor from OSPS.
 
 Format: `delete INDEX`
 
+* Leading zeros are accepted. Very large indexes are rejected with the displayed list's valid range;
+  indexes longer than 100 significant digits are abbreviated in feedback. There is no input digit cap.
+
 * Deletes the debtor at the specified `INDEX`.
 * The index refers to the one-based position in the currently displayed debtor list, including `find` results.
 * After deletion, the list refreshes and the current filter remains active.
