@@ -25,6 +25,46 @@ public class AddressBookTest {
     private final AddressBook addressBook = new AddressBook();
 
     @Test
+    public void addPerson_duplicate_doesNotConsumeId() {
+        addressBook.addPerson(ALICE);
+        int nextId = addressBook.getNextDebtorId();
+        assertThrows(DuplicatePersonException.class, () -> addressBook.addPerson(ALICE));
+        assertEquals(nextId, addressBook.getNextDebtorId());
+    }
+
+    @Test
+    public void setPersons_duplicate_doesNotResetIdCounter() {
+        addressBook.addPerson(ALICE);
+        addressBook.setNextDebtorId(20);
+        assertThrows(DuplicatePersonException.class, () -> addressBook.setPersons(List.of(ALICE, ALICE)));
+        assertEquals(20, addressBook.getNextDebtorId());
+        assertEquals(1, addressBook.getPersonList().size());
+    }
+
+    @Test
+    public void addPerson_idOverflow_rejectedWithoutChangingData() {
+        assertThrows(IllegalArgumentException.class, () ->
+                addressBook.addPerson(ALICE.withDebtorId(Integer.MAX_VALUE)));
+        assertEquals(1, addressBook.getNextDebtorId());
+        addressBook.setNextDebtorId(Integer.MAX_VALUE);
+        assertThrows(IllegalArgumentException.class, () -> addressBook.addPerson(ALICE));
+        assertEquals(Integer.MAX_VALUE, addressBook.getNextDebtorId());
+        assertTrue(addressBook.getPersonList().isEmpty());
+    }
+
+    @Test
+    public void setPersons_invalidIds_preservesDataAndCounter() {
+        addressBook.addPerson(ALICE);
+        addressBook.setNextDebtorId(20);
+        assertThrows(IllegalArgumentException.class, () ->
+                addressBook.setPersons(List.of(ALICE.withDebtorId(Integer.MAX_VALUE))));
+        assertThrows(IllegalArgumentException.class, () ->
+                addressBook.setPersons(List.of(ALICE.withDebtorId(1), ALICE.withDebtorId(1))));
+        assertEquals(20, addressBook.getNextDebtorId());
+        assertEquals(1, addressBook.getPersonList().size());
+    }
+
+    @Test
     public void constructor() {
         assertEquals(List.of(), addressBook.getPersonList());
     }
