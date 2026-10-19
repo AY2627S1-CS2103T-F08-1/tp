@@ -106,6 +106,16 @@ How the `Logic` component works:
    Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
 1. The result of the command execution is encapsulated as a `CommandResult` object which is returned from `Logic`.
 
+#### Delete command implementation
+
+`delete INDEX` uses a one-based index into the debtor list currently shown by the model. `ModelManager#getFilteredPersonList()` returns that filtered list sorted by persistent debtor ID, so a preceding `find` affects which debtor `delete 1` selects. The index is not a debtor ID and is checked against the displayed list at execution time.
+
+`DeleteCommandParser` accepts a positive decimal integer and strips leading zeroes. Empty input, non-digits, zero, and negative values produce an invalid-command-format error with the command usage. The parser keeps the normalized index as decimal text, so very large inputs do not overflow an integer during parsing. `DeleteCommand` checks it against the current displayed-list size using decimal length and lexical comparison before converting an in-range value to an integer. An index outside the list produces an actionable range error; when the list is empty, the error suggests running `list` or adjusting the `find` query. For an index longer than 100 digits, feedback shows its first 20 digits and total digit count. These parse and range failures do not change the model or trigger a save.
+
+For an in-range index, `DeleteCommand` removes the selected `Person` through `Model#deletePerson`. The model removes that person from the address book, which updates the observable displayed list. The success message includes the deleted debtor's ID, name, phone, email, address, outstanding amount, and tags. `LogicManager` then saves the updated address book; a storage failure is reported as a command error, but the in-memory removal is not rolled back.
+
+Interaction notes are part of the `Person` record. Deleting a debtor therefore removes the profile and its complete interaction history from the active address book and, after a successful save, from the persisted data. `show --id ID` can display profiles only for active debtors, so it reports that the debtor may have been deleted after removal. The current model does not maintain undo/redo history for deletion; the next debtor ID is not reused.
+
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
 
 <img src="images/ParserClasses.png" width="600"/>
@@ -488,6 +498,9 @@ testers are expected to do more *exploratory* testing.
 1. _{ more test cases …​ }_
 
 ### Deleting a person
+
+For the v1.4 release-candidate workflow, fixture preparation, and evidence manifest, use the
+[deletion regression and release-JAR smoke-test checklist](testing/v1.4-release-smoke-test.md).
 
 1. Deleting a person while all persons are being shown
 
