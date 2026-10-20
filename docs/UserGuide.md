@@ -191,8 +191,9 @@ Format: `find KEYWORD [MORE_KEYWORDS]`
 * The search is case-insensitive; for example, `hans` matches `Hans`.
 * Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
 * Name searches match only full words; for example, `Han` does not match `Hans`.
-* A phone search must provide the complete phone number. For example, `91234567` matches that exact number, but
-  `9123` does not.
+* A phone search must provide the complete phone number. For example, `91234567` matches that exact phone number,
+  but `9123` does not match a phone number such as `91234567`. As every keyword also searches names, `9123` can
+  still match a debtor whose name contains the complete word `9123`.
 * Debtors matching at least one name or phone keyword are returned (an `OR` search). For example,
   `Alice 98765432` returns debtors whose names contain `Alice` as a full word as well as the debtor whose phone is
   exactly `98765432`.

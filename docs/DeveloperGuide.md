@@ -540,7 +540,9 @@ testers are expected to do more *exploratory* testing.
       Expected: Only `Alex Yeoh` is shown and the status message is `1 matching debtor found.`
 
    1. Test case: `find 8743`<br>
-      Expected: No debtor is shown, because phone matching requires the complete stored number.
+      Expected: No debtor is shown in the sample data. The keyword `8743` does not match the phone number `87438807`,
+      because phone matching requires the complete stored number. Due to the command's `OR` semantics, a debtor would
+      still be shown if their name contained the complete word `8743`.
 
 3. Restoring the complete list
 
