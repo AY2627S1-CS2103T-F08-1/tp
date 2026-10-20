@@ -29,15 +29,22 @@ public class NoteCommandParserTest {
     }
 
     @Test
-    public void parse_textContainingLongOptionPrefixCharacters_returnsNoteCommand() {
-        assertParseSuccess(parser, " --id 4 --text Asked debtor to use the --identifier portal.",
-                new NoteCommand(4, "Asked debtor to use the --identifier portal."));
+    public void parse_textWithWhitespaceAndPunctuation_preservesInternalWhitespace() {
+        assertParseSuccess(parser, " --id 4 --text  Called debtor,  left voicemail; follow-up?  ",
+                new NoteCommand(4, "Called debtor,  left voicemail; follow-up?"));
     }
 
     @Test
     public void parse_longRealisticText_returnsNoteCommand() {
         String noteText = "Discussed instalment options; debtor requested a written summary. "
                 + "Follow up after the next payday with the agreed figures and payment reference. ".repeat(8);
+
+        assertParseSuccess(parser, " --id 4 --text " + noteText, new NoteCommand(4, noteText));
+    }
+
+    @Test
+    public void parse_textBeyondTypicalLength_returnsNoteCommand() {
+        String noteText = "Discussed payment options; follow up by email. ".repeat(256);
 
         assertParseSuccess(parser, " --id 4 --text " + noteText, new NoteCommand(4, noteText));
     }
@@ -63,7 +70,17 @@ public class NoteCommandParserTest {
     @Test
     public void parse_malformedLongOptionName_throwsParseException() {
         assertParseFailure(parser, " --id 2 --textbook Called debtor.",
-                String.format(MESSAGE_INVALID_COMMAND_FORMAT, NoteCommand.MESSAGE_USAGE));
+                String.format(NoteCommandParser.MESSAGE_UNKNOWN_OPTION, "--textbook"));
+    }
+
+    @Test
+    public void parse_unknownOption_throwsParseException() {
+        assertParseFailure(parser, " --unknown value --id 2 --text Called debtor.",
+                String.format(NoteCommandParser.MESSAGE_UNKNOWN_OPTION, "--unknown"));
+        assertParseFailure(parser, " --id 2 --text Called debtor. --unknown value",
+                String.format(NoteCommandParser.MESSAGE_UNKNOWN_OPTION, "--unknown"));
+        assertParseFailure(parser, " --id 2 --text Asked debtor to use the --identifier portal.",
+                String.format(NoteCommandParser.MESSAGE_UNKNOWN_OPTION, "--identifier"));
     }
 
     @Test
@@ -79,6 +96,7 @@ public class NoteCommandParserTest {
     @Test
     public void parse_blankText_throwsParseException() {
         assertParseFailure(parser, " --id 1 --text    ", InteractionNote.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " --id 1 --text", InteractionNote.MESSAGE_CONSTRAINTS);
     }
 
     @Test
