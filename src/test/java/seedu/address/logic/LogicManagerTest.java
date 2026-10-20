@@ -118,10 +118,15 @@ public class LogicManagerTest {
         String originalSavedData = Files.readString(savedAddressBookPath);
         List<Person> originalPersons = List.copyOf(model.getAddressBook().getPersonList());
 
-        assertThrows(ParseException.class, () -> logic.execute("note --id " + debtor.getDebtorId()
-                + " --text    "));
-        assertEquals(originalPersons, model.getAddressBook().getPersonList());
-        assertEquals(originalSavedData, Files.readString(savedAddressBookPath));
+        for (String invalidCommand : List.of(
+                "note --id " + debtor.getDebtorId() + " --text    ",
+                "note --id 0 --text Should not be saved.",
+                "note --id " + debtor.getDebtorId() + " --id 2 --text Should not be saved.",
+                "note --id " + debtor.getDebtorId() + " --text Should not be saved. --unknown value")) {
+            assertThrows(ParseException.class, () -> logic.execute(invalidCommand));
+            assertEquals(originalPersons, model.getAddressBook().getPersonList());
+            assertEquals(originalSavedData, Files.readString(savedAddressBookPath));
+        }
 
         assertThrows(CommandException.class, () -> logic.execute("note --id 999 --text Should not be saved."));
         assertEquals(originalPersons, model.getAddressBook().getPersonList());
