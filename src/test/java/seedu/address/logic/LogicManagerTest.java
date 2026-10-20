@@ -144,9 +144,10 @@ public class LogicManagerTest {
                 new JsonUserPrefsStorage(temporaryFolder.resolve("userPrefs.json"))));
 
         String noteText = "Called debtor; promised payment.";
+        String noteCommand = "note --id " + debtor.getDebtorId() + " --text " + noteText;
         assertThrows(CommandException.class,
-                String.format(LogicManager.FILE_OPS_ERROR_FORMAT, DUMMY_IO_EXCEPTION.getMessage()),
-                () -> logic.execute("note --id " + debtor.getDebtorId() + " --text " + noteText));
+                String.format(LogicManager.FILE_OPS_ERROR_FORMAT, DUMMY_IO_EXCEPTION.getMessage()), () ->
+                        logic.execute(noteCommand));
 
         Person updatedDebtor = model.getAddressBook().getPersonList().getFirst();
         assertEquals(1, updatedDebtor.getInteractionNotes().size());
