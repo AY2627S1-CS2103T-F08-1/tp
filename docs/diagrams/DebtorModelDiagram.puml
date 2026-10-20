@@ -31,13 +31,13 @@ class InteractionNote {
 }
 AddressBook *--> "1" UniquePersonList
 UniquePersonList --> "0..*" Person
-Person --> "1" Name
-Person --> "1" Phone
-Person --> "1" Email
-Person --> "1" Address
-Person --> "0..*" Tag
-Person --> "1" OutstandingAmount
-Person --> "0..* {ordered}" InteractionNote
+Person *--> "1" Name
+Person *--> "1" Phone
+Person *--> "1" Email
+Person *--> "1" Address
+Person *--> "0..*" Tag
+Person *--> "1" OutstandingAmount
+Person *--> "0..* {ordered}" InteractionNote
 note bottom of AddressBook
   nextDebtorId is saved with the records.
   Deletion does not reset it; clear does.
