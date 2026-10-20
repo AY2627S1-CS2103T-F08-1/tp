@@ -159,9 +159,11 @@ public class JsonAddressBookStorageTest {
     @Test
     public void readAndSaveAddressBook_interactionNotes_roundTrips() throws Exception {
         Path filePath = testFolder.resolve("InteractionNotesAddressBook.json");
+        InteractionNote duplicateNote = InteractionNote.fromStorage("2026-10-09T14:35:00",
+                "Sent payment reminder.");
         List<InteractionNote> notes = List.of(
                 InteractionNote.fromStorage("2026-10-09T14:30:00", "Called debtor, promised payment."),
-                InteractionNote.fromStorage("2026-10-09T14:35:00", "Sent payment reminder."));
+                duplicateNote, duplicateNote);
         AddressBook original = new AddressBook();
         original.addPerson(new PersonBuilder().withName("Alice").withPhone("91234567")
                 .withEmail("alice@example.com").withInteractionNotes(notes).build());
