@@ -127,7 +127,9 @@ Examples:
 
 Shows every active debtor in ascending debtor ID order. Each debtor card shows the ID, name, phone number,
 outstanding amount, email address, address, and tags. The result reports the active-debtor count and displays
-a helpful message when there are no active debtors.
+a helpful message when there are no active debtors. Running `list` also clears an active `find` filter and restores
+the complete debtor list. The number before `[ID ...]` is the current displayed index; the value inside `[ID ...]`
+is the debtor's persistent ID.
 
 Format: `list`
 
@@ -174,36 +176,50 @@ Example:
 
 Edits an existing debtor in OSPS.
 
-Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`
+Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/OUTSTANDING_AMOUNT] [t/TAG]…​`
 
 * Edits the debtor at the specified `INDEX`. The index refers to the index number shown in the displayed debtor list.
   The index **must be a positive integer** 1, 2, 3, …​
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
-* The persistent debtor ID, outstanding amount and interaction notes are preserved. Balance editing is not supported.
+* Use `o/OUTSTANDING_AMOUNT` to replace the outstanding amount. It accepts the same non-negative currency values as
+  `add`, such as `o/S$1,250.00` and `o/0`.
 * Changing a phone number or email to one already used by another active debtor is rejected, including when
-  that other debtor is hidden by a search. The matching rules and limitations are the same as for `add`.
+  that other debtor is hidden by a search. Phone numbers and email addresses use exact matching for uniqueness;
+  country codes, leading zeroes, email case, and email aliases are not normalised.
+* The persistent debtor ID and interaction notes are preserved.
 * When editing tags, all of the debtor's existing tags are removed; adding tags is not cumulative.
 * To remove all of a debtor's tags, enter `t/` without a tag after it.
 
 Examples:
 * `edit 1 p/91234567 e/johndoe@example.com` edits the phone number and email address of the 1st displayed debtor.
 * `edit 2 n/Betsy Crower t/` edits the name of the 2nd displayed debtor and clears all existing tags.
+* `edit 2 o/S$500.00` updates only the outstanding amount of the 2nd displayed debtor.
 
-### Locating debtors by name: `find`
+### Locating debtors by name or phone: `find`
 
-Finds debtors whose names contain any of the given keywords.
+Finds debtors using one or more name or phone search terms.
 
 Format: `find KEYWORD [MORE_KEYWORDS]`
 
 * The search is case-insensitive; for example, `hans` matches `Hans`.
 * Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
-* The search considers only names.
-* Only full words match; for example, `Han` does not match `Hans`.
-* Debtors matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
+* Name searches match only full words; for example, `Han` does not match `Hans`.
+* A phone search must provide the complete phone number. For example, `91234567` matches that exact phone number,
+  but `9123` does not match a phone number such as `91234567`. As every keyword also searches names, `9123` can
+  still match a debtor whose name contains the complete word `9123`.
+* Debtors matching at least one name or phone keyword are returned (an `OR` search). For example,
+  `Alice 98765432` returns debtors whose names contain `Alice` as a full word as well as the debtor whose phone is
+  exactly `98765432`.
+* Leading, trailing, and repeated whitespace is ignored. A blank search is rejected.
+* Results are displayed in ascending persistent debtor ID order. If nothing matches, OSPS reports that no debtors
+  matched the supplied name or phone keywords.
+* Run `list` to clear the search filter and restore every active debtor.
 
 Examples:
 * `find John` returns `john` and `John Doe`
+* `find 91234567` returns the debtor whose phone number is exactly `91234567`.
+* `find Alice 98765432` returns matches from either the name or phone search term.
 * `find alex david` returns `Alex Yeoh`, `David Li`<br>
   ![result for 'find alex david'](images/findAlexDavidResult.png)
 
@@ -276,7 +292,7 @@ Action | Format, Examples
 **Clear** | `clear`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
-**Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
+**Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find Alice 98765432`
 **List** | `list`
 **Note** | `note --id DEBTOR_ID --text NOTE_TEXT`<br> e.g., `note --id 1 --text Called debtor, promised payment on Friday.`
 **Show** | `show --id DEBTOR_ID`<br> e.g., `show --id 3`
