@@ -19,6 +19,8 @@ import seedu.address.model.person.exceptions.DuplicatePersonException;
  */
 public class AddressBook implements ReadOnlyAddressBook {
 
+    public static final String MESSAGE_DUPLICATE_DEBTOR_ID = "Debtor ID must be unique.";
+
     private final UniquePersonList persons = new UniquePersonList();
     private int nextDebtorId = 1;
 
@@ -48,7 +50,7 @@ public class AddressBook implements ReadOnlyAddressBook {
                 throw new IllegalArgumentException("Debtor ID exceeds the supported range.");
             }
             if (!usedDebtorIds.add(assignedPerson.getDebtorId())) {
-                throw new IllegalArgumentException("Debtor ID must be unique.");
+                throw new IllegalArgumentException(MESSAGE_DUPLICATE_DEBTOR_ID);
             }
             candidateNextId = Math.max(candidateNextId, assignedPerson.getDebtorId() + 1);
             assignedPersons.add(assignedPerson);
@@ -150,7 +152,7 @@ public class AddressBook implements ReadOnlyAddressBook {
         }
         if (persons.asUnmodifiableObservableList().stream()
                 .anyMatch(existingPerson -> existingPerson.getDebtorId() == person.getDebtorId())) {
-            throw new IllegalArgumentException("Debtor ID must be unique.");
+            throw new IllegalArgumentException(MESSAGE_DUPLICATE_DEBTOR_ID);
         }
         nextDebtorId = Math.max(nextDebtorId, person.getDebtorId() + 1);
         return person;

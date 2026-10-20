@@ -19,6 +19,8 @@ import seedu.address.model.tag.Tag;
  */
 public class Person {
 
+    public static final String MESSAGE_INVALID_DEBTOR_ID = "Debtor ID cannot be negative.";
+
     // Identity fields
     private final Name name;
     private final Phone phone;
@@ -61,7 +63,7 @@ public class Person {
             OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes, Set<Tag> tags) {
         requireAllNonNull(name, phone, email, address, outstandingAmount, interactionNotes, tags);
         if (debtorId < 0) {
-            throw new IllegalArgumentException("Debtor ID cannot be negative.");
+            throw new IllegalArgumentException(MESSAGE_INVALID_DEBTOR_ID);
         }
         this.name = name;
         this.phone = phone;

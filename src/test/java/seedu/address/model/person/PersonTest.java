@@ -22,6 +22,13 @@ import seedu.address.testutil.PersonBuilder;
 public class PersonTest {
 
     @Test
+    public void constructor_negativeDebtorId_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, Person.MESSAGE_INVALID_DEBTOR_ID, () ->
+                new Person(ALICE.getName(), ALICE.getPhone(), ALICE.getEmail(), ALICE.getAddress(), -1,
+                        ALICE.getOutstandingAmount(), ALICE.getTags()));
+    }
+
+    @Test
     public void asObservableList_modifyList_throwsUnsupportedOperationException() {
         Person person = new PersonBuilder().build();
         assertThrows(UnsupportedOperationException.class, () -> person.getTags().remove(0));
