@@ -156,6 +156,12 @@ public class EditCommandParserTest {
         expectedCommand = new EditCommand(targetIndex, descriptor);
         assertParseSuccess(parser, userInput, expectedCommand);
 
+        // zero outstanding amount combined with another field
+        userInput = targetIndex.getOneBased() + " o/0 n/Alice";
+        descriptor = new EditPersonDescriptorBuilder().withOutstandingAmount("0").withName("Alice").build();
+        expectedCommand = new EditCommand(targetIndex, descriptor);
+        assertParseSuccess(parser, userInput, expectedCommand);
+
         // email
         userInput = targetIndex.getOneBased() + EMAIL_DESC_AMY;
         descriptor = new EditPersonDescriptorBuilder().withEmail(VALID_EMAIL_AMY).build();
