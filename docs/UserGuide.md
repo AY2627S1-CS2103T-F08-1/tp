@@ -147,11 +147,14 @@ Adds a timestamped interaction note to the debtor identified by debtor ID.
 Format: `note --id DEBTOR_ID --text NOTE_TEXT`
 
 * `DEBTOR_ID` must be a positive integer shown as the debtor's ID in the debtor list.
-* `NOTE_TEXT` must not be blank. Ordinary punctuation is allowed.
+* `NOTE_TEXT` must not be blank. Ordinary punctuation is allowed, and there is no arbitrary note-length limit.
 * The `--id` and `--text` parameters can be provided in either order.
 * The exact standalone tokens `--id` and `--text` are reserved for command parameters and cannot appear inside
   `NOTE_TEXT`. Longer words such as `--identifier` are accepted as ordinary note text.
 * The note is saved with the debtor and is preserved after restarting the application.
+* If saving fails, OSPS reports an error, but the note remains in memory during the current session. It is not
+  guaranteed to be on disk or to survive a restart. Resolve the save problem and verify the data after saving
+  successfully. Check the profile before entering the note again to avoid adding a duplicate.
 
 Example:
 * `note --id 1 --text Called debtor, promised payment on Friday.`

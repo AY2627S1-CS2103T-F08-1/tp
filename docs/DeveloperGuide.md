@@ -158,6 +158,12 @@ The `Storage` component,
 * can save both address book data and user preference data in JSON format, and read them back into corresponding objects.
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
+* stores each debtor's ordered interaction history through `JsonAdaptedInteractionNote`; invalid entries, including
+  JSON `null` notes, are reported as data-loading errors.
+
+`LogicManager` applies a valid `note` command to the in-memory model before saving. If saving fails, it reports a
+command error but does not roll back the in-memory note. A failure before writing leaves the prior file unchanged;
+the file-writing path is not atomic, so a failure during writing does not guarantee an intact prior file.
 
 ### Common classes
 
