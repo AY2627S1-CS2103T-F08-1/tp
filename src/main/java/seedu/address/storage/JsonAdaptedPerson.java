@@ -148,6 +148,9 @@ class JsonAdaptedPerson {
         } catch (IllegalArgumentException exception) {
             throw new IllegalValueException(OutstandingAmount.MESSAGE_CONSTRAINTS);
         }
+        if (debtorId != null && debtorId < 0) {
+            throw new IllegalValueException(Person.MESSAGE_INVALID_DEBTOR_ID);
+        }
         return new Person(modelName, modelPhone, modelEmail, modelAddress,
                 debtorId == null ? 0 : debtorId, modelOutstandingAmount, modelInteractionNotes, modelTags);
     }
