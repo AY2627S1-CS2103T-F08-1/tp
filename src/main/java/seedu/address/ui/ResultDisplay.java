@@ -29,7 +29,7 @@ public class ResultDisplay extends UiPart<Region> {
         resultDisplay.setPrefRowCount(getVisibleRowCount(feedbackToUser));
     }
 
-    private int getVisibleRowCount(String text) {
+    static int getVisibleRowCount(String text) {
         int lineCount = text.split("\\R", -1).length;
         return Math.min(MAX_VISIBLE_ROWS, Math.max(MIN_VISIBLE_ROWS, lineCount));
     }
