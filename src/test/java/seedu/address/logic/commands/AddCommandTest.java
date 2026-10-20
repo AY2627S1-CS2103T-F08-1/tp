@@ -54,6 +54,19 @@ public class AddCommandTest {
     }
 
     @Test
+    public void execute_exhaustedDebtorIds_throwsCommandExceptionWithoutChangingModel() {
+        AddressBook addressBook = new AddressBook();
+        addressBook.setNextDebtorId(Integer.MAX_VALUE);
+        ModelStubWithAddressBook modelStub = new ModelStubWithAddressBook(addressBook);
+
+        assertThrows(CommandException.class, AddCommand.MESSAGE_ID_EXHAUSTED, () -> new AddCommand(
+                new PersonBuilder().build()).execute(modelStub));
+
+        assertTrue(addressBook.getPersonList().isEmpty());
+        assertEquals(Integer.MAX_VALUE, addressBook.getNextDebtorId());
+    }
+
+    @Test
     public void equals() {
         Person alice = new PersonBuilder().withName("Alice").build();
         Person bob = new PersonBuilder().withName("Bob").build();
@@ -159,6 +172,32 @@ public class AddCommandTest {
         public boolean hasPerson(Person person) {
             requireNonNull(person);
             return this.person.isSamePerson(person);
+        }
+    }
+
+    /**
+     * A Model stub backed by an address book.
+     */
+    private class ModelStubWithAddressBook extends ModelStub {
+        private final AddressBook addressBook;
+
+        ModelStubWithAddressBook(AddressBook addressBook) {
+            this.addressBook = addressBook;
+        }
+
+        @Override
+        public boolean hasPerson(Person person) {
+            return addressBook.hasPerson(person);
+        }
+
+        @Override
+        public Person addPerson(Person person) {
+            return addressBook.addPerson(person);
+        }
+
+        @Override
+        public ReadOnlyAddressBook getAddressBook() {
+            return addressBook;
         }
     }
 

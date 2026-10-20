@@ -2,8 +2,6 @@ package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
-import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
-import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
 import static seedu.address.testutil.TypicalPersons.CARL;
@@ -18,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.AddressBookBuilder;
 import seedu.address.testutil.PersonBuilder;
@@ -85,9 +84,15 @@ public class ListCommandTest {
     }
 
     @Test
-    public void execute_listIsFiltered_showsEverything() {
-        showPersonAtIndex(model, INDEX_FIRST_PERSON);
+    public void execute_afterPhoneSearch_showsEverythingInAscendingIdOrder() {
+        NameContainsKeywordsPredicate phonePredicate =
+                new NameContainsKeywordsPredicate(List.of(ALICE.getPhone().value));
+        new FindCommand(phonePredicate).execute(model);
+        assertEquals(1, model.getFilteredPersonList().size());
+
         assertCommandSuccess(new ListCommand(), model,
                 ListCommand.getMessageForDebtorCount(getTypicalPersons().size()), expectedModel);
+        assertEquals(List.of(1, 2, 3, 4, 5, 6, 7), model.getFilteredPersonList().stream()
+                .map(Person::getDebtorId).toList());
     }
 }

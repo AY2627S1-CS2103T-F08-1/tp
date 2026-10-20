@@ -39,6 +39,7 @@ public class AddCommand extends Command {
     public static final String MESSAGE_SUCCESS = "New debtor added: %1$s";
     public static final String MESSAGE_DUPLICATE_PERSON =
             "A debtor with the same phone number or email address already exists.";
+    public static final String MESSAGE_ID_EXHAUSTED = "No more debtor IDs are available.";
 
     private final Person toAdd;
 
@@ -58,6 +59,9 @@ public class AddCommand extends Command {
             throw new CommandException(MESSAGE_DUPLICATE_PERSON);
         }
 
+        if (model.getAddressBook().getNextDebtorId() == Integer.MAX_VALUE) {
+            throw new CommandException(MESSAGE_ID_EXHAUSTED);
+        }
         Person addedPerson = model.addPerson(toAdd);
         return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(addedPerson)));
     }
