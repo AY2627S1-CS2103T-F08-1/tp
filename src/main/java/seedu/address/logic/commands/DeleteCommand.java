@@ -4,7 +4,9 @@ import static java.util.Objects.requireNonNull;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.logging.Logger;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
@@ -25,6 +27,8 @@ public class DeleteCommand extends Command {
             + "Example: " + COMMAND_WORD + " 1";
 
     public static final String MESSAGE_DELETE_PERSON_SUCCESS = "Deleted debtor: %1$s";
+
+    private static final Logger logger = LogsCenter.getLogger(DeleteCommand.class);
 
     private static final String MAX_INDEX = Integer.toString(Integer.MAX_VALUE);
 
@@ -75,12 +79,14 @@ public class DeleteCommand extends Command {
         List<Person> lastShownList = model.getFilteredPersonList();
 
         if (exceeds(Integer.toString(lastShownList.size()))) {
+            logger.fine("Delete rejected: index outside displayed list.");
             throw new CommandException(Messages.getInvalidPersonDisplayedIndexMessage(displayIndex(),
                     lastShownList.size()));
         }
 
         Person personToDelete = lastShownList.get(Integer.parseInt(targetIndex) - 1);
         model.deletePerson(personToDelete);
+        logger.fine("Delete applied to model; persistence is handled by LogicManager.");
         return new CommandResult(String.format(MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(personToDelete)));
     }
 
