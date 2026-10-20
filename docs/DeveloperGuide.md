@@ -196,6 +196,37 @@ parser, or model log records.
   * Cons: Free-form addresses and notes, malformed commands, and future prefixes make complete redaction unreliable. A
     missed pattern can expose personal data, so this alternative was rejected.
 
+### Finding and listing debtors
+
+The `find` command filters the active debtors using one or more search keywords. Each keyword matches either a
+case-insensitive whole word in the debtor's name or the debtor's complete phone number. Matching uses `OR` semantics,
+so a debtor is included when any keyword matches either field.
+
+![Interactions for `find` followed by `list`](images/FindListSequenceDiagram.png)
+
+`FindCommandParser` normalises surrounding and repeated whitespace before constructing a
+`NameContainsKeywordsPredicate`. When `FindCommand` executes, it passes that predicate to
+`ModelManager#updateFilteredPersonList`. The JavaFX `FilteredList` applies the predicate to the active debtors, while
+the existing `SortedList` returned by `ModelManager#getFilteredPersonList` keeps the displayed matches in ascending
+persistent debtor ID order. The second half of the diagram shows how `list` restores all active debtors by replacing
+the search predicate with `Model#PREDICATE_SHOW_ALL_PERSONS`.
+
+#### Design considerations
+
+* **Exact phone matching instead of substring matching:** Names use case-insensitive whole-word matching because users
+  commonly remember one part of a name. Phone numbers use exact matching because a partial number can match several
+  debtors and make the result ambiguous. Phone values are already validated and stored as digit-only strings, so no
+  additional punctuation or whitespace normalisation is needed at search time. This keeps phone searches predictable:
+  the user must enter the complete stored number.
+* **One model-level `SortedList` instead of sorting inside each command:** `ModelManager` wraps its `FilteredList` in a
+  single `SortedList` ordered by persistent debtor ID. Both `find` and `list`, as well as any UI observer of
+  `getFilteredPersonList`, therefore see the same order without duplicating sorting logic. The list stays ordered when
+  the predicate or backing data changes, rather than only when a particular command happens to run.
+* **Wrapping card content instead of truncating it:** Debtor-card labels for names, contact details, addresses, and
+  outstanding amounts allow text wrapping, while tags are placed in a `FlowPane`. This preserves identifying and
+  financial information when the window is narrow or a value is long. The persistent ID is kept at its preferred
+  width so that wrapping the adjacent name does not obscure which debtor the card represents.
+
 ### \[Proposed\] Undo/redo feature
 
 #### Proposed Implementation
@@ -527,6 +558,51 @@ testers are expected to do more *exploratory* testing.
        Expected: The most recent window size and location are retained.
 
 1. _{ more test cases …​ }_
+
+### Finding and listing debtors
+
+1. Finding debtors by name
+
+   1. Prerequisites: Launch OSPS with the sample data. Confirm that `Alex Yeoh` and `David Li` are present.
+
+   1. Test case: `find alex DAVID`<br>
+      Expected: Only `Alex Yeoh` and `David Li` are shown, in ascending persistent debtor ID order. The status message
+      is `2 matching debtors found.` This also verifies case-insensitive matching and `OR` semantics.
+
+   1. Test case: `find Ale`<br>
+      Expected: No debtor is shown, because a name keyword must match a complete word. The status message explains
+      that no debtors matched.
+
+2. Finding a debtor by phone number
+
+   1. Prerequisites: Launch OSPS with the sample data containing `Alex Yeoh` with phone number `87438807`.
+
+   1. Test case: `find 87438807`<br>
+      Expected: Only `Alex Yeoh` is shown and the status message is `1 matching debtor found.`
+
+   1. Test case: `find 8743`<br>
+      Expected: No debtor is shown in the sample data. The keyword `8743` does not match the phone number `87438807`,
+      because phone matching requires the complete stored number. Due to the command's `OR` semantics, a debtor would
+      still be shown if their name contained the complete word `8743`.
+
+3. Restoring the complete list
+
+   1. Prerequisites: Run a `find` command that leaves a filtered result visible.
+
+   1. Test case: `list`<br>
+      Expected: Every active debtor is shown in ascending persistent debtor ID order. Each card includes its displayed
+      index, persistent ID, name, phone, outstanding amount, email, address, and tags. The status message reports the
+      number of active debtors.
+
+   1. Test case: `list extra`<br>
+      Expected: The command is rejected because `list` accepts no parameters, and the currently displayed data is not
+      modified.
+
+4. Rejecting an empty search
+
+   1. Test case: `find` (with no keyword)<br>
+      Expected: The command is rejected with the `find` usage message, and the currently displayed data is not
+      modified.
 
 ### Deleting a person
 

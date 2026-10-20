@@ -94,6 +94,24 @@ public class EditCommandTest {
     }
 
     @Test
+    public void execute_outstandingAmountOnly_preservesIdentityAndNotes() {
+        List<InteractionNote> notes = List.of(new InteractionNote(LocalDateTime.of(2026, 10, 9, 14, 30),
+                "Discussed payment."));
+        Person debtor = new PersonBuilder().withOutstandingAmount("1,250.00").withInteractionNotes(notes).build();
+        Model debtorModel = new ModelManager(new AddressBook(), new UserPrefs());
+        Person debtorInModel = debtorModel.addPerson(debtor);
+        Person editedPerson = new PersonBuilder(debtorInModel).withOutstandingAmount("500.50").build();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
+                new EditPersonDescriptorBuilder().withOutstandingAmount("500.50").build());
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson));
+
+        Model expectedModel = new ModelManager(new AddressBook(debtorModel.getAddressBook()), new UserPrefs());
+        expectedModel.setPerson(debtorInModel, editedPerson);
+
+        assertCommandSuccess(editCommand, debtorModel, expectedMessage, expectedModel);
+    }
+
+    @Test
     public void execute_otherFieldsEdited_preservesInteractionNotes() {
         List<InteractionNote> notes = List.of(
                 new InteractionNote(LocalDateTime.of(2026, 10, 9, 14, 30), "Called debtor."),

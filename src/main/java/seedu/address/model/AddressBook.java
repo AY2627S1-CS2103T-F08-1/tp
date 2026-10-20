@@ -11,6 +11,7 @@ import javafx.collections.ObservableList;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.UniquePersonList;
+import seedu.address.model.person.exceptions.DuplicatePersonException;
 
 /**
  * Wraps all data at the address-book level.
@@ -40,18 +41,22 @@ public class AddressBook implements ReadOnlyAddressBook {
      * {@code persons} must not contain duplicate persons.
      */
     public void setPersons(List<Person> persons) {
-        nextDebtorId = 1;
+        int candidateNextId = 1;
         List<Person> assignedPersons = new ArrayList<>();
         Set<Integer> usedDebtorIds = new HashSet<>();
         for (Person person : persons) {
-            Person assignedPerson = person.getDebtorId() == 0 ? person.withDebtorId(nextDebtorId++) : person;
+            Person assignedPerson = person.getDebtorId() == 0 ? person.withDebtorId(candidateNextId) : person;
+            if (assignedPerson.getDebtorId() == Integer.MAX_VALUE) {
+                throw new IllegalArgumentException("Debtor ID exceeds the supported range.");
+            }
             if (!usedDebtorIds.add(assignedPerson.getDebtorId())) {
                 throw new IllegalArgumentException(MESSAGE_DUPLICATE_DEBTOR_ID);
             }
-            nextDebtorId = Math.max(nextDebtorId, assignedPerson.getDebtorId() + 1);
+            candidateNextId = Math.max(candidateNextId, assignedPerson.getDebtorId() + 1);
             assignedPersons.add(assignedPerson);
         }
         this.persons.setPersons(assignedPersons);
+        nextDebtorId = candidateNextId;
     }
 
     /**
@@ -80,6 +85,10 @@ public class AddressBook implements ReadOnlyAddressBook {
      * The person must not already exist in the address book.
      */
     public Person addPerson(Person p) {
+        requireNonNull(p);
+        if (persons.contains(p)) {
+            throw new DuplicatePersonException();
+        }
         Person assignedPerson = assignDebtorId(p);
         persons.add(assignedPerson);
         return assignedPerson;
@@ -132,6 +141,10 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     private Person assignDebtorId(Person person) {
+        if (person.getDebtorId() == Integer.MAX_VALUE
+                || (person.getDebtorId() == 0 && nextDebtorId == Integer.MAX_VALUE)) {
+            throw new IllegalArgumentException("Debtor ID exceeds the supported range.");
+        }
         if (person.getDebtorId() == 0) {
             Person assignedPerson = person.withDebtorId(nextDebtorId);
             nextDebtorId++;

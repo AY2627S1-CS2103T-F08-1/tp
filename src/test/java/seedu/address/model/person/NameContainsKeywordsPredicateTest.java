@@ -38,7 +38,7 @@ public class NameContainsKeywordsPredicateTest {
     }
 
     @Test
-    public void test_nameContainsKeywords_returnsTrue() {
+    public void test_nameOrPhoneMatchesKeywords_returnsTrue() {
         // One keyword
         NameContainsKeywordsPredicate predicate = new NameContainsKeywordsPredicate(List.of("Alice"));
         assertTrue(predicate.test(new PersonBuilder().withName("Alice Bob").build()));
@@ -54,10 +54,24 @@ public class NameContainsKeywordsPredicateTest {
         // Mixed-case keywords
         predicate = new NameContainsKeywordsPredicate(List.of("aLIce", "bOB"));
         assertTrue(predicate.test(new PersonBuilder().withName("Alice Bob").build()));
+
+        // Exact phone number
+        predicate = new NameContainsKeywordsPredicate(List.of("91234567"));
+        assertTrue(predicate.test(new PersonBuilder().withName("Alice Bob").withPhone("91234567").build()));
+
+        // One keyword matches the name and another matches the phone
+        predicate = new NameContainsKeywordsPredicate(List.of("Carol", "91234567"));
+        assertTrue(predicate.test(new PersonBuilder().withName("Alice Bob").withPhone("91234567").build()));
     }
 
     @Test
-    public void test_nameDoesNotContainKeywords_returnsFalse() {
+    public void test_numericKeywordMatchesNameButOnlyPartiallyMatchesPhone_returnsTrue() {
+        NameContainsKeywordsPredicate predicate = new NameContainsKeywordsPredicate(List.of("1234"));
+        assertTrue(predicate.test(new PersonBuilder().withName("Case 1234").withPhone("12345").build()));
+    }
+
+    @Test
+    public void test_nameAndPhoneDoNotMatchKeywords_returnsFalse() {
         // Zero keywords
         NameContainsKeywordsPredicate predicate = new NameContainsKeywordsPredicate(List.of());
         assertFalse(predicate.test(new PersonBuilder().withName("Alice").build()));
@@ -66,8 +80,12 @@ public class NameContainsKeywordsPredicateTest {
         predicate = new NameContainsKeywordsPredicate(List.of("Carol"));
         assertFalse(predicate.test(new PersonBuilder().withName("Alice Bob").build()));
 
-        // Keywords match phone, email and address, but do not match name
-        predicate = new NameContainsKeywordsPredicate(List.of("12345", "alice@email.com", "Main", "Street"));
+        // Partial phone number does not match when the name does not contain the keyword
+        predicate = new NameContainsKeywordsPredicate(List.of("1234"));
+        assertFalse(predicate.test(new PersonBuilder().withName("Alice").withPhone("12345").build()));
+
+        // Keywords match email and address, but do not match name or phone
+        predicate = new NameContainsKeywordsPredicate(List.of("alice@email.com", "Main", "Street"));
         assertFalse(predicate.test(new PersonBuilder().withName("Alice").withPhone("12345")
                 .withEmail("alice@email.com").withAddress("Main Street").build()));
     }
