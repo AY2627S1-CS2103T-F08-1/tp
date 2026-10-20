@@ -25,6 +25,7 @@ import seedu.address.model.tag.Tag;
 class JsonAdaptedPerson {
 
     public static final String MISSING_FIELD_MESSAGE_FORMAT = "Person's %s field is missing!";
+    public static final String NULL_INTERACTION_NOTE_MESSAGE = "Interaction note entry cannot be null.";
 
     private final String name;
     private final String phone;
@@ -139,6 +140,9 @@ class JsonAdaptedPerson {
         final Set<Tag> modelTags = new HashSet<>(personTags);
         final List<InteractionNote> modelInteractionNotes = new ArrayList<>();
         for (JsonAdaptedInteractionNote note : interactionNotes) {
+            if (note == null) {
+                throw new IllegalValueException(NULL_INTERACTION_NOTE_MESSAGE);
+            }
             modelInteractionNotes.add(note.toModelType());
         }
         final OutstandingAmount modelOutstandingAmount;
