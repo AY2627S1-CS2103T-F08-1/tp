@@ -86,6 +86,34 @@ public class DeleteCommandParserTest {
     }
 
     @Test
+    public void parse_hundredSignificantDigits_reportsFullIndexWithoutMutation() throws Exception {
+        String index = "1234567890".repeat(10);
+        for (String input : new String[] {index, "000" + index}) {
+            ModelManager model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
+            DeleteCommand command = parser.parse(input);
+            CommandException error = assertThrows(CommandException.class, () -> command.execute(model));
+            int displayedCount = model.getFilteredPersonList().size();
+            assertEquals("Index " + index + " is out of range. The displayed list has " + displayedCount
+                    + " debtors; valid range is 1 to " + displayedCount + ".", error.getMessage());
+            assertEquals(getTypicalAddressBook(), model.getAddressBook());
+        }
+    }
+
+    @Test
+    public void parse_hundredOneSignificantDigits_reportsPreviewWithoutMutation() throws Exception {
+        String index = "1234567890".repeat(10) + "1";
+        for (String input : new String[] {index, "000" + index}) {
+            ModelManager model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
+            DeleteCommand command = parser.parse(input);
+            CommandException error = assertThrows(CommandException.class, () -> command.execute(model));
+            int displayedCount = model.getFilteredPersonList().size();
+            assertEquals("Index 12345678901234567890... (101 digits) is out of range. The displayed list has "
+                    + displayedCount + " debtors; valid range is 1 to " + displayedCount + ".", error.getMessage());
+            assertEquals(getTypicalAddressBook(), model.getAddressBook());
+        }
+    }
+
+    @Test
     public void parse_millionDigitIndexNonEmptyList_reportsBoundedFeedbackWithoutMutation() {
         ModelManager model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
         String input = "9".repeat(1_000_000);
