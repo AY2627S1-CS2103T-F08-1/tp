@@ -1,0 +1,168 @@
+{
+  "issue": {
+    "number": 69,
+    "title": "[v1.4] Run deletion regression and v1.4 release-JAR smoke test",
+    "release": "v1.4",
+    "owner": "Edmund",
+    "intendedReviewer": "Alfred",
+    "targetDeliverySgt": "2026-10-22 20:00",
+    "officialReleaseDeadlineSgt": "2026-10-22 23:59",
+    "preparationStatus": "DOCUMENTATION ONLY; no v1.4 candidate JAR tested"
+  },
+  "execution": {
+    "status": "NOT RUN",
+    "tester": null,
+    "startedAtSgt": null,
+    "finishedAtSgt": null,
+    "notes": "Complete only from a run against the exact candidate commit and JAR recorded below."
+  },
+  "environment": {
+    "osName": null,
+    "osVersion": null,
+    "javaVersion": null,
+    "javaVendor": null,
+    "displayResolution": null
+  },
+  "candidate": {
+    "branch": null,
+    "commitSha": null,
+    "workingTreeClean": null,
+    "jarFileName": "osps.jar",
+    "jarPathOrArtifactUrl": null,
+    "jarSha256": null
+  },
+  "v13Fixture": {
+    "releaseVersion": "v1.3",
+    "releaseUrl": null,
+    "sourceJarSha256": null,
+    "fixtureDescription": "v1.3 sample data plus synthetic Cedar, Maple, and Birch records; include non-zero balances and notes",
+    "sourceDataPath": null,
+    "sourceDataSha256": null,
+    "baselineRecordCount": null,
+    "baselineInventoryEvidence": null,
+    "syntheticDataOnly": true
+  },
+  "cases": {
+    "cleanFolderLaunch": {
+      "status": "NOT RUN",
+      "observedResult": null,
+      "evidence": []
+    },
+    "v13DataLoadsWithIdsAmountsAndNotes": {
+      "status": "NOT RUN",
+      "observedResult": null,
+      "evidence": []
+    },
+    "workflowAddListFindShowNoteEditDeleteRestart": {
+      "status": "NOT RUN",
+      "targetPersistentId": null,
+      "targetDisplayedIndexAtDelete": null,
+      "successMessageIdentifiesIntendedDebtor": null,
+      "deletionPersistsAfterRestart": null,
+      "survivingIdsAmountsAndNotesUnchanged": null,
+      "evidence": []
+    },
+    "deleteFirstDisplayedIndex": {
+      "status": "NOT RUN",
+      "targetPersistentId": null,
+      "observedSuccessMessage": null,
+      "evidence": []
+    },
+    "deleteMiddleDisplayedIndex": {
+      "status": "NOT RUN",
+      "targetPersistentId": null,
+      "targetDisplayedIndex": null,
+      "observedSuccessMessage": null,
+      "evidence": []
+    },
+    "deleteLastDisplayedIndex": {
+      "status": "NOT RUN",
+      "targetPersistentId": null,
+      "targetDisplayedIndex": null,
+      "observedSuccessMessage": null,
+      "evidence": []
+    },
+    "deleteOnlyDisplayedIndex": {
+      "status": "NOT RUN",
+      "targetPersistentId": null,
+      "emptyStateAfterDelete": null,
+      "evidence": []
+    },
+    "filteredIndexAndProfileIdentity": {
+      "status": "NOT RUN",
+      "filterQuery": "Release QA",
+      "targetPersistentId": null,
+      "targetDisplayedIndex": null,
+      "profileAndSuccessMessageIdentifySameDebtor": null,
+      "filterRemainsActiveAfterDelete": null,
+      "evidence": []
+    },
+    "invalidMalformedNonPositiveOutOfRangeAndVeryLargeIndexes": {
+      "status": "NOT RUN",
+      "inputsObserved": [],
+      "noDataChanged": null,
+      "promptRejectionNoHangOrCrash": null,
+      "evidence": []
+    },
+    "restartAndPersistence": {
+      "status": "NOT RUN",
+      "deletedIdAbsentAfterRestart": null,
+      "survivingIdsAmountsAndNotesMatchBaseline": null,
+      "evidence": []
+    }
+  },
+  "releaseAssetHashComparison": {
+    "status": "PENDING RELEASE UPLOAD",
+    "releaseAssetUrl": null,
+    "downloadedAssetPath": null,
+    "downloadedAssetSha256": null,
+    "matchesTestedCandidateSha256": null,
+    "evidence": []
+  },
+  "issueGates": {
+    "gradlewCleanCheckCoverageJava25": {
+      "status": "NOT RUN",
+      "javaVersion": null,
+      "summary": null,
+      "evidenceUrl": null
+    },
+    "currentJavaCi": {
+      "status": "NOT RUN",
+      "runUrl": null
+    },
+    "codecov": {
+      "status": "NOT RUN",
+      "reportUrl": null
+    },
+    "genuineTeammateReview": {
+      "status": "NOT RUN",
+      "reviewer": null,
+      "pullRequestUrl": null,
+      "reviewUrl": null
+    },
+    "focusedPullRequestLinkedToIssue69": {
+      "status": "NOT RUN",
+      "pullRequestUrl": null
+    },
+    "userGuideUpdated": {
+      "status": "NOT RUN",
+      "pullRequestUrl": null
+    },
+    "deleteCommandUmlAndDeveloperGuideUpdated": {
+      "status": "NOT RUN",
+      "diagramPath": null,
+      "pullRequestUrl": null
+    },
+    "qualifyingParallelPullRequestPairLinkedByWednesday": {
+      "status": "NOT RUN",
+      "links": []
+    }
+  },
+  "screenshotsAndOtherEvidence": [],
+  "defectsFiled": [],
+  "finalDisposition": {
+    "status": "PENDING",
+    "completedAtSgt": null,
+    "summary": null
+  }
+}

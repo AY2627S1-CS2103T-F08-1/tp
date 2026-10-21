@@ -106,6 +106,16 @@ How the `Logic` component works:
    Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
 1. The result of the command execution is encapsulated as a `CommandResult` object which is returned from `Logic`.
 
+#### Delete command implementation
+
+`delete INDEX` uses a one-based index into the debtor list currently shown by the model. `ModelManager#getFilteredPersonList()` returns that filtered list sorted by persistent debtor ID, so a preceding `find` affects which debtor `delete 1` selects. The index is not a debtor ID and is checked against the displayed list at execution time.
+
+`DeleteCommandParser` accepts a positive decimal integer and strips leading zeroes. Empty input, non-digits, zero, and negative values produce an invalid-command-format error with the command usage. The parser keeps the normalized index as decimal text, so very large inputs do not overflow an integer during parsing. `DeleteCommand` checks it against the current displayed-list size using decimal length and lexical comparison before converting an in-range value to an integer. An index outside the list produces an actionable range error; when the list is empty, the error suggests running `list` or adjusting the `find` query. For an index longer than 100 digits, feedback shows its first 20 digits and total digit count. These parse and range failures do not change the model or trigger a save.
+
+For an in-range index, `DeleteCommand` removes the selected `Person` through `Model#deletePerson`. The model removes that person from the address book, which updates the observable displayed list. The success message includes the deleted debtor's ID, name, phone, email, address, outstanding amount, and tags. `LogicManager` then saves the updated address book; a storage failure is reported as a command error, but the in-memory removal is not rolled back.
+
+Interaction notes are part of the `Person` record. Deleting a debtor therefore removes the profile and its complete interaction history from the active address book and, after a successful save, from the persisted data. `show --id ID` can display profiles only for active debtors, so it reports that the debtor may have been deleted after removal. The current model does not maintain undo/redo history for deletion; the next debtor ID is not reused.
+
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
 
 <img src="images/ParserClasses.png" width="600"/>
@@ -115,6 +125,20 @@ How the parsing works:
 * All `XYZCommandParser` classes, such as `AddCommandParser` and `DeleteCommandParser`, implement the `Parser` interface so they can be treated similarly where appropriate, for example during testing.
 
 ### Model component
+
+The OSPS debtor model extends the original contact model with persistent IDs, outstanding amounts and
+interaction notes. The following diagram shows the stored debtor data:
+
+<img src="images/DebtorModelDiagram.png" width="850" alt="OSPS debtor model and persistent ID allocation" />
+
+`AddressBook` saves `nextDebtorId` alongside its records so deleting a debtor, including the final debtor,
+does not cause ID reuse after restart. `clear` deliberately resets allocation. Missing IDs in legacy records
+are allocated on load.
+
+`EditCommand` creates a replacement immutable `Person`, preserving its ID, outstanding amount and notes.
+Duplicate checks compare exact phone/email values against all other active debtors, including filtered-out
+records. Email matching is currently case-sensitive; phone country codes are not normalised.
+
 **API** : [`Model.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/model/Model.java)
 
 <img src="images/ModelClassDiagram.png" width="450" />
@@ -154,6 +178,47 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 ## **Implementation**
 
 This section describes some noteworthy details on how certain features are implemented.
+
+### Privacy-preserving logging
+
+OSPS stores debtor records, so its logs must not become a second, less protected copy of those records. The logging
+invariant is:
+
+> Personal data from a debtor record or command must never be written to a log. This includes names, phone numbers,
+> email addresses, postal addresses, and interaction-note text.
+
+The invariant applies to successful commands, rejected commands, startup, and error handling. In particular, developers
+must not log raw command text, command arguments, `Person` objects, the full address book, or user-facing command
+feedback, as each can contain personal data.
+
+OSPS retains useful operational diagnostics without recording command content as follows:
+
+* `CommandLogFormatter` maps input to an allowlisted command category, such as `add`, `find`, or `note`. Arguments are
+  discarded. Blank input becomes `<empty>`, while an unrecognised first token becomes `<unknown>` instead of being
+  repeated in the log, because even that token could contain personal data.
+* `LogicManager` records only the safe command category when execution starts.
+* `MainWindow` records the command category and whether execution succeeded. A failure additionally records the
+  exception class, but not the exception message or command text.
+* `ModelManager` records only aggregate metadata (the number of address-book entries) during initialization, rather than
+  serializing the address book or its people.
+
+This gives developers enough information to identify the command path, outcome, and failure category. Detailed values
+needed to reproduce a defect should be supplied through a controlled test case, not recovered from a user's log file.
+`CommandLoggingTest` enforces the boundary with sentinel personal values and checks that none appear in captured logic,
+parser, or model log records.
+
+#### Design considerations
+
+**Aspect: Amount of command information retained:**
+
+* **Alternative 1 (current choice): Log an allowlisted command category and aggregate metadata.**
+  * Pros: Preserves useful execution context while preventing command arguments, result feedback, and model content from
+    leaking into logs.
+  * Cons: A log cannot reconstruct the exact input that caused a failure.
+* **Alternative 2: Log raw input after pattern-based redaction.**
+  * Pros: Retains more detail for debugging.
+  * Cons: Free-form addresses and notes, malformed commands, and future prefixes make complete redaction unreliable. A
+    missed pattern can expose personal data, so this alternative was rejected.
 
 ### Finding and listing debtors
 
@@ -564,6 +629,9 @@ testers are expected to do more *exploratory* testing.
       modified.
 
 ### Deleting a person
+
+For the v1.4 release-candidate workflow, fixture preparation, and evidence manifest, use the
+[deletion regression and release-JAR smoke-test checklist](testing/v1.4-release-smoke-test.md).
 
 1. Deleting a person while all persons are being shown
 

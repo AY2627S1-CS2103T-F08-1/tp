@@ -49,6 +49,13 @@ public class Messages {
      * Returns an actionable error message for an index outside the currently displayed person list.
      */
     public static String getInvalidPersonDisplayedIndexMessage(BigInteger requestedIndex, int displayedPersonCount) {
+        return getInvalidPersonDisplayedIndexMessage(requestedIndex.toString(), displayedPersonCount);
+    }
+
+    /**
+     * Returns range feedback using a decimal index or a bounded description of a very large index.
+     */
+    public static String getInvalidPersonDisplayedIndexMessage(String requestedIndex, int displayedPersonCount) {
         if (displayedPersonCount == 0) {
             return String.format(MESSAGE_NO_PERSONS_DISPLAYED_FOR_DELETE, requestedIndex);
         }

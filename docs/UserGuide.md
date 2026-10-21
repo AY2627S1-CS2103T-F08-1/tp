@@ -110,6 +110,13 @@ A debtor can have any number of tags, including zero.
   and correctly grouped comma separators are accepted; for example, `0`, `S$0.00`, `$1250.5`, and `S$1,250.00`.
 * Negative values, malformed currency, and values with more than two decimal places are rejected.
 * Phone numbers and email addresses must be unique across active debtors. Debtors may share the same name.
+* Leading and trailing spaces around command values are removed. Phone numbers accept digits only (at least
+  three); spaces within a number, hyphens and `+` are rejected. Country codes and leading zeroes are not
+  normalised, so `6591234567` and `91234567` are treated as different numbers.
+* Email duplicate checks are case-sensitive: `Alice@example.com` and `alice@example.com` are treated as
+  different addresses. Aliases such as `alice+work@example.com` are not matched to `alice@example.com`.
+  Check existing records before adding a debtor under a different spelling of the same contact.
+* Deleted IDs are not reused after saving and restarting, even when the last debtor is deleted.
 
 Examples:
 * `add n/Olaf Go p/91234567 e/olaf.letnonego@example.com a/H4M8+3J3, Kunlun Station, Antarctica o/S$1,250.00`
@@ -177,8 +184,9 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/OUTSTANDING_AMOU
 * Existing values will be updated to the input values.
 * Use `o/OUTSTANDING_AMOUNT` to replace the outstanding amount. It accepts the same non-negative currency values as
   `add`, such as `o/S$1,250.00` and `o/0`.
-* Phone numbers and email addresses use exact matching for uniqueness. Country codes, leading zeroes, email case,
-  and email aliases are not normalised.
+* Changing a phone number or email to one already used by another active debtor is rejected, including when
+  that other debtor is hidden by a search. Phone numbers and email addresses use exact matching for uniqueness;
+  country codes, leading zeroes, email case, and email aliases are not normalised.
 * The persistent debtor ID and interaction notes are preserved.
 * When editing tags, all of the debtor's existing tags are removed; adding tags is not cumulative.
 * To remove all of a debtor's tags, enter `t/` without a tag after it.
@@ -221,9 +229,14 @@ Deletes the specified debtor from OSPS.
 
 Format: `delete INDEX`
 
+* Leading zeros are accepted. Very large indexes are rejected with the displayed list's valid range;
+  indexes longer than 100 significant digits are abbreviated in feedback. There is no input digit cap.
+
 * Deletes the debtor at the specified `INDEX`.
 * The index refers to the one-based position in the currently displayed debtor list, including `find` results.
 * After deletion, the list refreshes and the current filter remains active.
+* Deleting a debtor also removes that debtor's interaction notes. Other debtors keep their persistent IDs,
+  outstanding amounts, and notes; their displayed indexes may change as the list closes the gap.
 * The index **must be a positive integer** 1, 2, 3, …​
 * For an index outside the displayed list, the error gives the displayed count and valid range. If no debtors are shown,
   run `list` or adjust the `find` query.
