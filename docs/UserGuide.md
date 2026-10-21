@@ -150,7 +150,8 @@ Format: `note --id DEBTOR_ID --text NOTE_TEXT`
 * `NOTE_TEXT` must not be blank. Ordinary punctuation is allowed, and there is no arbitrary note-length limit.
 * The `--id` and `--text` parameters can be provided in either order.
 * The tokens `--id` and `--text` are reserved for command parameters and cannot appear inside `NOTE_TEXT`.
-  Other tokens beginning with `--`, such as `--identifier`, are rejected as unknown options even inside note text.
+  Other words beginning with `--`, such as `--identifier`, are kept as part of the note text after `--text`.
+  Unknown options before `--text` or in the `--id` value are rejected.
 * The note is saved with the debtor and is preserved after restarting the application.
 * If saving fails, OSPS reports an error, but the note remains in memory during the current session. It is not
   guaranteed to be on disk or to survive a restart. Resolve the save problem and verify the data after saving

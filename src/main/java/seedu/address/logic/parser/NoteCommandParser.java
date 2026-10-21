@@ -24,8 +24,11 @@ public class NoteCommandParser implements Parser<NoteCommand> {
 
     @Override
     public NoteCommand parse(String args) throws ParseException {
-        rejectUnknownOptions(args);
         ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(args, PREFIX_DEBTOR_ID, PREFIX_NOTE_TEXT);
+        rejectUnknownOptions(argMultimap.getPreamble());
+        for (String idValue : argMultimap.getAllValues(PREFIX_DEBTOR_ID)) {
+            rejectUnknownOptions(idValue);
+        }
         if (!argMultimap.getPreamble().isEmpty()
                 || argMultimap.getValue(PREFIX_DEBTOR_ID).isEmpty()
                 || argMultimap.getValue(PREFIX_NOTE_TEXT).isEmpty()) {
@@ -42,13 +45,10 @@ public class NoteCommandParser implements Parser<NoteCommand> {
         return new NoteCommand(debtorId, noteText);
     }
 
-    private void rejectUnknownOptions(String args) throws ParseException {
-        Matcher matcher = LONG_OPTION_TOKEN.matcher(args);
+    private void rejectUnknownOptions(String parameterText) throws ParseException {
+        Matcher matcher = LONG_OPTION_TOKEN.matcher(parameterText);
         while (matcher.find()) {
-            String option = matcher.group();
-            if (!option.equals(PREFIX_DEBTOR_ID.toString()) && !option.equals(PREFIX_NOTE_TEXT.toString())) {
-                throw new ParseException(String.format(MESSAGE_UNKNOWN_OPTION, option));
-            }
+            throw new ParseException(String.format(MESSAGE_UNKNOWN_OPTION, matcher.group()));
         }
     }
 

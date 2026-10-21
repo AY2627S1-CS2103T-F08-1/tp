@@ -77,10 +77,20 @@ public class NoteCommandParserTest {
     public void parse_unknownOption_throwsParseException() {
         assertParseFailure(parser, " --unknown value --id 2 --text Called debtor.",
                 String.format(NoteCommandParser.MESSAGE_UNKNOWN_OPTION, "--unknown"));
-        assertParseFailure(parser, " --id 2 --text Called debtor. --unknown value",
+        assertParseFailure(parser, " --id 2 --unknown value --text Called debtor.",
                 String.format(NoteCommandParser.MESSAGE_UNKNOWN_OPTION, "--unknown"));
-        assertParseFailure(parser, " --id 2 --text Asked debtor to use the --identifier portal.",
-                String.format(NoteCommandParser.MESSAGE_UNKNOWN_OPTION, "--identifier"));
+        assertParseFailure(parser, " --text Called debtor. --id 2 --unknown value",
+                String.format(NoteCommandParser.MESSAGE_UNKNOWN_OPTION, "--unknown"));
+    }
+
+    @Test
+    public void parse_optionLikeWordsInText_preservesNoteText() {
+        assertParseSuccess(parser, " --id 2 --text Asked debtor to use the --identifier portal.",
+                new NoteCommand(2, "Asked debtor to use the --identifier portal."));
+        assertParseSuccess(parser, " --id 2 --text Called debtor. --unknown value",
+                new NoteCommand(2, "Called debtor. --unknown value"));
+        assertParseSuccess(parser, " --text Use --identifier portal. --id 2",
+                new NoteCommand(2, "Use --identifier portal."));
     }
 
     @Test
