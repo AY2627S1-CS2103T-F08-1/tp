@@ -122,7 +122,7 @@ public class LogicManagerTest {
                 "note --id " + debtor.getDebtorId() + " --text    ",
                 "note --id 0 --text Should not be saved.",
                 "note --id " + debtor.getDebtorId() + " --id 2 --text Should not be saved.",
-                "note --id " + debtor.getDebtorId() + " --text Should not be saved. --unknown value")) {
+                "note --id " + debtor.getDebtorId() + " --unknown value --text Should not be saved.")) {
             assertThrows(ParseException.class, () -> logic.execute(invalidCommand));
             assertEquals(originalPersons, model.getAddressBook().getPersonList());
             assertEquals(originalSavedData, Files.readString(savedAddressBookPath));
@@ -137,7 +137,7 @@ public class LogicManagerTest {
     public void execute_noteStorageThrowsIoException_keepsNoteInMemoryButNotOnDisk() throws Exception {
         Person debtor = model.addPerson(new PersonBuilder().withName("Alice Tan").build());
         Path savedAddressBookPath = temporaryFolder.resolve("addressBook.json");
-        logic.execute(ListCommand.COMMAND_WORD);
+        new JsonAddressBookStorage(savedAddressBookPath).saveAddressBook(model.getAddressBook());
         String originalSavedData = Files.readString(savedAddressBookPath);
         JsonAddressBookStorage failingStorage = new JsonAddressBookStorage(savedAddressBookPath) {
             @Override
