@@ -235,6 +235,8 @@ Format: `delete INDEX`
 * Deletes the debtor at the specified `INDEX`.
 * The index refers to the one-based position in the currently displayed debtor list, including `find` results.
 * After deletion, the list refreshes and the current filter remains active.
+* Deleting a debtor also removes that debtor's interaction notes. Other debtors keep their persistent IDs,
+  outstanding amounts, and notes; their displayed indexes may change as the list closes the gap.
 * The index **must be a positive integer** 1, 2, 3, …​
 * For an index outside the displayed list, the error gives the displayed count and valid range. If no debtors are shown,
   run `list` or adjust the `find` query.
