@@ -200,6 +200,27 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_saveFailsThenStorageRecovers_exitRetriesPendingChanges() throws Exception {
+        Path addressBookPath = temporaryFolder.resolve("recoveringAddressBook.json");
+        FailsOnceAddressBookStorage addressBookStorage = new FailsOnceAddressBookStorage(addressBookPath);
+        Logic retryingLogic = createLogic(new ModelManager(), addressBookStorage);
+        String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
+                + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
+
+        assertThrows(CommandException.class, () -> retryingLogic.execute(addCommand));
+        assertEquals(1, addressBookStorage.getSaveAttemptCount());
+
+        retryingLogic.execute("list");
+        assertEquals(1, addressBookStorage.getSaveAttemptCount());
+
+        CommandResult exitResult = retryingLogic.execute("exit");
+        assertTrue(exitResult.isExit());
+        assertEquals(2, addressBookStorage.getSaveAttemptCount());
+        assertEquals(List.of(new PersonBuilder(AMY).withTags().build()),
+                addressBookStorage.readAddressBook().orElseThrow().getPersonList());
+    }
+
+    @Test
     public void execute_validCommand_success() throws Exception {
         String listCommand = ListCommand.COMMAND_WORD;
         assertCommandSuccess(listCommand,
@@ -362,6 +383,27 @@ public class LogicManagerTest {
         public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
             saveAttemptCount++;
             throw DUMMY_IO_EXCEPTION;
+        }
+
+        int getSaveAttemptCount() {
+            return saveAttemptCount;
+        }
+    }
+
+    private static class FailsOnceAddressBookStorage extends JsonAddressBookStorage {
+        private int saveAttemptCount;
+
+        FailsOnceAddressBookStorage(Path filePath) {
+            super(filePath);
+        }
+
+        @Override
+        public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+            saveAttemptCount++;
+            if (saveAttemptCount == 1) {
+                throw DUMMY_IO_EXCEPTION;
+            }
+            super.saveAddressBook(addressBook);
         }
 
         int getSaveAttemptCount() {

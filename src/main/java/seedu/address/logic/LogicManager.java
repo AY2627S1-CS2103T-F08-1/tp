@@ -30,6 +30,7 @@ public class LogicManager implements Logic {
     private final Model model;
     private final Storage storage;
     private final AddressBookParser addressBookParser;
+    private boolean hasUnsavedAddressBookChanges;
 
     /**
      * Constructs a {@code LogicManager} with the given {@code Model} and {@code Storage}.
@@ -49,8 +50,13 @@ public class LogicManager implements Logic {
         commandResult = command.execute(model);
 
         if (command.shouldSaveAddressBook()) {
+            hasUnsavedAddressBookChanges = true;
+        }
+
+        if (hasUnsavedAddressBookChanges && (command.shouldSaveAddressBook() || commandResult.isExit())) {
             try {
                 storage.saveAddressBook(model.getAddressBook());
+                hasUnsavedAddressBookChanges = false;
             } catch (AccessDeniedException e) {
                 throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
             } catch (IOException ioe) {
