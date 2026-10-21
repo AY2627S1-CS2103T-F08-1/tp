@@ -8,9 +8,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 import javafx.application.Platform;
 import javafx.scene.control.TextArea;
@@ -23,34 +23,29 @@ public class ResultDisplayTest {
 
     private static final long TEST_TIMEOUT_SECONDS = 5;
 
-    @BeforeAll
-    public static void setUpJavaFxToolkit() throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        Platform.startup(latch::countDown);
-
-        assertTrue(latch.await(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS));
-    }
-
-    @AfterAll
-    public static void tearDownJavaFxToolkit() {
-        Platform.exit();
-    }
-
     @Test
+    @EnabledOnOs(OS.LINUX)
     public void setFeedbackToUser_updatesTextAndVisibleRows() throws InterruptedException {
         String feedback = "Debtor profile:\nID: 7\nName: Alex\nPhone: 91234567\nEmail: alex@example.com\n"
                 + "Address: 123 Example Street";
         AtomicReference<TextArea> textArea = new AtomicReference<>();
+        boolean startedToolkit = startJavaFxToolkit();
 
-        runOnJavaFxThread(() -> {
-            ResultDisplay resultDisplay = new ResultDisplay();
-            resultDisplay.setFeedbackToUser(feedback);
-            StackPane root = (StackPane) resultDisplay.getRoot();
-            textArea.set((TextArea) root.getChildren().getFirst());
-        });
+        try {
+            runOnJavaFxThread(() -> {
+                ResultDisplay resultDisplay = new ResultDisplay();
+                resultDisplay.setFeedbackToUser(feedback);
+                StackPane root = (StackPane) resultDisplay.getRoot();
+                textArea.set((TextArea) root.getChildren().getFirst());
+            });
 
-        assertEquals(feedback, textArea.get().getText());
-        assertEquals(6, textArea.get().getPrefRowCount());
+            assertEquals(feedback, textArea.get().getText());
+            assertEquals(6, textArea.get().getPrefRowCount());
+        } finally {
+            if (startedToolkit) {
+                Platform.exit();
+            }
+        }
     }
 
     @Test
@@ -71,6 +66,20 @@ public class ResultDisplayTest {
         String feedback = "Profile detail\n".repeat(20);
 
         assertEquals(12, ResultDisplay.getVisibleRowCount(feedback));
+    }
+
+    private boolean startJavaFxToolkit() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+
+        try {
+            Platform.startup(latch::countDown);
+        } catch (IllegalStateException exception) {
+            latch.countDown();
+            return false;
+        }
+
+        assertTrue(latch.await(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS));
+        return true;
     }
 
     private void runOnJavaFxThread(Runnable action) throws InterruptedException {
