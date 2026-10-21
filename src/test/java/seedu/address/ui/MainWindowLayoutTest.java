@@ -18,12 +18,12 @@ import seedu.address.MainApp;
 public class MainWindowLayoutTest {
 
     @Test
-    public void fxml_resultDisplayPlaceholder_allowsContentDrivenGrowth() throws IOException {
+    public void fxml_resultDisplayPlaceholder_growsWhenWindowGrows() throws IOException {
         String mainWindowFxml = readFxml("MainWindow.fxml");
         String resultDisplayPlaceholder = getElement(mainWindowFxml, "resultDisplayPlaceholder");
 
         assertTrue(resultDisplayPlaceholder.contains("minHeight=\"100\""));
-        assertTrue(resultDisplayPlaceholder.contains("VBox.vgrow=\"NEVER\""));
+        assertTrue(resultDisplayPlaceholder.contains("VBox.vgrow=\"ALWAYS\""));
         assertFalse(resultDisplayPlaceholder.contains("prefHeight="));
         assertFalse(resultDisplayPlaceholder.contains("maxHeight="));
     }
