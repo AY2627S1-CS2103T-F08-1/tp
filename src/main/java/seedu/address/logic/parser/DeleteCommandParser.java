@@ -2,9 +2,6 @@ package seedu.address.logic.parser;
 
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 
-import java.math.BigInteger;
-
-import seedu.address.commons.core.index.Index;
 import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 
@@ -20,32 +17,24 @@ public class DeleteCommandParser implements Parser<DeleteCommand> {
      */
     public DeleteCommand parse(String args) throws ParseException {
         String trimmedArgs = args.trim();
-        try {
-            Index index = ParserUtil.parseIndex(trimmedArgs);
-            return new DeleteCommand(index);
-        } catch (ParseException pe) {
-            if (isPositiveUnsignedInteger(trimmedArgs)) {
-                return DeleteCommand.fromOneBased(new BigInteger(trimmedArgs));
+        int firstNonZero = -1;
+        for (int index = 0; index < trimmedArgs.length(); index++) {
+            char character = trimmedArgs.charAt(index);
+            if (character < '0' || character > '9') {
+                throw invalidIndex();
             }
-            throw new ParseException(
-                    String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE), pe);
+            if (firstNonZero < 0 && character != '0') {
+                firstNonZero = index;
+            }
         }
+        if (firstNonZero < 0) {
+            throw invalidIndex();
+        }
+        return DeleteCommand.fromOneBasedDecimal(trimmedArgs.substring(firstNonZero));
     }
 
-    private boolean isPositiveUnsignedInteger(String value) {
-        if (value.isEmpty()) {
-            return false;
-        }
-
-        boolean hasNonZeroDigit = false;
-        for (int index = 0; index < value.length(); index++) {
-            char character = value.charAt(index);
-            if (character < '0' || character > '9') {
-                return false;
-            }
-            hasNonZeroDigit |= character != '0';
-        }
-        return hasNonZeroDigit;
+    private ParseException invalidIndex() {
+        return new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE));
     }
 
 }
