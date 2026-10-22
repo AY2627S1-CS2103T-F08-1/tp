@@ -75,6 +75,17 @@ public class JsonAdaptedPersonTest {
     }
 
     @Test
+    public void toModelType_nullInteractionNote_throwsIllegalValueException() {
+        List<JsonAdaptedInteractionNote> notes = new ArrayList<>();
+        notes.add(null);
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                null, VALID_OUTSTANDING_AMOUNT, notes, VALID_TAGS);
+
+        assertThrows(IllegalValueException.class, JsonAdaptedPerson.NULL_INTERACTION_NOTE_MESSAGE,
+                person::toModelType);
+    }
+
+    @Test
     public void toModelType_invalidOutstandingAmount_throwsIllegalValueException() {
         JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
                 INVALID_OUTSTANDING_AMOUNT, VALID_TAGS);

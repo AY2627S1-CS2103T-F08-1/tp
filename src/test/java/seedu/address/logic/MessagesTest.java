@@ -72,4 +72,12 @@ public class MessagesTest {
 
         assertTrue(profile.indexOf(secondNote.getText()) < profile.indexOf(firstNote.getText()));
     }
+
+    @Test
+    public void formatProfile_identicalNotes_showsBoth() {
+        InteractionNote note = new InteractionNote(LocalDateTime.of(2026, 10, 10, 10, 0), "Called debtor.");
+        Person debtor = new PersonBuilder().withInteractionNotes(List.of(note, note)).build();
+
+        assertTrue(Messages.formatProfile(debtor).endsWith("\n- " + note + "\n- " + note));
+    }
 }

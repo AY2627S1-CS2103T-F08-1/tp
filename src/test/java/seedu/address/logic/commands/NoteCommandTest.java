@@ -70,6 +70,19 @@ public class NoteCommandTest {
     }
 
     @Test
+    public void execute_sameTextAndTimestamp_retainsBothNotes() throws Exception {
+        Person debtor = model.getAddressBook().getPersonList().getFirst();
+        NoteCommand command = new NoteCommand(debtor.getDebtorId(), VALID_NOTE, EARLIER_CLOCK);
+
+        command.execute(model);
+        command.execute(model);
+
+        List<InteractionNote> notes = model.getAddressBook().getPersonList().getFirst().getInteractionNotes();
+        InteractionNote expectedNote = new InteractionNote(LocalDateTime.of(2026, 10, 9, 14, 30), VALID_NOTE);
+        assertEquals(List.of(expectedNote, expectedNote), notes);
+    }
+
+    @Test
     public void execute_invalidDebtorId_throwsCommandException() {
         NoteCommand noteCommand = new NoteCommand(999, VALID_NOTE, EARLIER_CLOCK);
 

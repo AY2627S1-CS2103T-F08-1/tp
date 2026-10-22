@@ -118,14 +118,49 @@ public class LogicManagerTest {
         String originalSavedData = Files.readString(savedAddressBookPath);
         List<Person> originalPersons = List.copyOf(model.getAddressBook().getPersonList());
 
-        assertThrows(ParseException.class, () -> logic.execute("note --id " + debtor.getDebtorId()
-                + " --text    "));
-        assertEquals(originalPersons, model.getAddressBook().getPersonList());
-        assertEquals(originalSavedData, Files.readString(savedAddressBookPath));
+        for (String invalidCommand : List.of(
+                "note --id " + debtor.getDebtorId() + " --text    ",
+                "note --id 0 --text Should not be saved.",
+                "note --id " + debtor.getDebtorId() + " --id 2 --text Should not be saved.",
+                "note --id " + debtor.getDebtorId() + " --unknown value --text Should not be saved.")) {
+            assertThrows(ParseException.class, () -> logic.execute(invalidCommand));
+            assertEquals(originalPersons, model.getAddressBook().getPersonList());
+            assertEquals(originalSavedData, Files.readString(savedAddressBookPath));
+        }
 
         assertThrows(CommandException.class, () -> logic.execute("note --id 999 --text Should not be saved."));
         assertEquals(originalPersons, model.getAddressBook().getPersonList());
         assertEquals(originalSavedData, Files.readString(savedAddressBookPath));
+    }
+
+    @Test
+    public void execute_noteStorageThrowsIoException_keepsNoteInMemoryButNotOnDisk() throws Exception {
+        Person debtor = model.addPerson(new PersonBuilder().withName("Alice Tan").build());
+        Path savedAddressBookPath = temporaryFolder.resolve("addressBook.json");
+        new JsonAddressBookStorage(savedAddressBookPath).saveAddressBook(model.getAddressBook());
+        String originalSavedData = Files.readString(savedAddressBookPath);
+        JsonAddressBookStorage failingStorage = new JsonAddressBookStorage(savedAddressBookPath) {
+            @Override
+            public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+                throw DUMMY_IO_EXCEPTION;
+            }
+        };
+        logic = new LogicManager(model, new StorageManager(failingStorage,
+                new JsonUserPrefsStorage(temporaryFolder.resolve("userPrefs.json"))));
+
+        String noteText = "Called debtor; promised payment.";
+        String noteCommand = "note --id " + debtor.getDebtorId() + " --text " + noteText;
+        assertThrows(CommandException.class,
+                String.format(LogicManager.FILE_OPS_ERROR_FORMAT, DUMMY_IO_EXCEPTION.getMessage()), () ->
+                        logic.execute(noteCommand));
+
+        Person updatedDebtor = model.getAddressBook().getPersonList().getFirst();
+        assertEquals(1, updatedDebtor.getInteractionNotes().size());
+        assertEquals(noteText, updatedDebtor.getInteractionNotes().getFirst().getText());
+        assertEquals(originalSavedData, Files.readString(savedAddressBookPath));
+        JsonAddressBookStorage savedStorage = new JsonAddressBookStorage(savedAddressBookPath);
+        Person reloadedDebtor = savedStorage.readAddressBook().get().getPersonList().getFirst();
+        assertTrue(reloadedDebtor.getInteractionNotes().isEmpty());
     }
 
     @Test
