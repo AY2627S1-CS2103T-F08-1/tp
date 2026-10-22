@@ -11,10 +11,10 @@ import seedu.address.ui.MainWindow;
 public class BrandingTest {
 
     @Test
-    public void releaseIdentity_matchesV13Branding() {
+    public void releaseIdentity_matchesV14Branding() {
         assertEquals("OSPS", MainApp.APP_NAME);
-        assertEquals("v1.3", MainApp.VERSION);
-        assertEquals("OSPS v1.3", MainWindow.APP_TITLE);
+        assertEquals("v1.4", MainApp.VERSION);
+        assertEquals("OSPS v1.4", MainWindow.APP_TITLE);
         assertEquals("Exiting OSPS as requested ...", ExitCommand.MESSAGE_EXIT_ACKNOWLEDGEMENT);
     }
 
