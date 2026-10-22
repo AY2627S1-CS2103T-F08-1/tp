@@ -37,6 +37,19 @@ public class MainWindowLayoutTest {
         assertTrue(resultDisplay.contains("wrapText=\"true\""));
     }
 
+    @Test
+    public void fxml_windowTitle_matchesApplicationTitle() throws IOException {
+        String mainWindowFxml = readFxml("MainWindow.fxml");
+        int rootStart = mainWindowFxml.indexOf("<fx:root");
+        int rootEnd = mainWindowFxml.indexOf('>', rootStart);
+
+        assertTrue(rootStart >= 0);
+        assertTrue(rootEnd > rootStart);
+        String rootElement = mainWindowFxml.substring(rootStart, rootEnd + 1);
+
+        assertTrue(rootElement.contains("title=\"" + MainWindow.APP_TITLE + "\""));
+    }
+
     private String readFxml(String fxmlFileName) throws IOException {
         try (InputStream inputStream = MainApp.class.getResourceAsStream("/view/" + fxmlFileName)) {
             assertNotNull(inputStream);
