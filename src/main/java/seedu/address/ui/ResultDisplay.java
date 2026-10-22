@@ -13,6 +13,9 @@ public class ResultDisplay extends UiPart<Region> {
 
     private static final String FXML = "ResultDisplay.fxml";
 
+    private static final int MIN_VISIBLE_ROWS = 4;
+    private static final int MAX_VISIBLE_ROWS = 12;
+
     @FXML
     private TextArea resultDisplay;
 
@@ -23,6 +26,12 @@ public class ResultDisplay extends UiPart<Region> {
     public void setFeedbackToUser(String feedbackToUser) {
         requireNonNull(feedbackToUser);
         resultDisplay.setText(feedbackToUser);
+        resultDisplay.setPrefRowCount(getVisibleRowCount(feedbackToUser));
+    }
+
+    static int getVisibleRowCount(String text) {
+        int lineCount = text.split("\\R", -1).length;
+        return Math.min(MAX_VISIBLE_ROWS, Math.max(MIN_VISIBLE_ROWS, lineCount));
     }
 
 }
