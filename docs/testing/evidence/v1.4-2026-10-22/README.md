@@ -63,8 +63,9 @@ python run_smoke.py
 ```
 
 The runner creates fresh folders under `runs-verified`; use a new copy of this directory for each run.
-Compare JSON records and hashes, not only screenshots. `SHA256SUMS.json` covers the committed raw evidence;
-the driver and runner are included for inspection and reproduction.
+Compare JSON records and hashes, not only screenshots. `SHA256SUMS.json` hashes the committed Git blob bytes
+(text uses Git's normalized line endings; a Windows checkout can use CRLF). Raw feedback retains trailing
+spaces emitted by the app. The driver and runner are included for inspection and reproduction.
 
 ## Outstanding release work
 
