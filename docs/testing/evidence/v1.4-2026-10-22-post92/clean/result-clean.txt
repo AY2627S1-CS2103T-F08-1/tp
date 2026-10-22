@@ -1,0 +1,6 @@
+PASS loaded Stage title is OSPS v1.4
+PASS packaged MainApp version is v1.4
+PASS command list rejected=false elapsedMs=3
+FEEDBACK 6 active debtors listed.
+PASS first-run sample data loaded
+PASS TOTAL 4
