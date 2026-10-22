@@ -1,0 +1,80 @@
+PASS command list rejected=false elapsedMs=3
+FEEDBACK 9 active debtors listed.
+PASS command show --id 1 rejected=false elapsedMs=9
+FEEDBACK Debtor profile
+ID: 1
+Name: Alex Yeoh
+Phone: 87438807
+Email: alexyeoh@example.com
+Address: Blk 30 Geylang Street 29, #06-40
+Outstanding: S$0.00
+Tags: [friends]
+Interaction history (newest first):
+- [2026-10-22 16:16] v1.3 control note to preserve
+PASS v1.3 notes loaded
+PASS command add n/Release Smoke Target p/81110004 e/release.smoke.target@example.com a/4 Test Lane o/1250.00 rejected=false elapsedMs=21
+FEEDBACK New debtor added: ID: 10; Release Smoke Target; Phone: 81110004; Email: release.smoke.target@example.com; Address: 4 Test Lane; Outstanding: S$1,250.00; Tags: 
+PASS command list rejected=false elapsedMs=1
+FEEDBACK 10 active debtors listed.
+PASS command find Target rejected=false elapsedMs=2
+FEEDBACK 1 matching debtor found.
+PASS filtered displayed index differs from persistent ID
+PASS command show --id 10 rejected=false elapsedMs=1
+FEEDBACK Debtor profile
+ID: 10
+Name: Release Smoke Target
+Phone: 81110004
+Email: release.smoke.target@example.com
+Address: 4 Test Lane
+Outstanding: S$1,250.00
+Tags: None
+Interaction history (newest first):
+No interaction notes recorded.
+PASS command note --id 10 --text Candidate smoke note before deletion rejected=false elapsedMs=4
+FEEDBACK Added interaction note to debtor ID 10: [2026-10-22 16:19] Candidate smoke note before deletion
+PASS command edit 1 a/4 Updated Test Lane rejected=false elapsedMs=5
+FEEDBACK Edited debtor: ID: 10; Release Smoke Target; Phone: 81110004; Email: release.smoke.target@example.com; Address: 4 Updated Test Lane; Outstanding: S$1,250.00; Tags: 
+PASS edit preserves ID, amount, and note
+PASS command show --id 10 rejected=false elapsedMs=1
+FEEDBACK Debtor profile
+ID: 10
+Name: Release Smoke Target
+Phone: 81110004
+Email: release.smoke.target@example.com
+Address: 4 Updated Test Lane
+Outstanding: S$1,250.00
+Tags: None
+Interaction history (newest first):
+- [2026-10-22 16:19] Candidate smoke note before deletion
+PASS command find Target rejected=false elapsedMs=1
+FEEDBACK 1 matching debtor found.
+PASS command show --id 10 rejected=false elapsedMs=0
+FEEDBACK Debtor profile
+ID: 10
+Name: Release Smoke Target
+Phone: 81110004
+Email: release.smoke.target@example.com
+Address: 4 Updated Test Lane
+Outstanding: S$1,250.00
+Tags: None
+Interaction history (newest first):
+- [2026-10-22 16:19] Candidate smoke note before deletion
+PASS command delete 1 rejected=false elapsedMs=5
+FEEDBACK Deleted debtor: ID: 10; Release Smoke Target; Phone: 81110004; Email: release.smoke.target@example.com; Address: 4 Updated Test Lane; Outstanding: S$1,250.00; Tags: 
+PASS delete success identifies edited target
+PASS filter remains active after deletion
+PASS survivor count unchanged
+PASS surviving ID/fields/amount/notes 1 unchanged
+PASS surviving ID/fields/amount/notes 2 unchanged
+PASS surviving ID/fields/amount/notes 3 unchanged
+PASS surviving ID/fields/amount/notes 4 unchanged
+PASS surviving ID/fields/amount/notes 5 unchanged
+PASS surviving ID/fields/amount/notes 6 unchanged
+PASS surviving ID/fields/amount/notes 7 unchanged
+PASS surviving ID/fields/amount/notes 8 unchanged
+PASS surviving ID/fields/amount/notes 9 unchanged
+PASS command show --id 10 rejected=true elapsedMs=2
+FEEDBACK No active debtor with ID 10 exists. It may have been deleted.
+PASS command list rejected=false elapsedMs=44
+FEEDBACK 9 active debtors listed.
+PASS TOTAL 29

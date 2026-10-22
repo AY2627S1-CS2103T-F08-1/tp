@@ -1,0 +1,83 @@
+{
+  "issue": 69,
+  "testedAtSgt": "2026-10-22T16:21:38.210520+08:00",
+  "status": "CANDIDATE SMOKE PASS; FINAL RELEASE HASH PENDING; BRANDING DEFECT OPEN",
+  "environment": {
+    "os": "Windows-11-10.0.26100-SP0",
+    "java": "openjdk version \"25.0.3\" 2026-04-21 LTS\nOpenJDK Runtime Environment Temurin-25.0.3+9 (build 25.0.3+9-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.3+9 (build 25.0.3+9-LTS, mixed mode, sharing)",
+    "execution": "Windows JavaFX GUI on packaged JAR; command field ActionEvent driver; no source-class substitution"
+  },
+  "candidate": {
+    "commitSha": "0706f3eb7f155083012c12336252adc994496da7",
+    "jarSha256": "738f6896139a670395feb338529fbb3fd864a9e523cdfeb6470d7178fe5346d6",
+    "jarBytes": 12519448,
+    "buildCommand": "gradlew.bat clean check coverage shadowJar",
+    "buildResult": "PASS; 398 tests, 0 failures, 0 errors, 1 skipped (Linux-only ResultDisplayTest on Windows)",
+    "masterJavaCi": "https://github.com/AY2627S1-CS2103T-F08-1/tp/actions/runs/39719437732",
+    "codecov": "https://app.codecov.io/gh/AY2627S1-CS2103T-F08-1/tp/commit/0706f3eb7f155083012c12336252adc994496da7"
+  },
+  "fixture": {
+    "sourceRelease": "https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.3",
+    "sourceJarSha256": "2ba23591c8e8901ea77c2976fd0106a266531a373ddfc6796c5e54c515123287",
+    "dataSha256": "c49931f17bf1febd577f81ff712bd360660b05214ab8eaf2e3420ec7fec34194",
+    "recordCount": 9,
+    "description": "Official v1.3 sample records plus three synthetic QA records with 0, 125.00, and 900.25 balances; two timestamped notes written by v1.3 JAR"
+  },
+  "caseResults": {
+    "clean\\result-clean.txt": {
+      "status": "PASS",
+      "assertions": 2
+    },
+    "workflow-final\\result-restart.txt": {
+      "status": "PASS",
+      "assertions": 5
+    },
+    "workflow-final\\result-workflow.txt": {
+      "status": "PASS",
+      "assertions": 29
+    },
+    "first\\result-first.txt": {
+      "status": "PASS",
+      "assertions": 14
+    },
+    "middle\\result-middle.txt": {
+      "status": "PASS",
+      "assertions": 14
+    },
+    "last\\result-last.txt": {
+      "status": "PASS",
+      "assertions": 14
+    },
+    "only\\result-only.txt": {
+      "status": "PASS",
+      "assertions": 8
+    },
+    "invalid\\result-invalid.txt": {
+      "status": "PASS",
+      "assertions": 117
+    }
+  },
+  "millionDigitUiCommandMs": {
+    "populatedList": 32,
+    "emptyFilteredList": 218
+  },
+  "persistedSurvivorsEqualFixture": true,
+  "invalidCommandsPreserveStoredBytes": true,
+  "restart": "New JVM loads the same candidate JAR and folder; deleted ID absent, control note preserved",
+  "executableStartup": "java --enable-native-access=ALL-UNNAMED -jar osps.jar in an otherwise empty folder; process alive after 5 seconds, Starting UI logged, no SEVERE; externally terminated after startup. Separate GUI driver checks orderly stop/restart.",
+  "defects": [
+    "https://github.com/AY2627S1-CS2103T-F08-1/tp/issues/90"
+  ],
+  "releaseAssetHashComparison": {
+    "status": "PENDING: no published v1.4 asset",
+    "uploadedSha256": null,
+    "matchesTestedJar": null
+  },
+  "limitations": [
+    "Automated GUI smoke on Windows only, not a manual three-platform test.",
+    "Million-digit text is supplied through TextField.setText followed by its ActionEvent; this does not test clipboard paste performance.",
+    "Screenshots are unedited JavaFX scene snapshots excluding window decorations.",
+    "Initial driver attempt forgot to reapply find after edit (which resets filter); corrected driver follows checklist; failed attempt retained locally and excluded from passing results.",
+    "Candidate is not declared final release-ready while branding #90 and uploaded-hash comparison remain outstanding."
+  ]
+}

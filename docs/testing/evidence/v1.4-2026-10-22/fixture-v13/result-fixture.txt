@@ -1,0 +1,24 @@
+PASS command list rejected=false elapsedMs=33
+FEEDBACK 6 active debtors listed.
+PASS command add n/Release QA Cedar p/81110001 e/release.qa.cedar@example.com a/1 Test Lane o/125.00 rejected=false elapsedMs=10
+FEEDBACK New debtor added: ID: 7; Release QA Cedar; Phone: 81110001; Email: release.qa.cedar@example.com; Address: 1 Test Lane; Outstanding: S$125.00; Tags: 
+PASS command add n/Release QA Maple p/81110002 e/release.qa.maple@example.com a/2 Test Lane o/900.25 rejected=false elapsedMs=3
+FEEDBACK New debtor added: ID: 8; Release QA Maple; Phone: 81110002; Email: release.qa.maple@example.com; Address: 2 Test Lane; Outstanding: S$900.25; Tags: 
+PASS command add n/Release QA Birch p/81110003 e/release.qa.birch@example.com a/3 Test Lane o/0 rejected=false elapsedMs=3
+FEEDBACK New debtor added: ID: 9; Release QA Birch; Phone: 81110003; Email: release.qa.birch@example.com; Address: 3 Test Lane; Outstanding: S$0.00; Tags: 
+PASS command note --id 7 --text v1.3 fixture Cedar note rejected=false elapsedMs=5
+FEEDBACK Added interaction note to debtor ID 7: [2026-10-22 16:16] v1.3 fixture Cedar note
+PASS command note --id 1 --text v1.3 control note to preserve rejected=false elapsedMs=2
+FEEDBACK Added interaction note to debtor ID 1: [2026-10-22 16:16] v1.3 control note to preserve
+PASS command show --id 1 rejected=false elapsedMs=5
+FEEDBACK Debtor profile
+ID: 1
+Name: Alex Yeoh
+Phone: 87438807
+Email: alexyeoh@example.com
+Address: Blk 30 Geylang Street 29, #06-40
+Outstanding: S$0.00
+Tags: [friends]
+Interaction history (newest first):
+- [2026-10-22 16:16] v1.3 control note to preserve
+PASS TOTAL 7
