@@ -12,7 +12,7 @@ Tags: None
 Interaction history (newest first):
 No interaction notes recorded.
 PASS command delete 9 rejected=false elapsedMs=18
-FEEDBACK Deleted debtor: ID: 9; Release QA Birch; Phone: 81110003; Email: release.qa.birch@example.com; Address: 3 Test Lane; Outstanding: S$0.00; Tags: 
+FEEDBACK Deleted debtor: ID: 9; Release QA Birch; Phone: 81110003; Email: release.qa.birch@example.com; Address: 3 Test Lane; Outstanding: S$0.00; Tags:
 PASS success names intended last debtor
 PASS survivor count unchanged
 PASS surviving ID/fields/amount/notes 1 unchanged

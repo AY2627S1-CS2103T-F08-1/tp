@@ -3,7 +3,7 @@ FEEDBACK 9 active debtors listed.
 PASS command clear rejected=false elapsedMs=12
 FEEDBACK All debtor records have been cleared from OSPS.
 PASS command add n/Only Debtor p/82220001 e/only@example.com a/Only Lane o/75.50 rejected=false elapsedMs=10
-FEEDBACK New debtor added: ID: 1; Only Debtor; Phone: 82220001; Email: only@example.com; Address: Only Lane; Outstanding: S$75.50; Tags: 
+FEEDBACK New debtor added: ID: 1; Only Debtor; Phone: 82220001; Email: only@example.com; Address: Only Lane; Outstanding: S$75.50; Tags:
 PASS command show --id 1 rejected=false elapsedMs=2
 FEEDBACK Debtor profile
 ID: 1
@@ -16,7 +16,7 @@ Tags: None
 Interaction history (newest first):
 No interaction notes recorded.
 PASS command delete 1 rejected=false elapsedMs=2
-FEEDBACK Deleted debtor: ID: 1; Only Debtor; Phone: 82220001; Email: only@example.com; Address: Only Lane; Outstanding: S$75.50; Tags: 
+FEEDBACK Deleted debtor: ID: 1; Only Debtor; Phone: 82220001; Email: only@example.com; Address: Only Lane; Outstanding: S$75.50; Tags:
 PASS success names intended only debtor
 PASS survivor count unchanged
 PASS command show --id 1 rejected=true elapsedMs=1

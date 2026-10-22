@@ -13,7 +13,7 @@ Interaction history (newest first):
 - [2026-10-22 16:16] v1.3 control note to preserve
 PASS v1.3 notes loaded
 PASS command add n/Release Smoke Target p/81110004 e/release.smoke.target@example.com a/4 Test Lane o/1250.00 rejected=false elapsedMs=21
-FEEDBACK New debtor added: ID: 10; Release Smoke Target; Phone: 81110004; Email: release.smoke.target@example.com; Address: 4 Test Lane; Outstanding: S$1,250.00; Tags: 
+FEEDBACK New debtor added: ID: 10; Release Smoke Target; Phone: 81110004; Email: release.smoke.target@example.com; Address: 4 Test Lane; Outstanding: S$1,250.00; Tags:
 PASS command list rejected=false elapsedMs=1
 FEEDBACK 10 active debtors listed.
 PASS command find Target rejected=false elapsedMs=2
@@ -33,7 +33,7 @@ No interaction notes recorded.
 PASS command note --id 10 --text Candidate smoke note before deletion rejected=false elapsedMs=4
 FEEDBACK Added interaction note to debtor ID 10: [2026-10-22 16:19] Candidate smoke note before deletion
 PASS command edit 1 a/4 Updated Test Lane rejected=false elapsedMs=5
-FEEDBACK Edited debtor: ID: 10; Release Smoke Target; Phone: 81110004; Email: release.smoke.target@example.com; Address: 4 Updated Test Lane; Outstanding: S$1,250.00; Tags: 
+FEEDBACK Edited debtor: ID: 10; Release Smoke Target; Phone: 81110004; Email: release.smoke.target@example.com; Address: 4 Updated Test Lane; Outstanding: S$1,250.00; Tags:
 PASS edit preserves ID, amount, and note
 PASS command show --id 10 rejected=false elapsedMs=1
 FEEDBACK Debtor profile
@@ -60,7 +60,7 @@ Tags: None
 Interaction history (newest first):
 - [2026-10-22 16:19] Candidate smoke note before deletion
 PASS command delete 1 rejected=false elapsedMs=5
-FEEDBACK Deleted debtor: ID: 10; Release Smoke Target; Phone: 81110004; Email: release.smoke.target@example.com; Address: 4 Updated Test Lane; Outstanding: S$1,250.00; Tags: 
+FEEDBACK Deleted debtor: ID: 10; Release Smoke Target; Phone: 81110004; Email: release.smoke.target@example.com; Address: 4 Updated Test Lane; Outstanding: S$1,250.00; Tags:
 PASS delete success identifies edited target
 PASS filter remains active after deletion
 PASS survivor count unchanged
