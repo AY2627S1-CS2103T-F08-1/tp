@@ -9,6 +9,16 @@ import seedu.address.model.Model;
 public abstract class Command {
 
     /**
+     * Returns whether executing this command can change address-book data that must be saved.
+     *
+     * <p>The default is {@code true} so that new commands persist safely unless they explicitly declare
+     * themselves read-only.
+     */
+    public boolean shouldSaveAddressBook() {
+        return true;
+    }
+
+    /**
      * Executes the command and returns the result message.
      *
      * @param model {@code Model} which the command should operate on.

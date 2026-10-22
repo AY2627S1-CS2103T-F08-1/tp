@@ -21,6 +21,10 @@ public class ListCommand extends Command {
     public static final String MESSAGE_SINGLE_DEBTOR = "1 active debtor listed.";
     public static final String MESSAGE_MULTIPLE_DEBTORS = "%1$d active debtors listed.";
 
+    @Override
+    public boolean shouldSaveAddressBook() {
+        return false;
+    }
 
     @Override
     public CommandResult execute(Model model) {

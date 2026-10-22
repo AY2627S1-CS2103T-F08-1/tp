@@ -35,6 +35,11 @@ public class ShowCommand extends Command {
     }
 
     @Override
+    public boolean shouldSaveAddressBook() {
+        return false;
+    }
+
+    @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
         Optional<Person> debtor = model.getAddressBook().getPersonList().stream()
