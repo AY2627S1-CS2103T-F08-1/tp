@@ -41,7 +41,9 @@ public class PersonListPanel extends UiPart<Region> {
                 setGraphic(null);
                 setText(null);
             } else {
-                Region card = new PersonCard(person, getIndex() + 1).getRoot();
+                PersonCard personCard = new PersonCard(person, getIndex() + 1);
+                personCard.bindContentWidth(personListView.widthProperty());
+                Region card = personCard.getRoot();
                 card.prefWidthProperty().bind(personListView.widthProperty().subtract(20));
                 setGraphic(card);
             }

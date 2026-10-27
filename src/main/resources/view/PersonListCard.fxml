@@ -29,13 +29,13 @@
                maxWidth="1.7976931348623157E308" wrapText="true" HBox.hgrow="ALWAYS" />
       </HBox>
       <FlowPane fx:id="tags" />
-      <Label fx:id="phone" styleClass="cell_small_label" text="\$phone" minWidth="0.0"
+      <Label fx:id="phone" styleClass="cell_small_label" text="\$phone" minWidth="0.0" prefWidth="0.0"
              maxWidth="1.7976931348623157E308" wrapText="true" />
-      <Label fx:id="outstandingAmount" styleClass="cell_small_label" text="\$outstandingAmount" minWidth="0.0"
+      <Label fx:id="outstandingAmount" styleClass="cell_small_label" text="\$outstandingAmount" minWidth="0.0" prefWidth="0.0"
              maxWidth="1.7976931348623157E308" wrapText="true" />
-      <Label fx:id="address" styleClass="cell_small_label" text="\$address" minWidth="0.0"
+      <Label fx:id="address" styleClass="cell_small_label" text="\$address" minWidth="0.0" prefWidth="0.0"
              maxWidth="1.7976931348623157E308" wrapText="true" />
-      <Label fx:id="email" styleClass="cell_small_label" text="\$email" minWidth="0.0"
+      <Label fx:id="email" styleClass="cell_small_label" text="\$email" minWidth="0.0" prefWidth="0.0"
              maxWidth="1.7976931348623157E308" wrapText="true" />
     </VBox>
   </GridPane>
