@@ -17,9 +17,13 @@ import org.junit.jupiter.api.condition.OS;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.collections.FXCollections;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
 
 /**
@@ -70,6 +74,33 @@ public class UiRuntimeTest {
             assertNotNull(address);
             assertEquals(363.0, address.getMaxWidth());
             listWidth.set(300.0);
+            assertEquals(250.0, address.getMaxWidth());
+        });
+    }
+
+    @Test
+    public void personListPanel_cellWidthTracksListViewport() throws InterruptedException {
+        runOnJavaFxThread(() -> {
+            Person person = new PersonBuilder().build();
+            PersonListPanel panel = new PersonListPanel(FXCollections.observableArrayList(person));
+            @SuppressWarnings("unchecked")
+            ListView<Person> listView = (ListView<Person>) panel.getRoot().lookup("#personListView");
+            listView.resize(413.0, 600.0);
+
+            PersonListPanel.PersonListViewCell cell =
+                    (PersonListPanel.PersonListViewCell) listView.getCellFactory().call(listView);
+            cell.updateIndex(0);
+            cell.updateItem(person, false);
+            Region card = (Region) cell.getGraphic();
+            Label address = (Label) card.lookup("#address");
+
+            assertNotNull(card);
+            assertNotNull(address);
+            assertEquals(393.0, card.getPrefWidth());
+            assertEquals(363.0, address.getMaxWidth());
+
+            listView.resize(300.0, 600.0);
+            assertEquals(280.0, card.getPrefWidth());
             assertEquals(250.0, address.getMaxWidth());
         });
     }
