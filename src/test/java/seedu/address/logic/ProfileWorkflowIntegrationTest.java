@@ -67,8 +67,8 @@ public class ProfileWorkflowIntegrationTest {
 
         logic.execute("delete 1");
         String expectedMessage = String.format(ShowCommand.MESSAGE_DEBTOR_NOT_FOUND, alice.getDebtorId());
-        CommandException exception = assertThrows(CommandException.class,
-                () -> logic.execute("show --id " + alice.getDebtorId()));
+        CommandException exception = assertThrows(CommandException.class, (
+        ) -> logic.execute("show --id " + alice.getDebtorId()));
         assertEquals(expectedMessage, exception.getMessage());
 
         String remainingProfile = logic.execute("show --id " + bob.getDebtorId()).getFeedbackToUser();
