@@ -9,7 +9,12 @@ title: Developer Guide
 
 ## **Acknowledgements**
 
-* _{List the sources of reused or adapted ideas, code, documentation, and third-party libraries here, with links to the originals.}_
+* OSPS is based on [AddressBook-Level3](https://github.com/se-edu/addressbook-level3) by the
+  [SE-EDU initiative](https://se-education.org). The original project structure, documentation layout, and selected
+  diagrams were adapted for OSPS.
+* The project uses [JavaFX](https://openjfx.io/) for its graphical interface,
+  [Jackson](https://github.com/FasterXML/jackson) for JSON persistence, and
+  [JUnit 5](https://junit.org/junit5/) for automated testing.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -36,7 +41,7 @@ The following provides a quick overview of the main components and their interac
 
 **Main components of the architecture**
 
-**`Main`** (consisting of classes [`Main`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/Main.java) and [`MainApp`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/MainApp.java)) is in charge of the app launch and shut down.
+**`Main`** (consisting of classes [`Main`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/java/seedu/address/Main.java) and [`MainApp`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/java/seedu/address/MainApp.java)) is in charge of the app launch and shut down.
 * At app launch, it initializes the other components in the correct sequence, and connects them up with each other.
 * At shut down, it shuts down the other components and invokes cleanup methods where necessary.
 
@@ -68,13 +73,13 @@ The sections below give more details of each component.
 
 ### UI component
 
-The **API** of this component is specified in [`Ui.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/ui/Ui.java)
+The **API** of this component is specified in [`Ui.java`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/java/seedu/address/ui/Ui.java)
 
 ![Structure of the UI Component](images/UiClassDiagram.png)
 
 The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDisplay`, `PersonListPanel`, and `StatusBarFooter`. All of these, including `MainWindow`, inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts.
 
-The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/ui/MainWindow.java).
+The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/java/seedu/address/ui/MainWindow.java).
 
 The `UI` component,
 
@@ -85,7 +90,7 @@ The `UI` component,
 
 ### Logic component
 
-**API** : [`Logic.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/logic/Logic.java)
+**API** : [`Logic.java`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/java/seedu/address/logic/Logic.java)
 
 Here's a (partial) class diagram of the `Logic` component:
 
@@ -139,7 +144,7 @@ are allocated on load.
 Duplicate checks compare exact phone/email values against all other active debtors, including filtered-out
 records. Email matching is currently case-sensitive; phone country codes are not normalised.
 
-**API** : [`Model.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/model/Model.java)
+**API** : [`Model.java`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/java/seedu/address/model/Model.java)
 
 <img src="images/ModelClassDiagram.png" width="450" />
 
@@ -160,7 +165,7 @@ The `Model` component,
 
 ### Storage component
 
-**API** : [`Storage.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/storage/Storage.java)
+**API** : [`Storage.java`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/java/seedu/address/storage/Storage.java)
 
 <img src="images/StorageClassDiagram.png" width="550" />
 
@@ -339,11 +344,18 @@ The following activity diagram summarizes what happens when a user executes a ne
   * Pros: Will use less memory (e.g. for `delete`, just save the person being deleted).
   * Cons: We must ensure that the implementation of each individual command is correct.
 
-_{more aspects and alternatives to be added}_
 
-### \[Proposed\] Data archiving
+### Deferred data archiving
 
-_{Explain here how the data archiving feature will be implemented}_
+Data archiving is not implemented in v1.4. Deleting a debtor currently removes that debtor and their interaction
+history from the active address book, while the monotonically increasing debtor-ID counter prevents a deleted ID from
+being reused.
+
+A future archive could move settled debtors into a separate read-only collection instead of deleting them. Keeping the
+archive separate from the active list would preserve historical records without slowing the primary list and search
+workflows. Such an extension would require an explicit archive command, storage-schema migration, rules for restoring
+archived records, and clear retention/privacy policies. Until those requirements are defined, OSPS deliberately avoids
+presenting deletion as archival.
 
 
 --------------------------------------------------------------------------------------------------------------------
@@ -374,7 +386,11 @@ _{Explain here how the data archiving feature will be implemented}_
 
 ### User stories
 
-Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (could have) - `*`
+Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (could have) - `*`.
+
+This table records both implemented requirements and product-roadmap ideas. The
+[User Guide](UserGuide.md#features) is the authoritative description of commands available in the current release;
+sections explicitly labelled “Proposed” or “Deferred” below are not implemented.
 
 | Priority | As a …​ | I want to …​ | So that I can …​ |
 | -------- | ------ | ------------ | ---------------- |
@@ -564,100 +580,97 @@ with a representative dataset of 1,000 debtor records.
 
 ## **Appendix: Instructions for manual testing**
 
-Given below are instructions to test the app manually.
+The following steps exercise the release JAR using only documented commands. Run each scenario in a separate writable
+folder when its initial data state matters.
 
-<div markdown="span" class="alert alert-info">:information_source: **Note:** These instructions only provide a starting point for testers to work on;
-testers are expected to do more *exploratory* testing.
-
+<div markdown="span" class="alert alert-info">:information_source: **Note:** These instructions provide deterministic
+regression checks, but they do not replace exploratory testing on each supported operating system.
 </div>
 
-### Launch and shutdown
+### Launch, shutdown, and window preferences
 
-1. Initial launch
+1. Copy the release JAR into an empty writable folder.
+1. Open a terminal in that folder and run `java -jar osps.jar`.<br>
+   Expected: OSPS opens with sample debtor records. A `data` folder is created after the first data-changing command.
+1. Resize and move the main window, then close OSPS using the **File → Exit** menu.
+1. Run `java -jar osps.jar` again.<br>
+   Expected: The last window size and position are restored, subject to the available screen bounds.
 
-   1. Download the JAR file and copy it into an empty folder.
+### Adding and editing a debtor
 
-   1. Double-click the JAR file.<br>
-      Expected: The GUI opens with a set of sample contacts. The window size may not be optimal.
-
-1. Saving window preferences
-
-   1. Resize the window to an optimal size. Move the window to a different location. Close the window.
-
-   1. Relaunch the app by double-clicking the JAR file.<br>
-       Expected: The most recent window size and location are retained.
-
-1. _{ more test cases …​ }_
+1. Run:
+   `add n/Olaf Go p/91234567 e/olaf.letnonego@example.com a/H4M8+3J3, Kunlun Station, Antarctica o/S$1,250.00 t/new`.<br>
+   Expected: One debtor is added with a new persistent ID and an outstanding amount of `S$1,250.00`.
+1. Run `list`, note Olaf's displayed index and persistent ID, then run
+   `edit INDEX n/Olaf Updated o/S$500.00 t/follow-up`, replacing `INDEX` with the displayed index.<br>
+   Expected: The same persistent ID now shows the updated name, amount, and replacement tag.
+1. Try adding another debtor with Olaf's phone or email.<br>
+   Expected: The command is rejected and neither debtor is changed.
 
 ### Finding and listing debtors
 
-1. Finding debtors by name
+1. With the sample data loaded, run `find alex DAVID`.<br>
+   Expected: Only `Alex Yeoh` and `David Li` are shown, in ascending persistent-ID order.
+1. Run `find Ale`.<br>
+   Expected: No debtor is shown because name keywords must match complete words.
+1. Run `find 87438807`.<br>
+   Expected: Only the debtor with that complete phone number is shown.
+1. Run `find 8743`.<br>
+   Expected: The partial phone number does not match `87438807`.
+1. Run `list`.<br>
+   Expected: The complete active-debtor list is restored.
+1. Run `list extra` and then `find` with no keyword.<br>
+   Expected: Each command is rejected and the displayed data remains unchanged.
 
-   1. Prerequisites: Launch OSPS with the sample data. Confirm that `Alex Yeoh` and `David Li` are present.
+### Showing profiles and recording interaction history
 
-   1. Test case: `find alex DAVID`<br>
-      Expected: Only `Alex Yeoh` and `David Li` are shown, in ascending persistent debtor ID order. The status message
-      is `2 matching debtors found.` This also verifies case-insensitive matching and `OR` semantics.
+1. Run `list` and choose an active debtor's persistent ID, referred to below as `ID`.
+1. Run `show --id ID`.<br>
+   Expected: The result contains that debtor's ID, name, phone, email, address, outstanding amount, tags, and either
+   their interaction notes or an explicit no-notes message.
+1. Run `find KEYWORD` using a keyword that hides the chosen debtor, then run `show --id ID` again.<br>
+   Expected: The same debtor profile is shown because `show` selects by persistent ID, not displayed index.
+1. Run `note --id ID --text Called debtor; promised payment on Friday.`, followed by `show --id ID`.<br>
+   Expected: The profile includes the new timestamped note.
+1. Add a second note and show the profile again.<br>
+   Expected: Both notes are present, with the newer note displayed first.
+1. Run `show --id 0`, `show --id -1`, and `show --id 999999`.<br>
+   Expected: Each invalid or missing target produces an error and does not display another debtor's profile.
 
-   1. Test case: `find Ale`<br>
-      Expected: No debtor is shown, because a name keyword must match a complete word. The status message explains
-      that no debtors matched.
+### Deleting a debtor and checking stale selections
 
-2. Finding a debtor by phone number
+1. Run `list`, record the persistent ID of the first displayed debtor, and run `delete 1`.<br>
+   Expected: The first displayed debtor is removed and the success message identifies that debtor.
+1. Run `show --id ID` using the deleted persistent ID.<br>
+   Expected: OSPS reports that no active debtor with that ID exists; it never substitutes a different debtor.
+1. Run `list` and show a remaining debtor by their persistent ID.<br>
+   Expected: Remaining records retain their original IDs and profile details.
+1. Run `delete 0`, `delete -1`, `delete x`, and an index larger than the displayed list.<br>
+   Expected: Every command is rejected without changing the model or saved file.
 
-   1. Prerequisites: Launch OSPS with the sample data containing `Alex Yeoh` with phone number `87438807`.
-
-   1. Test case: `find 87438807`<br>
-      Expected: Only `Alex Yeoh` is shown and the status message is `1 matching debtor found.`
-
-   1. Test case: `find 8743`<br>
-      Expected: No debtor is shown in the sample data. The keyword `8743` does not match the phone number `87438807`,
-      because phone matching requires the complete stored number. Due to the command's `OR` semantics, a debtor would
-      still be shown if their name contained the complete word `8743`.
-
-3. Restoring the complete list
-
-   1. Prerequisites: Run a `find` command that leaves a filtered result visible.
-
-   1. Test case: `list`<br>
-      Expected: Every active debtor is shown in ascending persistent debtor ID order. Each card includes its displayed
-      index, persistent ID, name, phone, outstanding amount, email, address, and tags. The status message reports the
-      number of active debtors.
-
-   1. Test case: `list extra`<br>
-      Expected: The command is rejected because `list` accepts no parameters, and the currently displayed data is not
-      modified.
-
-4. Rejecting an empty search
-
-   1. Test case: `find` (with no keyword)<br>
-      Expected: The command is rejected with the `find` usage message, and the currently displayed data is not
-      modified.
-
-### Deleting a person
-
-For the v1.4 release-candidate workflow, fixture preparation, and evidence manifest, use the
+For the detailed release-JAR deletion matrix and evidence format, see the
 [deletion regression and release-JAR smoke-test checklist](testing/v1.4-release-smoke-test.md).
 
-1. Deleting a person while all persons are being shown
+### Long content, scrolling, and resizing
 
-   1. Prerequisites: List all persons using the `list` command, with multiple persons in the list.
+1. Add a debtor with a long but valid name and address, then add a multi-sentence interaction note.
+1. Run `show --id ID` for that debtor.<br>
+   Expected: Profile text wraps rather than being clipped, and every profile field remains accessible by scrolling.
+1. Make the window taller and shorter.<br>
+   Expected: The result area receives additional vertical space when the window grows; at the minimum supported window
+   size, the command box, result area, debtor list, and status bar remain usable.
+1. Narrow and widen the window.<br>
+   Expected: Debtor-card text wraps and tags flow to additional rows without obscuring the persistent ID.
 
-   1. Test case: `delete 1`<br>
-      Expected: The first contact is deleted from the list. The status message shows the deleted contact's details.
+### Persistence and edited data files
 
-   1. Test case: `delete 0`<br>
-      Expected: No person is deleted. The status message shows error details.
-
-   1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
-      Expected: Similar to previous.
-
-1. _{ more test cases …​ }_
-
-### Saving data
-
-1. Dealing with missing/corrupted data files
-
-   1. _{Explain how to simulate missing or corrupted data files and state the expected behavior.}_
-
-1. _{ more test cases …​ }_
+1. Add or edit a debtor and add an interaction note. Record the profile shown by `show --id ID`.
+1. Exit normally and restart OSPS from the same folder.
+1. Run `show --id ID` again.<br>
+   Expected: All edited fields and interaction notes match the pre-restart profile.
+1. Exit OSPS, back up `data/addressbook.json`, and delete the original file. Restart OSPS.<br>
+   Expected: OSPS starts with sample data. The data file is recreated after a successful data-changing command.
+1. Exit OSPS, replace `data/addressbook.json` with text that is not valid JSON, and restart OSPS.<br>
+   Expected: OSPS starts with no debtor records and logs a data-loading warning. The corrupted file remains untouched
+   until a successful data-changing command writes a valid replacement.
+1. Restore the backup after completing the test.
