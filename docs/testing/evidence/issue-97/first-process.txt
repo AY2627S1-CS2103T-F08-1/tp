@@ -1,0 +1,63 @@
+RELEASE DATA PATH: /private/tmp/osps97-process-restart-rst64p4d/data/addressbook.json
+> clear
+All debtor records have been cleared from OSPS.
+> add n/Alpha Tester p/98880001 e/alpha@example.com a/Alpha Street o/123.45
+New debtor added: ID: 1; Alpha Tester; Phone: 98880001; Email: alpha@example.com; Address: Alpha Street; Outstanding: S$123.45; Tags: 
+> add n/Beta Tester p/98880002 e/beta@example.com a/Beta Street o/50
+New debtor added: ID: 2; Beta Tester; Phone: 98880002; Email: beta@example.com; Address: Beta Street; Outstanding: S$50.00; Tags: 
+> note --id 1 --text Called debtor; callback at 5pm?
+Added interaction note to debtor ID 1: [2026-10-29 03:06] Called debtor; callback at 5pm?
+> note --text Called debtor; callback at 5pm? --id 1
+Added interaction note to debtor ID 1: [2026-10-29 03:06] Called debtor; callback at 5pm?
+> note --id 1 --text Use the --identifier portal.  Follow-up?
+Added interaction note to debtor ID 1: [2026-10-29 03:06] Use the --identifier portal.  Follow-up?
+> find Beta
+1 matching debtor found.
+> note --id 1 --text Contacted while hidden by the filter.
+Added interaction note to debtor ID 1: [2026-10-29 03:06] Contacted while hidden by the filter.
+> list
+2 active debtors listed.
+> edit 1 n/Alpha Updated o/0
+Edited debtor: ID: 1; Alpha Updated; Phone: 98880001; Email: alpha@example.com; Address: Alpha Street; Outstanding: S$0.00; Tags: 
+> find Beta
+1 matching debtor found.
+> delete 1
+Deleted debtor: ID: 2; Beta Tester; Phone: 98880002; Email: beta@example.com; Address: Beta Street; Outstanding: S$50.00; Tags: 
+> exit
+Exiting OSPS as requested ...
+Oct 29, 2026 3:06:28 AM seedu.address.MainApp init
+INFO: =============================[ Initializing AddressBook ]===========================
+Oct 29, 2026 3:06:28 AM seedu.address.MainApp initPrefs
+INFO: Using preference file : preferences.json
+Oct 29, 2026 3:06:28 AM seedu.address.MainApp initPrefs
+INFO: Creating new preference file preferences.json
+Oct 29, 2026 3:06:28 AM seedu.address.MainApp initModelManager
+INFO: Using data file : data/addressbook.json
+Oct 29, 2026 3:06:28 AM seedu.address.MainApp initModelManager
+INFO: Creating a new data file data/addressbook.json populated with sample debtor records.
+Oct 29, 2026 3:06:28 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][clear]
+Oct 29, 2026 3:06:28 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][add]
+Oct 29, 2026 3:06:28 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][add]
+Oct 29, 2026 3:06:28 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][note]
+Oct 29, 2026 3:06:28 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][note]
+Oct 29, 2026 3:06:28 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][note]
+Oct 29, 2026 3:06:28 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][find]
+Oct 29, 2026 3:06:28 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][note]
+Oct 29, 2026 3:06:28 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][list]
+Oct 29, 2026 3:06:28 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][edit]
+Oct 29, 2026 3:06:28 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][find]
+Oct 29, 2026 3:06:28 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][delete]
+Oct 29, 2026 3:06:28 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][exit]

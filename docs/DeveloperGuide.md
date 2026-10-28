@@ -176,9 +176,16 @@ The `Storage` component,
 * stores each debtor's ordered interaction history through `JsonAdaptedInteractionNote`; invalid entries, including
   JSON `null` notes, are reported as data-loading errors.
 
+Interaction notes retain their insertion order in JSON, including identical text and timestamps. Profile formatting
+sorts notes by descending timestamp and uses reverse insertion order for ties. Editing a debtor preserves the full
+history. `NoteHistoryWorkflowTest` verifies these behaviours together across editing, JSON reload and `show`.
+
 `LogicManager` applies a valid `note` command to the in-memory model before saving. If saving fails, it reports a
 command error but does not roll back the in-memory note. A failure before writing leaves the prior file unchanged;
 the file-writing path is not atomic, so a failure during writing does not guarantee an intact prior file.
+Pending changes are retried by the next successful data-changing command or the `exit` command, after storage access
+is restored. Read-only commands do not retry the write. The workflow tests simulate both an I/O failure and denied
+access before writing, then check that an exit retry saves the existing note exactly once.
 
 ### Common classes
 

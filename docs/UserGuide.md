@@ -153,9 +153,12 @@ Format: `note --id DEBTOR_ID --text NOTE_TEXT`
   Other words beginning with `--`, such as `--identifier`, are kept as part of the note text after `--text`.
   Unknown options before `--text` or in the `--id` value are rejected.
 * The note is saved with the debtor and is preserved after restarting the application.
+* Repeating the same note records a separate interaction each time. Editing the debtor preserves all existing notes.
 * If saving fails, OSPS reports an error, but the note remains in memory during the current session. It is not
   guaranteed to be on disk or to survive a restart. Resolve the save problem and verify the data after saving
   successfully. Check the profile before entering the note again to avoid adding a duplicate.
+  Once the save problem is resolved, the next successful data-changing command or the `exit` command retries saving.
+  Read-only commands such as `show` and `list` do not retry a failed save.
 
 Example:
 * `note --id 1 --text Called debtor, promised payment on Friday.`
@@ -165,6 +168,8 @@ Example:
 Shows the complete profile of the active debtor identified by persistent debtor ID. The profile includes the
 debtor's name, phone number, email address, address, outstanding amount, tags, and interaction history. Interaction
 notes are shown newest first. If the debtor has no notes, the profile states that no interaction notes are recorded.
+If two notes have exactly the same timestamp, the later-added note is shown first; neither note is removed.
+Displayed times have minute precision, so two notes showing the same time may have different stored timestamps.
 
 Format: `show --id DEBTOR_ID`
 

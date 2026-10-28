@@ -1,0 +1,128 @@
+[
+  {
+    "path": "src/main/java/seedu/address/logic/commands/NoteCommand.java",
+    "dashboard_lines": 88,
+    "git_blame_lines": 88,
+    "matches": true
+  },
+  {
+    "path": "src/main/java/seedu/address/model/person/InteractionNote.java",
+    "dashboard_lines": 85,
+    "git_blame_lines": 85,
+    "matches": true
+  },
+  {
+    "path": "docs/DeveloperGuide.md",
+    "dashboard_lines": 84,
+    "git_blame_lines": 114,
+    "matches": false
+  },
+  {
+    "path": "src/test/java/seedu/address/logic/LogicManagerTest.java",
+    "dashboard_lines": 83,
+    "git_blame_lines": 83,
+    "matches": true
+  },
+  {
+    "path": "src/test/java/seedu/address/logic/commands/NoteCommandTest.java",
+    "dashboard_lines": 83,
+    "git_blame_lines": 83,
+    "matches": true
+  },
+  {
+    "path": "src/test/java/seedu/address/logic/parser/NoteCommandParserTest.java",
+    "dashboard_lines": 76,
+    "git_blame_lines": 76,
+    "matches": true
+  },
+  {
+    "path": "src/main/java/seedu/address/logic/parser/NoteCommandParser.java",
+    "dashboard_lines": 49,
+    "git_blame_lines": 49,
+    "matches": true
+  },
+  {
+    "path": "src/test/java/seedu/address/model/person/InteractionNoteTest.java",
+    "dashboard_lines": 49,
+    "git_blame_lines": 49,
+    "matches": true
+  },
+  {
+    "path": "src/main/java/seedu/address/storage/JsonAdaptedInteractionNote.java",
+    "dashboard_lines": 45,
+    "git_blame_lines": 45,
+    "matches": true
+  },
+  {
+    "path": "src/main/java/seedu/address/model/person/Person.java",
+    "dashboard_lines": 25,
+    "git_blame_lines": 25,
+    "matches": true
+  },
+  {
+    "path": "src/test/java/seedu/address/storage/JsonAdaptedPersonTest.java",
+    "dashboard_lines": 21,
+    "git_blame_lines": 21,
+    "matches": true
+  },
+  {
+    "path": "src/test/java/seedu/address/storage/JsonAddressBookStorageTest.java",
+    "dashboard_lines": 21,
+    "git_blame_lines": 21,
+    "matches": true
+  },
+  {
+    "path": "src/main/java/seedu/address/storage/JsonAdaptedPerson.java",
+    "dashboard_lines": 20,
+    "git_blame_lines": 20,
+    "matches": true
+  },
+  {
+    "path": "docs/UserGuide.md",
+    "dashboard_lines": 18,
+    "git_blame_lines": 21,
+    "matches": false
+  },
+  {
+    "path": "src/test/java/seedu/address/testutil/PersonBuilder.java",
+    "dashboard_lines": 11,
+    "git_blame_lines": 11,
+    "matches": true
+  },
+  {
+    "path": "src/test/java/seedu/address/logic/MessagesTest.java",
+    "dashboard_lines": 8,
+    "git_blame_lines": 8,
+    "matches": true
+  },
+  {
+    "path": "src/test/java/seedu/address/logic/parser/AddressBookParserTest.java",
+    "dashboard_lines": 8,
+    "git_blame_lines": 8,
+    "matches": true
+  },
+  {
+    "path": "docs/AboutUs.md",
+    "dashboard_lines": 4,
+    "git_blame_lines": 4,
+    "matches": true
+  },
+  {
+    "path": "docs/diagrams/StorageClassDiagram.puml",
+    "dashboard_lines": 2,
+    "git_blame_lines": 2,
+    "matches": true
+  },
+  {
+    "path": "src/main/java/seedu/address/logic/parser/AddressBookParser.java",
+    "dashboard_lines": 2,
+    "git_blame_lines": 2,
+    "matches": true
+  },
+  {
+    "path": "src/main/java/seedu/address/logic/commands/EditCommand.java",
+    "dashboard_lines": 1,
+    "git_blame_lines": 1,
+    "matches": true
+  }
+]
