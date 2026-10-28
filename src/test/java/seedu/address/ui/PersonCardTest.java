@@ -23,6 +23,8 @@ public class PersonCardTest {
 
     private static final Path PERSON_CARD_SOURCE =
             Path.of("src/main/java/seedu/address/ui/PersonCard.java");
+    private static final Path PERSON_LIST_PANEL_SOURCE =
+            Path.of("src/main/java/seedu/address/ui/PersonListPanel.java");
     private static final Pattern AMOUNT_BINDING = Pattern.compile(
             "outstandingAmount\\.setText\\(\\\"([^\\\"]*)\\\" \\+ person\\.getOutstandingAmount\\(\\)\\);");
 
@@ -68,8 +70,26 @@ public class PersonCardTest {
             assertTrue(labelElement.contains("minWidth=\"0.0\""));
             assertTrue(labelElement.contains("maxWidth=\"1.7976931348623157E308\""));
             assertTrue(labelElement.contains("wrapText=\"true\""));
+            if (!labelId.equals("name")) {
+                assertTrue(labelElement.contains("prefWidth=\"0.0\""));
+            }
         }
         assertTrue(getLabelElement(fxml, "name").contains("HBox.hgrow=\"ALWAYS\""));
+    }
+
+    @Test
+    public void listCell_cardWidthTracksListViewport() throws IOException {
+        String source = Files.readString(PERSON_LIST_PANEL_SOURCE);
+        String panelFxml;
+        try (InputStream inputStream = MainApp.class.getResourceAsStream("/view/PersonListPanel.fxml")) {
+            assertNotNull(inputStream);
+            panelFxml = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        }
+
+        assertTrue(source.contains(
+                "card.prefWidthProperty().bind(personListView.widthProperty().subtract(20));"));
+        assertTrue(source.contains("personCard.bindContentWidth(personListView.widthProperty());"));
+        assertTrue(panelFxml.contains("fx:id=\"personListView\" minWidth=\"0.0\""));
     }
 
     private String readPersonListCardFxml() throws IOException {

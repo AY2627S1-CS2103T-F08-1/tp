@@ -83,7 +83,7 @@ Each debtor card shows both a displayed index and a persistent debtor ID. In a h
 * Use the persistent ID with `show --id DEBTOR_ID` and `note --id DEBTOR_ID --text NOTE_TEXT`.
 * Use the displayed index with `delete INDEX` and `edit INDEX ...`.
 * A persistent ID stays with the same debtor until that debtor is deleted. A displayed index can change after a `find`,
-  `list`, `add`, or `delete` command.
+  `list`, `add`, `edit`, or `delete` command.
 
 ### Viewing help: `help`
 
@@ -192,6 +192,8 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/OUTSTANDING_AMOU
   that other debtor is hidden by a search. Phone numbers and email addresses use exact matching for uniqueness;
   country codes, leading zeroes, email case, and email aliases are not normalised.
 * The persistent debtor ID and interaction notes are preserved.
+* An active `find` filter remains applied after the edit. If an edited name no longer matches the active search,
+  that debtor leaves the filtered results; run `list` to restore every active debtor.
 * When editing tags, all of the debtor's existing tags are removed; adding tags is not cumulative.
 * To remove all of a debtor's tags, enter `t/` without a tag after it.
 
