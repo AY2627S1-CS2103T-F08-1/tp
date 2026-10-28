@@ -98,6 +98,11 @@ public class JsonAddressBookStorageTest {
     }
 
     @Test
+    public void readAddressBook_maximumDebtorId_throwsDataLoadingException() {
+        assertThrows(DataLoadingException.class, () -> readAddressBook("maximumDebtorIdAddressBook.json"));
+    }
+
+    @Test
     public void readAndSaveAddressBook_allInOrder_success() throws Exception {
         Path filePath = testFolder.resolve("TempAddressBook.json");
         AddressBook original = getTypicalAddressBook();

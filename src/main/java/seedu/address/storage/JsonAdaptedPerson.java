@@ -26,6 +26,7 @@ class JsonAdaptedPerson {
 
     public static final String MISSING_FIELD_MESSAGE_FORMAT = "Person's %s field is missing!";
     public static final String NULL_INTERACTION_NOTE_MESSAGE = "Interaction note entry cannot be null.";
+    public static final String DEBTOR_ID_OUT_OF_RANGE_MESSAGE = "Debtor ID exceeds the supported range.";
 
     private final String name;
     private final String phone;
@@ -154,6 +155,9 @@ class JsonAdaptedPerson {
         }
         if (debtorId != null && debtorId < 0) {
             throw new IllegalValueException(Person.MESSAGE_INVALID_DEBTOR_ID);
+        }
+        if (debtorId != null && debtorId == Integer.MAX_VALUE) {
+            throw new IllegalValueException(DEBTOR_ID_OUT_OF_RANGE_MESSAGE);
         }
         return new Person(modelName, modelPhone, modelEmail, modelAddress,
                 debtorId == null ? 0 : debtorId, modelOutstandingAmount, modelInteractionNotes, modelTags);
