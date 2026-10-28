@@ -1,11 +1,11 @@
 > add n/Alpha Tester p/98880001 e/alpha@example.com a/Alpha Street o/123.45
 Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
 INFO: ----------------[USER COMMAND][add]
-New debtor added: ID: 1; Alpha Tester; Phone: 98880001; Email: alpha@example.com; Address: Alpha Street; Outstanding: S$123.45; Tags: 
+New debtor added: ID: 1; Alpha Tester; Phone: 98880001; Email: alpha@example.com; Address: Alpha Street; Outstanding: S$123.45; Tags:
 > add n/Beta Tester p/98880002 e/beta@example.com a/Beta Street o/50
 Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
 INFO: ----------------[USER COMMAND][add]
-New debtor added: ID: 2; Beta Tester; Phone: 98880002; Email: beta@example.com; Address: Beta Street; Outstanding: S$50.00; Tags: 
+New debtor added: ID: 2; Beta Tester; Phone: 98880002; Email: beta@example.com; Address: Beta Street; Outstanding: S$50.00; Tags:
 > note --id 1 --text Called debtor; callback at 5pm?
 Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
 INFO: ----------------[USER COMMAND][note]
@@ -33,7 +33,7 @@ INFO: ----------------[USER COMMAND][list]
 > edit 1 n/Alpha Updated o/0
 Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
 INFO: ----------------[USER COMMAND][edit]
-Edited debtor: ID: 1; Alpha Updated; Phone: 98880001; Email: alpha@example.com; Address: Alpha Street; Outstanding: S$0.00; Tags: 
+Edited debtor: ID: 1; Alpha Updated; Phone: 98880001; Email: alpha@example.com; Address: Alpha Street; Outstanding: S$0.00; Tags:
 > find Beta
 Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
 INFO: ----------------[USER COMMAND][find]
@@ -41,7 +41,7 @@ INFO: ----------------[USER COMMAND][find]
 > delete 1
 Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
 INFO: ----------------[USER COMMAND][delete]
-Deleted debtor: ID: 2; Beta Tester; Phone: 98880002; Email: beta@example.com; Address: Beta Street; Outstanding: S$50.00; Tags: 
+Deleted debtor: ID: 2; Beta Tester; Phone: 98880002; Email: beta@example.com; Address: Beta Street; Outstanding: S$50.00; Tags:
 > list
 Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
 INFO: ----------------[USER COMMAND][list]

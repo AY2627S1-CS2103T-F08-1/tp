@@ -2,9 +2,9 @@ RELEASE DATA PATH: /private/tmp/osps97-process-restart-rst64p4d/data/addressbook
 > clear
 All debtor records have been cleared from OSPS.
 > add n/Alpha Tester p/98880001 e/alpha@example.com a/Alpha Street o/123.45
-New debtor added: ID: 1; Alpha Tester; Phone: 98880001; Email: alpha@example.com; Address: Alpha Street; Outstanding: S$123.45; Tags: 
+New debtor added: ID: 1; Alpha Tester; Phone: 98880001; Email: alpha@example.com; Address: Alpha Street; Outstanding: S$123.45; Tags:
 > add n/Beta Tester p/98880002 e/beta@example.com a/Beta Street o/50
-New debtor added: ID: 2; Beta Tester; Phone: 98880002; Email: beta@example.com; Address: Beta Street; Outstanding: S$50.00; Tags: 
+New debtor added: ID: 2; Beta Tester; Phone: 98880002; Email: beta@example.com; Address: Beta Street; Outstanding: S$50.00; Tags:
 > note --id 1 --text Called debtor; callback at 5pm?
 Added interaction note to debtor ID 1: [2026-10-29 03:06] Called debtor; callback at 5pm?
 > note --text Called debtor; callback at 5pm? --id 1
@@ -18,11 +18,11 @@ Added interaction note to debtor ID 1: [2026-10-29 03:06] Contacted while hidden
 > list
 2 active debtors listed.
 > edit 1 n/Alpha Updated o/0
-Edited debtor: ID: 1; Alpha Updated; Phone: 98880001; Email: alpha@example.com; Address: Alpha Street; Outstanding: S$0.00; Tags: 
+Edited debtor: ID: 1; Alpha Updated; Phone: 98880001; Email: alpha@example.com; Address: Alpha Street; Outstanding: S$0.00; Tags:
 > find Beta
 1 matching debtor found.
 > delete 1
-Deleted debtor: ID: 2; Beta Tester; Phone: 98880002; Email: beta@example.com; Address: Beta Street; Outstanding: S$50.00; Tags: 
+Deleted debtor: ID: 2; Beta Tester; Phone: 98880002; Email: beta@example.com; Address: Beta Street; Outstanding: S$50.00; Tags:
 > exit
 Exiting OSPS as requested ...
 Oct 29, 2026 3:06:28 AM seedu.address.MainApp init
