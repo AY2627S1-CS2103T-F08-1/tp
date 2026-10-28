@@ -56,13 +56,21 @@ public class AddCommandTest {
     @Test
     public void execute_exhaustedDebtorIds_throwsCommandExceptionWithoutChangingModel() {
         AddressBook addressBook = new AddressBook();
-        addressBook.setNextDebtorId(Integer.MAX_VALUE);
+        Person highestAssignablePerson = new PersonBuilder()
+                .withDebtorId(Integer.MAX_VALUE - 1)
+                .build();
+        addressBook.addPerson(highestAssignablePerson);
+
+        Person newPerson = new PersonBuilder()
+                .withName("Bob")
+                .withPhone("91234567")
+                .withEmail("bob@example.com")
+                .build();
         ModelStubWithAddressBook modelStub = new ModelStubWithAddressBook(addressBook);
 
-        assertThrows(CommandException.class, AddCommand.MESSAGE_ID_EXHAUSTED, () -> new AddCommand(
-                new PersonBuilder().build()).execute(modelStub));
-
-        assertTrue(addressBook.getPersonList().isEmpty());
+        assertThrows(CommandException.class, AddCommand.MESSAGE_ID_EXHAUSTED, (
+                ) -> new AddCommand(newPerson).execute(modelStub));
+        assertEquals(List.of(highestAssignablePerson), addressBook.getPersonList());
         assertEquals(Integer.MAX_VALUE, addressBook.getNextDebtorId());
     }
 
