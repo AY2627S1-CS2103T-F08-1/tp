@@ -57,6 +57,14 @@ public class AddressBookTest {
     }
 
     @Test
+    public void setNextDebtorId_reusedValue_throwsIllegalArgumentException() {
+        addressBook.addPerson(ALICE);
+
+        assertThrows(IllegalArgumentException.class, () -> addressBook.setNextDebtorId(1));
+        assertEquals(2, addressBook.getNextDebtorId());
+    }
+
+    @Test
     public void setPersons_invalidIds_preservesDataAndCounter() {
         addressBook.addPerson(ALICE);
         addressBook.setNextDebtorId(20);
