@@ -109,6 +109,8 @@ A debtor can have any number of tags, including zero.
 * `OUTSTANDING_AMOUNT` must be a non-negative number with at most two decimal places. An optional `S$` or `$` prefix
   and correctly grouped comma separators are accepted; for example, `0`, `S$0.00`, `$1250.5`, and `S$1,250.00`.
 * Negative values, malformed currency, and values with more than two decimal places are rejected.
+* Names must start and end with an alphanumeric character. Spaces, hyphens, and apostrophes are allowed within a
+  name; for example, `Anne-Marie` and `O'Neil` are valid.
 * Phone numbers and email addresses must be unique across active debtors. Debtors may share the same name.
 * Leading and trailing spaces around command values are removed. Phone numbers accept digits only (at least
   three); spaces within a number, hyphens and `+` are rejected. Country codes and leading zeroes are not
@@ -186,6 +188,7 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/OUTSTANDING_AMOU
   The index **must be a positive integer** 1, 2, 3, …​
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
+* Updated names follow the same rules as names provided to `add`.
 * Use `o/OUTSTANDING_AMOUNT` to replace the outstanding amount. It accepts the same non-negative currency values as
   `add`, such as `o/S$1,250.00` and `o/0`.
 * Changing a phone number or email to one already used by another active debtor is rejected, including when
