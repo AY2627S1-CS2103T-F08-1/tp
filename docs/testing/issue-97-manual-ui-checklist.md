@@ -1,6 +1,12 @@
-# Issue #97: remaining manual GUI checks
+# Issue #97: manual GUI checks
 
-These checks remain pending. Automated command/storage checks do not establish visual results.
+Alfred reported all checks below passed on 29 October 2026 after following this checklist with the released v1.4 JAR.
+He supplied profile output showing Alpha's ID, contact details, S$123.45 balance, both repeated interactions and the
+`--identifier` note, and confirmed correct rejection of invalid commands. He then confirmed completion of the full
+checklist, including scrolling, filtered deletion and GUI exit/relaunch. These are user-reported manual results;
+the agent did not operate the JavaFX window, and no GUI screenshots were supplied with the confirmation.
+
+Automated command/storage checks are recorded separately and do not establish visual results.
 Use the released v1.4 JAR in a new writable folder with synthetic data and Java 25. Record the JAR SHA-256, OS,
 Java version and actual results. Do not use the working folder that contains personal records.
 
@@ -56,12 +62,12 @@ full history and absence of Beta. Capture the post-restart result.
 
 | Check | Actual result / evidence |
 | --- | --- |
-| Repeated notes and punctuation readable | Pending |
-| Long-history scrolling and reduced-width readability | Pending |
-| Rejected input leaves history unchanged | Pending |
-| Edit updates visible details and preserves history | Pending |
-| Filtered deletion removes only Beta | Pending |
-| GUI exit/relaunch preserves ID, balance and full history | Pending |
+| Repeated notes and punctuation readable | Passed; profile text supplied by Alfred |
+| Long-history scrolling and reduced-width readability | Passed; Alfred's full-checklist confirmation |
+| Rejected input leaves history unchanged | Passed; Alfred confirmed rejection and full-checklist completion |
+| Edit updates visible details and preserves history | Passed; Alfred's full-checklist confirmation |
+| Filtered deletion removes only Beta | Passed; Alfred's full-checklist confirmation |
+| GUI exit/relaunch preserves ID, balance and full history | Passed; Alfred's full-checklist confirmation |
 
 Do not test exact equal timestamps by racing manual input. The deterministic fixed-clock automated test covers
 that condition; displayed timestamps have minute precision and may conceal different stored timestamps.
