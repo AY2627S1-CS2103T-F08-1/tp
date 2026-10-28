@@ -3,7 +3,7 @@ layout: page
 title: User Guide
 ---
 
-Orchestration and Scheduling of Payment Scheme (OSPS) v1.3 is a **desktop application for debt recovery agents**.
+Orchestration and Scheduling of Payment Scheme (OSPS) v1.4 is a **desktop application for debt recovery agents**.
 It manages debtor contact details, outstanding balances, and interaction histories through keyboard-driven commands
 while retaining the benefits of a graphical user interface (GUI).
 
@@ -83,7 +83,7 @@ Each debtor card shows both a displayed index and a persistent debtor ID. In a h
 * Use the persistent ID with `show --id DEBTOR_ID` and `note --id DEBTOR_ID --text NOTE_TEXT`.
 * Use the displayed index with `delete INDEX` and `edit INDEX ...`.
 * A persistent ID stays with the same debtor until that debtor is deleted. A displayed index can change after a `find`,
-  `list`, `add`, or `delete` command.
+  `list`, `add`, `edit`, or `delete` command.
 
 ### Viewing help: `help`
 
@@ -192,6 +192,8 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/OUTSTANDING_AMOU
   that other debtor is hidden by a search. Phone numbers and email addresses use exact matching for uniqueness;
   country codes, leading zeroes, email case, and email aliases are not normalised.
 * The persistent debtor ID and interaction notes are preserved.
+* An active `find` filter remains applied after the edit. If an edited name no longer matches the active search,
+  that debtor leaves the filtered results; run `list` to restore every active debtor.
 * When editing tags, all of the debtor's existing tags are removed; adding tags is not cumulative.
 * To remove all of a debtor's tags, enter `t/` without a tag after it.
 
@@ -300,7 +302,7 @@ Action | Format, Examples
 **Add** | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [o/OUTSTANDING_AMOUNT] [t/TAG]…​` <br> e.g., `add n/Olaf Go p/91234567 e/olaf.letnonego@example.com a/H4M8+3J3, Kunlun Station, Antarctica o/S$1,250.00`
 **Clear** | `clear`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
-**Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
+**Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [o/OUTSTANDING_AMOUNT] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find Alice 98765432`
 **List** | `list`
 **Note** | `note --id DEBTOR_ID --text NOTE_TEXT`<br> e.g., `note --id 1 --text Called debtor, promised payment on Friday.`

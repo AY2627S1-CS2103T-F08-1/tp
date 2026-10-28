@@ -27,6 +27,7 @@ class JsonAdaptedPerson {
     public static final String MISSING_FIELD_MESSAGE_FORMAT = "Person's %s field is missing!";
     public static final String NULL_INTERACTION_NOTE_MESSAGE = "Interaction note entry cannot be null.";
     public static final String DEBTOR_ID_OUT_OF_RANGE_MESSAGE = "Debtor ID exceeds the supported range.";
+    public static final String NULL_TAG_MESSAGE = "Tag entry cannot be null.";
 
     private final String name;
     private final String phone;
@@ -103,6 +104,9 @@ class JsonAdaptedPerson {
     public Person toModelType() throws IllegalValueException {
         final List<Tag> personTags = new ArrayList<>();
         for (JsonAdaptedTag tag : tags) {
+            if (tag == null) {
+                throw new IllegalValueException(NULL_TAG_MESSAGE);
+            }
             personTags.add(tag.toModelType());
         }
 
