@@ -84,6 +84,7 @@ public class ProfileWorkflowIntegrationTest {
         logic.execute("add n/Alice Tan p/91234567 e/alice@example.com a/1 Main Street");
         List<Person> originalPersons = List.copyOf(model.getAddressBook().getPersonList());
 
+        assertThrows(ParseException.class, () -> logic.execute("show"));
         assertThrows(ParseException.class, () -> logic.execute("show --id 0"));
         assertThrows(ParseException.class, () -> logic.execute("show --id -1"));
         assertThrows(CommandException.class, () -> logic.execute("show --id 999999"));
