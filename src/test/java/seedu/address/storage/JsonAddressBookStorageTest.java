@@ -110,9 +110,9 @@ public class JsonAddressBookStorageTest {
     @Test
     public void readAddressBook_reusedNextDebtorId_throwsDataLoadingException() {
         assertThrows(DataLoadingException.class, () -> readAddressBook("reusedNextDebtorIdAddressBook.json"));
-	}
-	
-	@Test
+    }
+
+    @Test
     public void readAddressBook_nullTag_throwsDataLoadingException() {
         assertThrows(DataLoadingException.class, () -> readAddressBook("nullTagAddressBook.json"));
     }
