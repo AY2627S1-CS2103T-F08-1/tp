@@ -12,7 +12,9 @@ public class ClearCommand extends Command {
 
     public static final String COMMAND_WORD = "clear";
     public static final String MESSAGE_SUCCESS = "All debtor records have been cleared from OSPS.";
-
+    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Clears all debtor records.\n"
+            + "Parameters: none\n"
+            + "Example: " + COMMAND_WORD;
 
     @Override
     public CommandResult execute(Model model) {
