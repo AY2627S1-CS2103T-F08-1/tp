@@ -105,11 +105,16 @@ public class JsonAddressBookStorage {
             moveAtomically(temporaryFile, target);
         } finally {
             try {
-                Files.deleteIfExists(temporaryFile);
+                deleteTemporaryFile(temporaryFile);
             } catch (IOException ignored) {
                 // Temporary-file cleanup is best-effort and must not turn a completed replacement into a failure.
             }
         }
+    }
+
+    /** Removes the temporary file left behind by a save, if any. */
+    void deleteTemporaryFile(Path temporaryFile) throws IOException {
+        Files.deleteIfExists(temporaryFile);
     }
 
     /** Replaces the destination only when the file system supports an atomic move. */

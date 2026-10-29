@@ -15,13 +15,13 @@ import javafx.collections.transformation.SortedList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.PersonSort;
 
 /**
  * Represents the in-memory model of the address book data.
  */
 public class ModelManager implements Model {
     private static final int MAX_HISTORY_SIZE = 100;
-    private static final Comparator<Person> DEFAULT_ORDER = Comparator.comparingInt(Person::getDebtorId);
     private static final Logger logger = LogsCenter.getLogger(ModelManager.class);
 
     private final AddressBook addressBook;
@@ -31,6 +31,7 @@ public class ModelManager implements Model {
     private final List<AddressBook> addressBookHistory = new ArrayList<>();
     private int historyPointer;
     private Predicate<Person> personListPredicate = PREDICATE_SHOW_ALL_PERSONS;
+    private Comparator<Person> personListComparator = PersonSort.DEFAULT_COMPARATOR;
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -43,7 +44,7 @@ public class ModelManager implements Model {
         this.addressBook = new AddressBook(addressBook);
         this.userPrefs = new UserPrefs(userPrefs);
         filteredPersons = new FilteredList<>(this.addressBook.getPersonList());
-        sortedPersons = new SortedList<>(filteredPersons, DEFAULT_ORDER);
+        sortedPersons = new SortedList<>(filteredPersons, PersonSort.DEFAULT_COMPARATOR);
         addressBookHistory.add(new AddressBook(this.addressBook));
     }
 
@@ -95,7 +96,7 @@ public class ModelManager implements Model {
     @Override
     public Person addPerson(Person person) {
         Person addedPerson = addressBook.addPerson(person);
-        updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
+        updatePersonView(PREDICATE_SHOW_ALL_PERSONS, PersonSort.DEFAULT_COMPARATOR);
         return addedPerson;
     }
 
@@ -172,8 +173,23 @@ public class ModelManager implements Model {
 
     /** Shows every debtor in persistent-ID order, discarding any active filter. */
     private void resetView() {
-        updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
-        sortedPersons.setComparator(DEFAULT_ORDER);
+        updatePersonView(PREDICATE_SHOW_ALL_PERSONS, PersonSort.DEFAULT_COMPARATOR);
+    }
+
+    @Override
+    public void updateSortedPersonList(Comparator<Person> comparator) {
+        requireNonNull(comparator);
+        personListComparator = comparator;
+        sortedPersons.setComparator(comparator);
+    }
+
+    @Override
+    public void updatePersonView(Predicate<Person> predicate, Comparator<Person> comparator) {
+        requireAllNonNull(predicate, comparator);
+        personListPredicate = predicate;
+        personListComparator = comparator;
+        filteredPersons.setPredicate(predicate);
+        sortedPersons.setComparator(comparator);
     }
 
     @Override
@@ -183,8 +199,7 @@ public class ModelManager implements Model {
         candidate.addressBookHistory.clear();
         candidate.addressBookHistory.addAll(addressBookHistory);
         candidate.historyPointer = historyPointer;
-        candidate.updateFilteredPersonList(personListPredicate);
-        candidate.sortedPersons.setComparator(sortedPersons.getComparator());
+        candidate.updatePersonView(personListPredicate, personListComparator);
         return candidate;
     }
 
@@ -198,8 +213,7 @@ public class ModelManager implements Model {
         addressBookHistory.clear();
         addressBookHistory.addAll(candidateManager.addressBookHistory);
         historyPointer = candidateManager.historyPointer;
-        updateFilteredPersonList(candidateManager.personListPredicate);
-        sortedPersons.setComparator(candidateManager.sortedPersons.getComparator());
+        updatePersonView(candidateManager.personListPredicate, candidateManager.personListComparator);
     }
 
     @Override

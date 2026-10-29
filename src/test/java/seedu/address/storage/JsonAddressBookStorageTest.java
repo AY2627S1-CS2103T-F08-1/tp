@@ -190,6 +190,21 @@ public class JsonAddressBookStorageTest {
     }
 
     @Test
+    public void saveAddressBook_temporaryFileCleanupFails_stillReplacesDataFile() throws Exception {
+        Path filePath = testFolder.resolve("cleanupFailureAddressBook.json");
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(filePath) {
+            @Override
+            void deleteTemporaryFile(Path temporaryFile) throws IOException {
+                throw new IOException("test seam");
+            }
+        };
+
+        storage.saveAddressBook(getTypicalAddressBook());
+
+        assertEquals(getTypicalAddressBook(), new JsonAddressBookStorage(filePath).readAddressBook().orElseThrow());
+    }
+
+    @Test
     public void readAndSaveAddressBook_nextDebtorIdIsNotReused_success() throws Exception {
         Path filePath = testFolder.resolve("DebtorIdsAddressBook.json");
         AddressBook original = new AddressBook();

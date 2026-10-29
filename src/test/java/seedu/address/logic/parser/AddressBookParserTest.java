@@ -24,10 +24,13 @@ import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.NoteCommand;
 import seedu.address.logic.commands.RedoCommand;
 import seedu.address.logic.commands.ShowCommand;
+import seedu.address.logic.commands.SortCommand;
 import seedu.address.logic.commands.UndoCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.PersonSort.Direction;
+import seedu.address.model.person.PersonSort.Field;
 import seedu.address.testutil.EditPersonDescriptorBuilder;
 import seedu.address.testutil.PersonBuilder;
 import seedu.address.testutil.PersonUtil;
@@ -126,6 +129,13 @@ public class AddressBookParserTest {
     public void parseCommand_undoRedoWithArguments_throwsParseException() {
         assertThrows(ParseException.class, () -> parser.parseCommand("undo 1"));
         assertThrows(ParseException.class, () -> parser.parseCommand("redo 1"));
+    }
+
+    @Test
+    public void parseCommand_sort() throws Exception {
+        SortCommand command = (SortCommand) parser.parseCommand(
+                SortCommand.COMMAND_WORD + " --by amount --order desc");
+        assertEquals(new SortCommand(Field.AMOUNT, Direction.DESCENDING), command);
     }
 
     @Test

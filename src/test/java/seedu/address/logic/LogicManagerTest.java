@@ -253,6 +253,7 @@ public class LogicManagerTest {
 
         for (String command : List.of(
                 "find Amy",
+                "sort --by amount --order desc",
                 "list",
                 "show --id " + debtor.getDebtorId(),
                 "help",
@@ -635,6 +636,25 @@ public class LogicManagerTest {
         noChangeLogic.execute("clear");
 
         assertEquals(0, addressBookStorage.getSaveAttemptCount());
+    }
+
+    @Test
+    public void execute_onlyNextDebtorIdChanges_attemptsSave() {
+        ModelManager idOnlyModel = new ModelManager() {
+            @Override
+            public Model createTransactionCopy() {
+                Model candidate = super.createTransactionCopy();
+                candidate.deletePerson(candidate.addPerson(AMY));
+                return candidate;
+            }
+        };
+        SaveTrackingAddressBookStorage addressBookStorage = new SaveTrackingAddressBookStorage(
+                temporaryFolder.resolve("idOnlyAddressBook.json"));
+        Logic idOnlyLogic = createLogic(idOnlyModel, addressBookStorage);
+
+        assertThrows(CommandException.class, () -> idOnlyLogic.execute("clear"));
+
+        assertEquals(1, addressBookStorage.getSaveAttemptCount());
     }
 
     @Test
