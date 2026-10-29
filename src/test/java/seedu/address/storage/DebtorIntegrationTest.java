@@ -46,6 +46,8 @@ public class DebtorIntegrationTest {
         Model model = new ModelManager();
         parser.parseCommand("add n/Alice p/91234567 e/alice@example.com a/123 Street o/1250.50").execute(model);
         parser.parseCommand("stage --id 1 --value contacted").execute(model);
+        parser.parseCommand("followup --id 1 --date 2026-11-03").execute(model);
+        parser.parseCommand("contact --id 1 --method sms --hours 09:00-17:30").execute(model);
         parser.parseCommand("note --id 1 --text Promised payment on Friday.").execute(model);
         parser.parseCommand("edit 1 n/Alice Tan p/92345678").execute(model);
 
@@ -57,6 +59,10 @@ public class DebtorIntegrationTest {
         assertEquals("Alice Tan", restored.getName().fullName);
         assertEquals(1, restored.getInteractionNotes().size());
         assertEquals("Promised payment on Friday.", restored.getInteractionNotes().getFirst().getText());
+        assertEquals("2026-11-03", restored.getFollowUpDate().orElseThrow().toString());
+        assertEquals(1, restored.getFollowUpHistory().size());
+        assertEquals("sms", restored.getContactPreferences().getMethod());
+        assertEquals("09:00-17:30", restored.getContactPreferences().getHours());
     }
 
     @Test

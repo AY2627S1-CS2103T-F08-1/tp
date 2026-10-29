@@ -32,4 +32,12 @@ public class FindCommandParserTest {
         assertParseSuccess(parser, " \n Alice \n \t Bob  \t", expectedFindCommand);
     }
 
+    @Test
+    public void parse_literalPunctuation_returnsFindCommandWithoutRegexInterpretation() {
+        FindCommand expectedFindCommand =
+                new FindCommand(new NameContainsKeywordsPredicate(List.of("(Priority)", "[A]", ".*")));
+
+        assertParseSuccess(parser, "(Priority) [A] .*", expectedFindCommand);
+    }
+
 }

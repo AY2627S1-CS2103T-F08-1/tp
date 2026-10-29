@@ -5,9 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.model.person.ContactOutcome;
 import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
@@ -19,7 +21,7 @@ public class MessagesTest {
         InteractionNote olderNote = new InteractionNote(LocalDateTime.of(2026, 10, 9, 14, 30),
                 "Called debtor, promised payment.");
         InteractionNote newerNote = new InteractionNote(LocalDateTime.of(2026, 10, 10, 9, 15),
-                "Sent follow-up email.");
+                "Sent follow-up email.", Optional.of(ContactOutcome.REACHED));
         Person debtor = new PersonBuilder().withDebtorId(17).withName("Alice Tan")
                 .withPhone("91234567").withEmail("alice@example.com")
                 .withAddress("1 Example Road, #02-03").withOutstandingAmount("1,250.50")
@@ -35,9 +37,14 @@ public class MessagesTest {
                 Outstanding: S$1,250.50
                 Recovery stage: new
                 Tags: [alpha], [zeta]
+                Preferred contact method: Not set
+                Contact hours: Not set
+                Follow-up: None
                 Interaction history (newest first):
-                - [2026-10-10 09:15] Sent follow-up email.
-                - [2026-10-09 14:30] Called debtor, promised payment.""";
+                - [2026-10-10 09:15] [reached] Sent follow-up email.
+                - [2026-10-09 14:30] [unspecified] Called debtor, promised payment.
+                Follow-up history (chronological, oldest first):
+                No follow-up history recorded.""";
 
         assertEquals(expected, Messages.formatProfile(debtor));
     }
@@ -49,7 +56,9 @@ public class MessagesTest {
         String profile = Messages.formatProfile(debtor);
 
         assertTrue(profile.contains("Tags: None"));
-        assertTrue(profile.endsWith("Interaction history (newest first):\nNo interaction notes recorded."));
+        assertTrue(profile.contains("Interaction history (newest first):\nNo interaction notes recorded."));
+        assertTrue(profile.endsWith("Follow-up history (chronological, oldest first):\n"
+                + "No follow-up history recorded."));
     }
 
     @Test
@@ -79,6 +88,7 @@ public class MessagesTest {
         InteractionNote note = new InteractionNote(LocalDateTime.of(2026, 10, 10, 10, 0), "Called debtor.");
         Person debtor = new PersonBuilder().withInteractionNotes(List.of(note, note)).build();
 
-        assertTrue(Messages.formatProfile(debtor).endsWith("\n- " + note + "\n- " + note));
+        assertTrue(Messages.formatProfile(debtor).contains("\n- " + note + "\n- " + note
+                + "\nFollow-up history (chronological, oldest first):"));
     }
 }

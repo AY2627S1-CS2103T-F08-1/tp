@@ -21,6 +21,9 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.PersonSort;
+import seedu.address.model.person.PersonSort.Direction;
+import seedu.address.model.person.PersonSort.Field;
 import seedu.address.testutil.AddressBookBuilder;
 import seedu.address.testutil.PersonBuilder;
 
@@ -89,6 +92,50 @@ public class FindCommandTest {
     }
 
     @Test
+    public void execute_partialNameKeyword_returnsBeginningMiddleAndEndMatches() {
+        Person beginningMatch = new PersonBuilder(ALICE).withDebtorId(9).withName("Alexandra Tan").build();
+        Person middleMatch = new PersonBuilder(BENSON).withDebtorId(2).withName("Calexico Lim").build();
+        Person endMatch = new PersonBuilder(CARL).withDebtorId(5).withName("Mihalex").build();
+        AddressBook addressBook = new AddressBookBuilder().withPerson(beginningMatch)
+                .withPerson(middleMatch).withPerson(endMatch).build();
+        Model partialNameModel = new ModelManager(addressBook, new UserPrefs());
+        Model expectedPartialNameModel = new ModelManager(addressBook, new UserPrefs());
+        NameContainsKeywordsPredicate predicate = preparePredicate("aLeX");
+        expectedPartialNameModel.updateFilteredPersonList(predicate);
+
+        assertCommandSuccess(new FindCommand(predicate), partialNameModel,
+                FindCommand.getMessageForMatchCount(3), expectedPartialNameModel);
+        assertEquals(List.of(2, 5, 9), partialNameModel.getFilteredPersonList().stream()
+                .map(Person::getDebtorId).toList());
+    }
+
+    @Test
+    public void execute_partialPhoneKeyword_returnsNoMatches() {
+        NameContainsKeywordsPredicate predicate = preparePredicate(ALICE.getPhone().value.substring(0, 4));
+        FindCommand command = new FindCommand(predicate);
+        expectedModel.updateFilteredPersonList(predicate);
+
+        assertCommandSuccess(command, model, FindCommand.MESSAGE_NO_DEBTORS_FOUND, expectedModel);
+        assertEquals(List.of(), model.getFilteredPersonList());
+    }
+
+    @Test
+    public void execute_supportedPunctuation_treatedAsLiteralNameText() {
+        Person literalMatch = new PersonBuilder(ALICE).withDebtorId(4).withName("Alice-Jane O'Neil").build();
+        Person punctuationNonMatch = new PersonBuilder(BENSON).withDebtorId(1).withName("Alice Jane Oneil").build();
+        AddressBook addressBook = new AddressBookBuilder().withPerson(literalMatch)
+                .withPerson(punctuationNonMatch).build();
+        Model literalModel = new ModelManager(addressBook, new UserPrefs());
+        Model expectedLiteralModel = new ModelManager(addressBook, new UserPrefs());
+        NameContainsKeywordsPredicate predicate = preparePredicate("O'Ne");
+        expectedLiteralModel.updateFilteredPersonList(predicate);
+
+        assertCommandSuccess(new FindCommand(predicate), literalModel,
+                FindCommand.MESSAGE_SINGLE_DEBTOR_FOUND, expectedLiteralModel);
+        assertEquals(List.of(literalMatch), literalModel.getFilteredPersonList());
+    }
+
+    @Test
     public void execute_nameAndPhoneKeywords_returnsMatchesInAscendingDebtorIdOrder() {
         Person debtorWithIdNine = new PersonBuilder(CARL).withDebtorId(9).build();
         Person debtorWithIdTwo = new PersonBuilder(ALICE).withDebtorId(2).build();
@@ -105,6 +152,16 @@ public class FindCommandTest {
                 FindCommand.getMessageForMatchCount(2), expectedOutOfOrderModel);
         assertEquals(List.of(2, 9), outOfOrderModel.getFilteredPersonList().stream()
                 .map(Person::getDebtorId).toList());
+    }
+
+    @Test
+    public void execute_afterDescendingSort_resetsMatchingResultsToAscendingIdOrder() {
+        NameContainsKeywordsPredicate predicate = new NameContainsKeywordsPredicate(List.of("Meier"));
+        model.updateSortedPersonList(PersonSort.createComparator(Field.ID, Direction.DESCENDING));
+
+        new FindCommand(predicate).execute(model);
+
+        assertEquals(List.of(2, 4), model.getFilteredPersonList().stream().map(Person::getDebtorId).toList());
     }
 
     @Test

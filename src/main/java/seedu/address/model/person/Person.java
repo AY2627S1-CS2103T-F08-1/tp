@@ -3,11 +3,13 @@ package seedu.address.model.person;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import seedu.address.commons.util.ToStringBuilder;
@@ -32,6 +34,9 @@ public class Person {
     private final OutstandingAmount outstandingAmount;
     private final List<InteractionNote> interactionNotes;
     private final RecoveryStage recoveryStage;
+    private final Optional<LocalDate> followUpDate;
+    private final List<FollowUpEvent> followUpHistory;
+    private final ContactPreferences contactPreferences;
     private final Set<Tag> tags = new HashSet<>();
 
     /**
@@ -57,9 +62,7 @@ public class Person {
         this(name, phone, email, address, debtorId, outstandingAmount, List.of(), RecoveryStage.NEW, tags);
     }
 
-    /**
-     * Creates a person with all debtor fields, including interaction notes.
-     */
+    /** Creates a person with all debtor fields, including interaction notes. */
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes, Set<Tag> tags) {
         this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, RecoveryStage.NEW, tags);
@@ -69,7 +72,35 @@ public class Person {
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes,
             RecoveryStage recoveryStage, Set<Tag> tags) {
-        requireAllNonNull(name, phone, email, address, outstandingAmount, interactionNotes, recoveryStage, tags);
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, recoveryStage,
+                Optional.empty(), List.of(), tags, new ContactPreferences(null, null));
+    }
+
+    /** Creates a person with every debtor field, including follow-up state and history. */
+    public Person(Name name, Phone phone, Email email, Address address, int debtorId,
+            OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes,
+            Optional<LocalDate> followUpDate, List<FollowUpEvent> followUpHistory, Set<Tag> tags) {
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, RecoveryStage.NEW,
+                followUpDate, followUpHistory, tags, new ContactPreferences(null, null));
+    }
+
+    /** Creates a person with contact preferences. */
+    public Person(Name name, Phone phone, Email email, Address address, int debtorId,
+            OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes, Set<Tag> tags,
+            ContactPreferences contactPreferences) {
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, RecoveryStage.NEW,
+                Optional.empty(), List.of(), tags, contactPreferences);
+    }
+
+    /** Creates a person with every debtor field. */
+    public Person(Name name, Phone phone, Email email, Address address, int debtorId,
+            OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes,
+            RecoveryStage recoveryStage, Optional<LocalDate> followUpDate,
+            List<FollowUpEvent> followUpHistory, Set<Tag> tags,
+            ContactPreferences contactPreferences) {
+        requireAllNonNull(name, phone, email, address, outstandingAmount, interactionNotes,
+                recoveryStage, tags, contactPreferences);
+        requireAllNonNull(followUpDate, followUpHistory);
         if (debtorId < 0) {
             throw new IllegalArgumentException(MESSAGE_INVALID_DEBTOR_ID);
         }
@@ -81,6 +112,9 @@ public class Person {
         this.outstandingAmount = outstandingAmount;
         this.interactionNotes = List.copyOf(interactionNotes);
         this.recoveryStage = recoveryStage;
+        this.followUpDate = followUpDate;
+        this.followUpHistory = List.copyOf(followUpHistory);
+        this.contactPreferences = contactPreferences;
         this.tags.addAll(tags);
     }
 
@@ -112,7 +146,17 @@ public class Person {
      */
     public Person withDebtorId(int newDebtorId) {
         return new Person(name, phone, email, address, newDebtorId, outstandingAmount,
-                interactionNotes, recoveryStage, tags);
+                interactionNotes, recoveryStage, followUpDate, followUpHistory, tags, contactPreferences);
+    }
+
+    public ContactPreferences getContactPreferences() {
+        return contactPreferences;
+    }
+
+    /** Returns a copy with updated preferences. */
+    public Person withContactPreferences(ContactPreferences preferences) {
+        return new Person(name, phone, email, address, debtorId, outstandingAmount,
+                interactionNotes, recoveryStage, followUpDate, followUpHistory, tags, preferences);
     }
 
     public OutstandingAmount getOutstandingAmount() {
@@ -135,7 +179,27 @@ public class Person {
     public Person withRecoveryStage(RecoveryStage updatedStage) {
         requireNonNull(updatedStage);
         return new Person(name, phone, email, address, debtorId, outstandingAmount,
-                interactionNotes, updatedStage, tags);
+                interactionNotes, updatedStage, followUpDate, followUpHistory, tags, contactPreferences);
+    }
+
+    /** Returns this debtor's pending follow-up date, if one is scheduled. */
+    public Optional<LocalDate> getFollowUpDate() {
+        return followUpDate;
+    }
+
+    /** Returns follow-up changes in insertion order. */
+    public List<FollowUpEvent> getFollowUpHistory() {
+        return followUpHistory;
+    }
+
+    /** Returns a copy with the supplied pending date and one appended history event. */
+    public Person withFollowUpChange(Optional<LocalDate> date, FollowUpEvent event) {
+        requireNonNull(date);
+        requireNonNull(event);
+        List<FollowUpEvent> updatedHistory = new ArrayList<>(followUpHistory);
+        updatedHistory.add(event);
+        return new Person(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
+                recoveryStage, date, updatedHistory, tags, contactPreferences);
     }
 
     /**
@@ -145,7 +209,8 @@ public class Person {
         requireNonNull(note);
         List<InteractionNote> updatedNotes = new ArrayList<>(interactionNotes);
         updatedNotes.add(note);
-        return new Person(name, phone, email, address, debtorId, outstandingAmount, updatedNotes, recoveryStage, tags);
+        return new Person(name, phone, email, address, debtorId, outstandingAmount, updatedNotes,
+                recoveryStage, followUpDate, followUpHistory, tags, contactPreferences);
     }
 
     /**
@@ -191,13 +256,17 @@ public class Person {
                 && outstandingAmount.equals(otherPerson.outstandingAmount)
                 && interactionNotes.equals(otherPerson.interactionNotes)
                 && recoveryStage.equals(otherPerson.recoveryStage)
+                && followUpDate.equals(otherPerson.followUpDate)
+                && followUpHistory.equals(otherPerson.followUpHistory)
+                && contactPreferences.equals(otherPerson.contactPreferences)
                 && tags.equals(otherPerson.tags);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, outstandingAmount, interactionNotes, recoveryStage, tags);
+        return Objects.hash(name, phone, email, address, outstandingAmount, interactionNotes,
+                recoveryStage, followUpDate, followUpHistory, tags, contactPreferences);
     }
 
     @Override

@@ -18,6 +18,11 @@ public abstract class Command {
         return true;
     }
 
+    /** Returns whether a successful save should create a new undo history entry. */
+    public boolean shouldCommitAddressBook() {
+        return shouldSaveAddressBook();
+    }
+
     /**
      * Executes the command and returns the result message.
      *

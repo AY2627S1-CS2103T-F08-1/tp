@@ -1,16 +1,21 @@
 package seedu.address.testutil;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import seedu.address.model.person.Address;
+import seedu.address.model.person.ContactPreferences;
 import seedu.address.model.person.Email;
+import seedu.address.model.person.FollowUpEvent;
 import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.OutstandingAmount;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.model.person.RecoveryStage;
 import seedu.address.model.tag.Tag;
 import seedu.address.model.util.SampleDataUtil;
 
@@ -30,6 +35,10 @@ public class PersonBuilder {
     private Address address;
     private OutstandingAmount outstandingAmount;
     private List<InteractionNote> interactionNotes;
+    private RecoveryStage recoveryStage;
+    private Optional<LocalDate> followUpDate;
+    private List<FollowUpEvent> followUpHistory;
+    private ContactPreferences contactPreferences;
     private int debtorId;
     private Set<Tag> tags;
 
@@ -43,6 +52,10 @@ public class PersonBuilder {
         address = new Address(DEFAULT_ADDRESS);
         outstandingAmount = new OutstandingAmount();
         interactionNotes = List.of();
+        recoveryStage = RecoveryStage.NEW;
+        followUpDate = Optional.empty();
+        followUpHistory = List.of();
+        contactPreferences = new ContactPreferences(null, null);
         debtorId = 0;
         tags = new HashSet<>();
     }
@@ -57,6 +70,10 @@ public class PersonBuilder {
         address = personToCopy.getAddress();
         outstandingAmount = personToCopy.getOutstandingAmount();
         interactionNotes = personToCopy.getInteractionNotes();
+        recoveryStage = personToCopy.getRecoveryStage();
+        followUpDate = personToCopy.getFollowUpDate();
+        followUpHistory = personToCopy.getFollowUpHistory();
+        contactPreferences = personToCopy.getContactPreferences();
         debtorId = personToCopy.getDebtorId();
         tags = new HashSet<>(personToCopy.getTags());
     }
@@ -125,8 +142,34 @@ public class PersonBuilder {
         return this;
     }
 
+    /** Sets the recovery stage. */
+    public PersonBuilder withRecoveryStage(RecoveryStage recoveryStage) {
+        this.recoveryStage = recoveryStage;
+        return this;
+    }
+
+    /** Sets the pending follow-up date. */
+    public PersonBuilder withFollowUpDate(Optional<LocalDate> followUpDate) {
+        this.followUpDate = followUpDate;
+        return this;
+    }
+
+    /** Sets the follow-up history. */
+    public PersonBuilder withFollowUpHistory(List<FollowUpEvent> followUpHistory) {
+        this.followUpHistory = List.copyOf(followUpHistory);
+        return this;
+    }
+
+    /** Sets the contact preferences. */
+    public PersonBuilder withContactPreferences(ContactPreferences contactPreferences) {
+        this.contactPreferences = contactPreferences;
+        return this;
+    }
+
+    /** Builds a person using the configured field values. */
     public Person build() {
-        return new Person(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, tags);
+        return new Person(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
+                recoveryStage, followUpDate, followUpHistory, tags, contactPreferences);
     }
 
 }
