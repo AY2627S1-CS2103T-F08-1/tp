@@ -97,8 +97,7 @@ Format: `help`
 ### Adding a debtor: `add`
 
 Adds a debtor to OSPS. The outstanding amount is optional, may be zero, and defaults to `S$0.00`.
-Each debtor is assigned a unique ID, which is shown in the debtor list. IDs are assigned from 1 again after
-using `clear`.
+Each debtor is assigned a unique ID, which is shown in the debtor list. New ID are assigned in increasing numerical order and are not reused after deletion or `clear`.
 
 Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [o/OUTSTANDING_AMOUNT] [t/TAG]…​`
 
@@ -153,9 +152,13 @@ Format: `note --id DEBTOR_ID --text NOTE_TEXT`
   Other words beginning with `--`, such as `--identifier`, are kept as part of the note text after `--text`.
   Unknown options before `--text` or in the `--id` value are rejected.
 * The note is saved with the debtor and is preserved after restarting the application.
+* Repeating the same note records a separate interaction each time. Editing the debtor preserves all existing notes.
 * If saving fails, OSPS reports an error, but the note remains in memory during the current session. It is not
   guaranteed to be on disk or to survive a restart. Resolve the save problem and verify the data after saving
   successfully. Check the profile before entering the note again to avoid adding a duplicate.
+  Once the save problem is resolved, the next successful data-changing command or the `exit` command retries saving.
+  If the `exit` retry fails, OSPS reports an error and does not complete the exit.
+  Read-only commands such as `show` and `list` do not retry a failed save.
 
 Example:
 * `note --id 1 --text Called debtor, promised payment on Friday.`
@@ -165,6 +168,8 @@ Example:
 Shows the complete profile of the active debtor identified by persistent debtor ID. The profile includes the
 debtor's name, phone number, email address, address, outstanding amount, tags, and interaction history. Interaction
 notes are shown newest first. If the debtor has no notes, the profile states that no interaction notes are recorded.
+If two notes have exactly the same timestamp, the later-added note is shown first; neither note is removed.
+Displayed times have minute precision, so two notes showing the same time may have different stored timestamps.
 
 Format: `show --id DEBTOR_ID`
 
@@ -253,7 +258,9 @@ Examples:
 
 ### Clearing all entries: `clear`
 
-Clears all debtor records from OSPS.
+Clears all debtor records from OSPS. This operation has no undo or confirmation.
+
+The `clear` operation will be rejected if additional arguments are supplied
 
 Format: `clear`
 
@@ -274,10 +281,11 @@ so an existing data file continues to be discovered after upgrading to `osps.jar
 directly by editing that JSON file.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-If your changes make the data file invalid, OSPS starts with no debtor records at the next run. The invalid file remains
+If OSPS detects loading errors, it will start with no debtor records at the next run. The invalid file remains
 on disk until you run a data-changing command. Back up the file before editing it.<br>
 Furthermore, certain edits can cause OSPS to behave unexpectedly (for example, if a value is outside the accepted
 range). Edit the data file only if you are confident that you can update it correctly.
+Malformed JSON can also cause OSPS to fail to start.
 </div>
 
 ## FAQ

@@ -46,10 +46,22 @@ public class AddressBookTest {
         assertThrows(IllegalArgumentException.class, () ->
                 addressBook.addPerson(ALICE.withDebtorId(Integer.MAX_VALUE)));
         assertEquals(1, addressBook.getNextDebtorId());
-        addressBook.setNextDebtorId(Integer.MAX_VALUE);
-        assertThrows(IllegalArgumentException.class, () -> addressBook.addPerson(ALICE));
-        assertEquals(Integer.MAX_VALUE, addressBook.getNextDebtorId());
         assertTrue(addressBook.getPersonList().isEmpty());
+    }
+
+    @Test
+    public void setNextDebtorId_maximumValue_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, AddressBook.MESSAGE_DEBTOR_ID_OUT_OF_RANGE, () ->
+                addressBook.setNextDebtorId(Integer.MAX_VALUE));
+        assertEquals(1, addressBook.getNextDebtorId());
+    }
+
+    @Test
+    public void setNextDebtorId_reusedValue_throwsIllegalArgumentException() {
+        addressBook.addPerson(ALICE);
+
+        assertThrows(IllegalArgumentException.class, () -> addressBook.setNextDebtorId(1));
+        assertEquals(2, addressBook.getNextDebtorId());
     }
 
     @Test

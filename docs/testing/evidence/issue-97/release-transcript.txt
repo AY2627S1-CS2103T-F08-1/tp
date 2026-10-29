@@ -1,0 +1,87 @@
+> add n/Alpha Tester p/98880001 e/alpha@example.com a/Alpha Street o/123.45
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][add]
+New debtor added: ID: 1; Alpha Tester; Phone: 98880001; Email: alpha@example.com; Address: Alpha Street; Outstanding: S$123.45; Tags:
+> add n/Beta Tester p/98880002 e/beta@example.com a/Beta Street o/50
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][add]
+New debtor added: ID: 2; Beta Tester; Phone: 98880002; Email: beta@example.com; Address: Beta Street; Outstanding: S$50.00; Tags:
+> note --id 1 --text Called debtor; callback at 5pm?
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][note]
+Added interaction note to debtor ID 1: [2026-10-29 02:24] Called debtor; callback at 5pm?
+> note --text Called debtor; callback at 5pm? --id 1
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][note]
+Added interaction note to debtor ID 1: [2026-10-29 02:24] Called debtor; callback at 5pm?
+> note --id 1 --text Use the --identifier portal.  Follow-up?
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][note]
+Added interaction note to debtor ID 1: [2026-10-29 02:24] Use the --identifier portal.  Follow-up?
+> find Beta
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][find]
+1 matching debtor found.
+> note --id 1 --text Contacted while hidden by the filter.
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][note]
+Added interaction note to debtor ID 1: [2026-10-29 02:24] Contacted while hidden by the filter.
+> list
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][list]
+2 active debtors listed.
+> edit 1 n/Alpha Updated o/0
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][edit]
+Edited debtor: ID: 1; Alpha Updated; Phone: 98880001; Email: alpha@example.com; Address: Alpha Street; Outstanding: S$0.00; Tags:
+> find Beta
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][find]
+1 matching debtor found.
+> delete 1
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][delete]
+Deleted debtor: ID: 2; Beta Tester; Phone: 98880002; Email: beta@example.com; Address: Beta Street; Outstanding: S$50.00; Tags:
+> list
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][list]
+1 active debtor listed.
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][note]
+REJECTED: note --id 1 --text [ParseException]
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][note]
+REJECTED: note --id 0 --text Rejected [ParseException]
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][note]
+REJECTED: note --id 1 --text Reserved --text value [ParseException]
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][note]
+REJECTED: note --id 1 --text Reserved --id 2 [ParseException]
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][note]
+REJECTED: note --id 1 --unknown value --text Rejected [ParseException]
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][note]
+REJECTED: note --id 2 --text Deleted debtor [CommandException]
+Oct 29, 2026 2:24:35 AM seedu.address.commons.util.JsonUtil readJsonFile
+INFO: JSON file /private/tmp/osps-97-released-evidence/addressbook.json found.
+RELOADED PROFILE:
+Oct 29, 2026 2:24:35 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][show]
+Debtor profile
+ID: 1
+Name: Alpha Updated
+Phone: 98880001
+Email: alpha@example.com
+Address: Alpha Street
+Outstanding: S$0.00
+Tags: None
+Interaction history (newest first):
+- [2026-10-29 02:24] Contacted while hidden by the filter.
+- [2026-10-29 02:24] Use the --identifier portal.  Follow-up?
+- [2026-10-29 02:24] Called debtor; callback at 5pm?
+- [2026-10-29 02:24] Called debtor; callback at 5pm?
+PASS: repeated notes, punctuation, both parameter orders, hidden ID targeting, edit,
+filtered deletion, rejected-input immutability and saved-history reload.
+Scope: release command/storage classes; JavaFX rendering was not tested.
