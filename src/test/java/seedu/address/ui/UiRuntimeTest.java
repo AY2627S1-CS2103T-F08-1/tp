@@ -123,6 +123,9 @@ public class UiRuntimeTest {
             helpWindow.show();
             assertTrue(helpWindow.isShowing());
             reference.requestFocus();
+            Event.fireEvent(reference, new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER,
+                    false, false, false, false));
+            assertTrue(helpWindow.isShowing());
             Event.fireEvent(reference, new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ESCAPE,
                     false, false, false, false));
             assertFalse(helpWindow.isShowing());
