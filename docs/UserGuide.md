@@ -3,7 +3,7 @@ layout: page
 title: User Guide
 ---
 
-Orchestration and Scheduling of Payment Scheme (OSPS) v1.4 is a **desktop application for debt recovery agents**.
+Orchestration and Scheduling of Payment Scheme (OSPS) v1.5 is a **desktop application for debt recovery agents**.
 It manages debtor contact details, outstanding balances, and interaction histories through keyboard-driven commands
 while retaining the benefits of a graphical user interface (GUI).
 
