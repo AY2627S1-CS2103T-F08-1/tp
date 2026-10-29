@@ -3,6 +3,8 @@ package seedu.address.logic.parser;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,6 +42,53 @@ public class AddressBookParser {
      */
     private static final Pattern BASIC_COMMAND_FORMAT = Pattern.compile("(?<commandWord>\\S+)(?<arguments>.*)");
     private static final Logger logger = LogsCenter.getLogger(AddressBookParser.class);
+    private static final Map<String, CommandParser> COMMAND_PARSERS = Map.ofEntries(
+            Map.entry(AddCommand.COMMAND_WORD, arguments -> new AddCommandParser().parse(arguments)),
+            Map.entry(ClearCommand.COMMAND_WORD, arguments -> {
+                if (!arguments.trim().isEmpty()) {
+                    throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, ClearCommand.MESSAGE_USAGE));
+                }
+                return new ClearCommand();
+            }),
+            Map.entry(ContactCommand.COMMAND_WORD, arguments -> new ContactCommandParser().parse(arguments)),
+            Map.entry(ContactableCommand.COMMAND_WORD, arguments -> new ContactableCommandParser().parse(arguments)),
+            Map.entry(DeleteCommand.COMMAND_WORD, arguments -> new DeleteCommandParser().parse(arguments)),
+            Map.entry(EditCommand.COMMAND_WORD, arguments -> new EditCommandParser().parse(arguments)),
+            Map.entry(ExitCommand.COMMAND_WORD, arguments -> new ExitCommand()),
+            Map.entry(ExportCommand.COMMAND_WORD, arguments -> new ExportCommandParser().parse(arguments)),
+            Map.entry(FindCommand.COMMAND_WORD, arguments -> new FindCommandParser().parse(arguments)),
+            Map.entry(HelpCommand.COMMAND_WORD, arguments -> new HelpCommand()),
+            Map.entry(ListCommand.COMMAND_WORD, arguments -> new ListCommandParser().parse(arguments)),
+            Map.entry(ListAmountCommand.COMMAND_WORD, arguments -> new ListAmountCommandParser().parse(arguments)),
+            Map.entry(NoteCommand.COMMAND_WORD, arguments -> new NoteCommandParser().parse(arguments)),
+            Map.entry(PreviewCommand.COMMAND_WORD, arguments -> new PreviewCommandParser().parse(arguments)),
+            Map.entry(RedoCommand.COMMAND_WORD, arguments -> {
+                if (!arguments.trim().isEmpty()) {
+                    throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT,
+                            RedoCommand.COMMAND_WORD + ": Redoes the most recently undone change.\nParameters: none"));
+                }
+                return new RedoCommand();
+            }),
+            Map.entry(ShowCommand.COMMAND_WORD, arguments -> new ShowCommandParser().parse(arguments)),
+            Map.entry(SortCommand.COMMAND_WORD, arguments -> new SortCommandParser().parse(arguments)),
+            Map.entry(UndoCommand.COMMAND_WORD, arguments -> {
+                if (!arguments.trim().isEmpty()) {
+                    throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT,
+                            UndoCommand.COMMAND_WORD + ": Undoes the most recent change.\nParameters: none"));
+                }
+                return new UndoCommand();
+            }));
+
+    /** Parses one command's argument text into an executable command. */
+    @FunctionalInterface
+    private interface CommandParser {
+        Command parse(String arguments) throws ParseException;
+    }
+
+    /** Exposes the immutable dispatch keys to the cross-package {@code BrandingTest}. */
+    public static Set<String> getSupportedCommandWords() {
+        return COMMAND_PARSERS.keySet();
+    }
 
     /**
      * Parses user input into command for execution.
@@ -62,48 +111,13 @@ public class AddressBookParser {
         // Lower level log messages are used sparingly to minimize noise in the code.
         logger.fine("Command word: " + CommandLogFormatter.getCommandWord(userInput));
 
-        return switch (commandWord) {
-            case AddCommand.COMMAND_WORD -> new AddCommandParser().parse(arguments);
-            case EditCommand.COMMAND_WORD -> new EditCommandParser().parse(arguments);
-            case DeleteCommand.COMMAND_WORD -> new DeleteCommandParser().parse(arguments);
-            case ClearCommand.COMMAND_WORD -> {
-                if (!arguments.trim().isEmpty()) {
-                    throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, ClearCommand.MESSAGE_USAGE));
-                }
-                yield new ClearCommand();
-            }
-            case FindCommand.COMMAND_WORD -> new FindCommandParser().parse(arguments);
-            case ListCommand.COMMAND_WORD -> new ListCommandParser().parse(arguments);
-            case ListAmountCommand.COMMAND_WORD -> new ListAmountCommandParser().parse(arguments);
-            case ContactableCommand.COMMAND_WORD -> new ContactableCommandParser().parse(arguments);
-            case ContactCommand.COMMAND_WORD -> new ContactCommandParser().parse(arguments);
-            case PreviewCommand.COMMAND_WORD -> new PreviewCommandParser().parse(arguments);
-            case NoteCommand.COMMAND_WORD -> new NoteCommandParser().parse(arguments);
-            case ShowCommand.COMMAND_WORD -> new ShowCommandParser().parse(arguments);
-            case SortCommand.COMMAND_WORD -> new SortCommandParser().parse(arguments);
-            case ExportCommand.COMMAND_WORD -> new ExportCommandParser().parse(arguments);
-            case ExitCommand.COMMAND_WORD -> new ExitCommand();
-            case HelpCommand.COMMAND_WORD -> new HelpCommand();
-            case UndoCommand.COMMAND_WORD -> {
-                if (!arguments.trim().isEmpty()) {
-                    throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT,
-                            UndoCommand.COMMAND_WORD + ": Undoes the most recent change.\nParameters: none"));
-                }
-                yield new UndoCommand();
-            }
-            case RedoCommand.COMMAND_WORD -> {
-                if (!arguments.trim().isEmpty()) {
-                    throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT,
-                            RedoCommand.COMMAND_WORD + ": Redoes the most recently undone change.\nParameters: none"));
-                }
-                yield new RedoCommand();
-            }
-            default -> {
-                logger.finer("Command parsing failed for command word: "
-                        + CommandLogFormatter.getCommandWord(userInput));
-                throw new ParseException(MESSAGE_UNKNOWN_COMMAND);
-            }
-        };
+        CommandParser commandParser = COMMAND_PARSERS.get(commandWord);
+        if (commandParser == null) {
+            logger.finer("Command parsing failed for command word: "
+                    + CommandLogFormatter.getCommandWord(userInput));
+            throw new ParseException(MESSAGE_UNKNOWN_COMMAND);
+        }
+        return commandParser.parse(arguments);
     }
 
 }
