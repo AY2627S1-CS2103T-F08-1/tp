@@ -227,6 +227,36 @@ public class ModelManagerTest {
         assertThrows(UnsupportedOperationException.class, () -> unsupported.publishTransaction(modelManager));
     }
 
+    @Test
+    public void historyDefaults_unsupportedModel_reportNoHistory() {
+        Model unsupported = unsupportedModel();
+        unsupported.commitAddressBook();
+        assertFalse(unsupported.canUndoAddressBook());
+        assertFalse(unsupported.canRedoAddressBook());
+        assertThrows(IllegalStateException.class, unsupported::undoAddressBook);
+        assertThrows(IllegalStateException.class, unsupported::redoAddressBook);
+    }
+
+    @Test
+    public void undoRedo_noHistory_throwsIllegalStateException() {
+        assertFalse(modelManager.canUndoAddressBook());
+        assertFalse(modelManager.canRedoAddressBook());
+        assertThrows(IllegalStateException.class, modelManager::undoAddressBook);
+        assertThrows(IllegalStateException.class, modelManager::redoAddressBook);
+    }
+
+    @Test
+    public void commitAddressBook_unchangedState_addsNoHistory() {
+        modelManager.commitAddressBook();
+        assertFalse(modelManager.canUndoAddressBook());
+
+        modelManager.addPerson(ALICE);
+        modelManager.commitAddressBook();
+        modelManager.commitAddressBook();
+        modelManager.undoAddressBook();
+        assertFalse(modelManager.canUndoAddressBook());
+    }
+
     /** Returns a {@code Model} that only provides the interface's default methods. */
     private static Model unsupportedModel() {
         InvocationHandler defaultsOnly = (proxy, method, args) -> InvocationHandler.invokeDefault(proxy, method, args);
