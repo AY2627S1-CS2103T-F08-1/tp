@@ -89,6 +89,8 @@ class FollowUpEventTest {
         assertThrows(IllegalArgumentException.class, () ->
                 FollowUpEvent.fromStorage("not-a-time", "SCHEDULED", null, "2026-11-03"));
         assertThrows(IllegalArgumentException.class, () ->
+                FollowUpEvent.fromStorage("0000-10-29T10:00:00", "SCHEDULED", null, "2026-11-03"));
+        assertThrows(IllegalArgumentException.class, () ->
                 FollowUpEvent.fromStorage(null, "SCHEDULED", null, "2026-11-03"));
         assertThrows(IllegalArgumentException.class, () ->
                 FollowUpEvent.fromStorage("2026-10-29T10:00:00", "SHELVED", null, "2026-11-03"));

@@ -101,7 +101,11 @@ public final class FollowUpEvent {
 
     private static LocalDateTime parseTimestamp(String timestamp) {
         try {
-            return LocalDateTime.parse(timestamp, STORAGE_FORMATTER);
+            LocalDateTime parsed = LocalDateTime.parse(timestamp, STORAGE_FORMATTER);
+            if (parsed.getYear() < 1 || parsed.getYear() > 9999) {
+                throw new DateTimeParseException("Year is outside 0001–9999", timestamp, 0);
+            }
+            return parsed;
         } catch (DateTimeParseException | NullPointerException exception) {
             throw new IllegalArgumentException("Follow-up event contains an invalid timestamp, action or date.",
                     exception);

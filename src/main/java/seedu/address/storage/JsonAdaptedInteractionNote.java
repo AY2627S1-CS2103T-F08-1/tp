@@ -16,15 +16,24 @@ class JsonAdaptedInteractionNote {
 
     private final String timestamp;
     private final String text;
+    private final String outcome;
 
     /**
      * Constructs a {@code JsonAdaptedInteractionNote} with the given note details.
      */
     @JsonCreator
     public JsonAdaptedInteractionNote(@JsonProperty("timestamp") String timestamp,
-            @JsonProperty("text") String text) {
+            @JsonProperty("text") String text, @JsonProperty("outcome") String outcome) {
         this.timestamp = timestamp;
         this.text = text;
+        this.outcome = outcome;
+    }
+
+    /**
+     * Backwards-compatible constructor for notes without outcome metadata.
+     */
+    public JsonAdaptedInteractionNote(String timestamp, String text) {
+        this(timestamp, text, null);
     }
 
     /**
@@ -33,6 +42,7 @@ class JsonAdaptedInteractionNote {
     public JsonAdaptedInteractionNote(InteractionNote source) {
         timestamp = source.getStorageTimestamp();
         text = source.getText();
+        outcome = source.getOutcome().map(Object::toString).orElse(null);
     }
 
     /**
@@ -46,7 +56,7 @@ class JsonAdaptedInteractionNote {
             throw new IllegalValueException(MISSING_TEXT_MESSAGE);
         }
         try {
-            return InteractionNote.fromStorage(timestamp, text);
+            return InteractionNote.fromStorage(timestamp, text, outcome);
         } catch (IllegalArgumentException exception) {
             throw new IllegalValueException(exception.getMessage());
         }

@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.person.Address;
+import seedu.address.model.person.ContactPreferences;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.FollowUpEvent;
 import seedu.address.model.person.InteractionNote;
@@ -39,6 +40,7 @@ class JsonAdaptedPerson {
     private final String address;
     private final Integer debtorId;
     private final String outstandingAmount;
+    private final JsonContactPreferences contactPreferences;
     private final List<JsonAdaptedInteractionNote> interactionNotes = new ArrayList<>();
     private final String followUpDate;
     private final List<JsonAdaptedFollowUpEvent> followUpHistory = new ArrayList<>();
@@ -55,7 +57,8 @@ class JsonAdaptedPerson {
             @JsonProperty("interactionNotes") List<JsonAdaptedInteractionNote> interactionNotes,
             @JsonProperty("followUpDate") String followUpDate,
             @JsonProperty("followUpHistory") List<JsonAdaptedFollowUpEvent> followUpHistory,
-            @JsonProperty("tags") List<JsonAdaptedTag> tags) {
+            @JsonProperty("tags") List<JsonAdaptedTag> tags,
+            @JsonProperty("contactPreferences") JsonContactPreferences contactPreferences) {
         this.name = name;
         this.phone = phone;
         this.email = email;
@@ -63,6 +66,7 @@ class JsonAdaptedPerson {
         this.debtorId = debtorId;
         this.outstandingAmount = outstandingAmount;
         this.followUpDate = followUpDate;
+        this.contactPreferences = contactPreferences;
         if (interactionNotes != null) {
             this.interactionNotes.addAll(interactionNotes);
         }
@@ -74,19 +78,35 @@ class JsonAdaptedPerson {
         }
     }
 
+    /** Compatibility constructor for older callers. */
+    public JsonAdaptedPerson(String name, String phone, String email, String address, Integer debtorId,
+            String outstandingAmount, List<JsonAdaptedInteractionNote> interactionNotes, List<JsonAdaptedTag> tags) {
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
+                null, null, tags, null);
+    }
+
+    /** Compatibility constructor for callers that specify contact preferences but no follow-up data. */
+    public JsonAdaptedPerson(String name, String phone, String email, String address, Integer debtorId,
+            String outstandingAmount, List<JsonAdaptedInteractionNote> interactionNotes, List<JsonAdaptedTag> tags,
+            JsonContactPreferences contactPreferences) {
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
+                null, null, tags, contactPreferences);
+    }
+
+    /** Compatibility constructor for callers that specify follow-up data but no contact preferences. */
+    public JsonAdaptedPerson(String name, String phone, String email, String address, Integer debtorId,
+            String outstandingAmount, List<JsonAdaptedInteractionNote> interactionNotes, String followUpDate,
+            List<JsonAdaptedFollowUpEvent> followUpHistory, List<JsonAdaptedTag> tags) {
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
+                followUpDate, followUpHistory, tags, null);
+    }
+
     /**
      * Backwards-compatible constructor for data and tests that do not specify an amount.
      */
     public JsonAdaptedPerson(String name, String phone, String email, String address,
             List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, null, null, null, null, null, tags);
-    }
-
-    /** Backwards-compatible constructor for callers specifying debtor fields without follow-up data. */
-    public JsonAdaptedPerson(String name, String phone, String email, String address, Integer debtorId,
-            String outstandingAmount, List<JsonAdaptedInteractionNote> interactionNotes,
-            List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, null, null, tags);
+        this(name, phone, email, address, null, null, null, null, null, tags, null);
     }
 
     /**
@@ -94,7 +114,7 @@ class JsonAdaptedPerson {
      */
     public JsonAdaptedPerson(String name, String phone, String email, String address,
             String outstandingAmount, List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, null, outstandingAmount, null, null, null, tags);
+        this(name, phone, email, address, null, outstandingAmount, null, null, null, tags, null);
     }
 
     /**
@@ -108,6 +128,7 @@ class JsonAdaptedPerson {
         debtorId = source.getDebtorId() == 0 ? null : source.getDebtorId();
         outstandingAmount = source.getOutstandingAmount().toString();
         followUpDate = source.getFollowUpDate().map(Object::toString).orElse(null);
+        contactPreferences = new JsonContactPreferences(source.getContactPreferences());
         interactionNotes.addAll(source.getInteractionNotes().stream()
                 .map(JsonAdaptedInteractionNote::new)
                 .collect(Collectors.toList()));
@@ -209,7 +230,8 @@ class JsonAdaptedPerson {
         }
         return new Person(modelName, modelPhone, modelEmail, modelAddress,
                 debtorId == null ? 0 : debtorId, modelOutstandingAmount, modelInteractionNotes,
-                modelFollowUpDate, modelFollowUpHistory, modelTags);
+                modelFollowUpDate, modelFollowUpHistory, modelTags,
+                contactPreferences == null ? new ContactPreferences(null, null) : contactPreferences.toModelType());
     }
 
     private LocalDate parseFollowUpDate(String value) {

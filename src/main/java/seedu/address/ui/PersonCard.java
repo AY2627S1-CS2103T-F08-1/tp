@@ -60,7 +60,13 @@ public class PersonCard extends UiPart<Region> {
         email.setText(person.getEmail().value);
         person.getTags().stream()
                 .sorted(Comparator.comparing(tag -> tag.tagName))
-                .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
+                .forEach(tag -> {
+                    Label label = new Label(tag.tagName);
+                    label.setWrapText(true);
+                    label.setMinWidth(0);
+                    label.maxWidthProperty().bind(tags.maxWidthProperty());
+                    tags.getChildren().add(label);
+                });
     }
 
     /**
@@ -73,5 +79,8 @@ public class PersonCard extends UiPart<Region> {
         outstandingAmount.maxWidthProperty().bind(contentWidth);
         address.maxWidthProperty().bind(contentWidth);
         email.maxWidthProperty().bind(contentWidth);
+        tags.maxWidthProperty().bind(contentWidth);
+        tags.setMinWidth(0);
+        tags.setPrefWidth(0);
     }
 }

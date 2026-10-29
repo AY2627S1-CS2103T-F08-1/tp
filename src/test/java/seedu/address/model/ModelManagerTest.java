@@ -9,6 +9,9 @@ import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
 import static seedu.address.testutil.TypicalPersons.CARL;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
+import java.util.Comparator;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -106,6 +109,60 @@ public class ModelManagerTest {
     }
 
     @Test
+    public void undoRedo_restoresDataNeverReusesIdsAndResetsView() {
+        modelManager.addPerson(ALICE);
+        modelManager.commitAddressBook();
+        int firstId = modelManager.getAddressBook().getPersonList().get(0).getDebtorId();
+        modelManager.updateFilteredPersonList(person -> person.getName().fullName.contains("Benson"));
+        modelManager.deletePerson(modelManager.getAddressBook().getPersonList().get(0));
+        modelManager.commitAddressBook();
+
+        assertTrue(modelManager.canUndoAddressBook());
+        modelManager.undoAddressBook();
+        assertEquals(1, modelManager.getAddressBook().getPersonList().size());
+        assertEquals(1, modelManager.getFilteredPersonList().size());
+        assertTrue(modelManager.canRedoAddressBook());
+        modelManager.updateFilteredPersonList(person -> false);
+        modelManager.redoAddressBook();
+        assertEquals(0, modelManager.getAddressBook().getPersonList().size());
+        modelManager.undoAddressBook();
+        modelManager.deletePerson(modelManager.getAddressBook().getPersonList().get(0));
+        modelManager.commitAddressBook();
+        Person next = modelManager.addPerson(BENSON);
+        assertTrue(next.getDebtorId() > firstId);
+    }
+
+    @Test
+    public void undoRedo_historyIsBoundedToOneHundredStatesAndNewBranchClearsRedo() {
+        for (int i = 0; i < 100; i++) {
+            Person debtor = new PersonBuilder().withName("Debtor " + i)
+                    .withPhone(String.format("8%07d", i))
+                    .withEmail("debtor" + i + "@example.com").build();
+            modelManager.addPerson(debtor);
+            modelManager.commitAddressBook();
+        }
+
+        for (int i = 0; i < 99; i++) {
+            assertTrue(modelManager.canUndoAddressBook());
+            modelManager.undoAddressBook();
+        }
+        assertFalse(modelManager.canUndoAddressBook());
+        assertEquals(1, modelManager.getAddressBook().getPersonList().size());
+
+        for (int i = 0; i < 99; i++) {
+            assertTrue(modelManager.canRedoAddressBook());
+            modelManager.redoAddressBook();
+        }
+        assertFalse(modelManager.canRedoAddressBook());
+        assertEquals(100, modelManager.getAddressBook().getPersonList().size());
+
+        modelManager.undoAddressBook();
+        modelManager.deletePerson(modelManager.getAddressBook().getPersonList().getLast());
+        modelManager.commitAddressBook();
+        assertFalse(modelManager.canRedoAddressBook());
+    }
+
+    @Test
     public void updateSortedPersonList_preservesFilterAndUsesComparatorForLaterMutations() {
         Person alpha = new PersonBuilder(ALICE).withName("Alpha Tan").withDebtorId(3)
                 .withOutstandingAmount("10.00").build();
@@ -195,5 +252,85 @@ public class ModelManagerTest {
         UserPrefs differentUserPrefs = new UserPrefs();
         differentUserPrefs.setGuiSettings(new GuiSettings(1, 2, 3, 4));
         assertFalse(modelManager.equals(new ModelManager(addressBook, differentUserPrefs)));
+    }
+
+    @Test
+    public void createTransactionCopy_isIsolatedUntilPublished() {
+        modelManager.addPerson(ALICE);
+        modelManager.updateFilteredPersonList(new NameContainsKeywordsPredicate(List.of("Alice")));
+        Model candidate = modelManager.createTransactionCopy();
+
+        assertEquals(modelManager.getFilteredPersonList(), candidate.getFilteredPersonList());
+        candidate.addPerson(BENSON);
+        assertEquals(1, modelManager.getAddressBook().getPersonList().size());
+
+        modelManager.publishTransaction(candidate);
+        assertEquals(2, modelManager.getAddressBook().getPersonList().size());
+        assertEquals(candidate.getFilteredPersonList(), modelManager.getFilteredPersonList());
+    }
+
+    @Test
+    public void transactionCopy_carriesSortOrderThroughPublish() {
+        modelManager.addPerson(ALICE);
+        modelManager.addPerson(BENSON);
+        Comparator<Person> byNameDescending = Comparator.comparing((Person person) -> person.getName().fullName)
+                .reversed();
+        modelManager.updateSortedPersonList(byNameDescending);
+        List<Person> sortedView = List.copyOf(modelManager.getFilteredPersonList());
+
+        Model candidate = modelManager.createTransactionCopy();
+        assertEquals(sortedView, candidate.getFilteredPersonList());
+        candidate.updatePersonView(PREDICATE_SHOW_ALL_PERSONS, byNameDescending);
+        modelManager.publishTransaction(candidate);
+        assertEquals(sortedView, modelManager.getFilteredPersonList());
+    }
+
+    @Test
+    public void publishTransaction_invalidCandidate_throws() {
+        assertThrows(NullPointerException.class, () -> modelManager.publishTransaction(null));
+        assertThrows(IllegalArgumentException.class, () -> modelManager.publishTransaction(unsupportedModel()));
+    }
+
+    @Test
+    public void transactionDefaults_unsupportedModel_throwUnsupportedOperationException() {
+        Model unsupported = unsupportedModel();
+        assertThrows(UnsupportedOperationException.class, unsupported::createTransactionCopy);
+        assertThrows(UnsupportedOperationException.class, () -> unsupported.publishTransaction(modelManager));
+    }
+
+    @Test
+    public void historyDefaults_unsupportedModel_reportNoHistory() {
+        Model unsupported = unsupportedModel();
+        unsupported.commitAddressBook();
+        assertFalse(unsupported.canUndoAddressBook());
+        assertFalse(unsupported.canRedoAddressBook());
+        assertThrows(IllegalStateException.class, unsupported::undoAddressBook);
+        assertThrows(IllegalStateException.class, unsupported::redoAddressBook);
+    }
+
+    @Test
+    public void undoRedo_noHistory_throwsIllegalStateException() {
+        assertFalse(modelManager.canUndoAddressBook());
+        assertFalse(modelManager.canRedoAddressBook());
+        assertThrows(IllegalStateException.class, modelManager::undoAddressBook);
+        assertThrows(IllegalStateException.class, modelManager::redoAddressBook);
+    }
+
+    @Test
+    public void commitAddressBook_unchangedState_addsNoHistory() {
+        modelManager.commitAddressBook();
+        assertFalse(modelManager.canUndoAddressBook());
+
+        modelManager.addPerson(ALICE);
+        modelManager.commitAddressBook();
+        modelManager.commitAddressBook();
+        modelManager.undoAddressBook();
+        assertFalse(modelManager.canUndoAddressBook());
+    }
+
+    /** Returns a {@code Model} that only provides the interface's default methods. */
+    private static Model unsupportedModel() {
+        InvocationHandler defaultsOnly = (proxy, method, args) -> InvocationHandler.invokeDefault(proxy, method, args);
+        return (Model) Proxy.newProxyInstance(Model.class.getClassLoader(), new Class<?>[] {Model.class}, defaultsOnly);
     }
 }

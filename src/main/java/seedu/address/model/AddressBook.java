@@ -65,9 +65,9 @@ public class AddressBook implements ReadOnlyAddressBook {
      */
     public void resetData(ReadOnlyAddressBook newData) {
         requireNonNull(newData);
-
+        int previousNextDebtorId = nextDebtorId;
         setPersons(newData.getPersonList());
-        nextDebtorId = Math.max(nextDebtorId, newData.getNextDebtorId());
+        nextDebtorId = Math.max(previousNextDebtorId, Math.max(nextDebtorId, newData.getNextDebtorId()));
     }
 
     //// person-level operations

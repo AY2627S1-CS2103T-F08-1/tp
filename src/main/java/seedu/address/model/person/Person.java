@@ -35,6 +35,7 @@ public class Person {
     private final List<InteractionNote> interactionNotes;
     private final Optional<LocalDate> followUpDate;
     private final List<FollowUpEvent> followUpHistory;
+    private final ContactPreferences contactPreferences;
     private final Set<Tag> tags = new HashSet<>();
 
     /**
@@ -64,14 +65,31 @@ public class Person {
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes, Set<Tag> tags) {
         this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
-                Optional.empty(), List.of(), tags);
+                Optional.empty(), List.of(), tags, new ContactPreferences(null, null));
     }
 
     /** Creates a person with every debtor field, including follow-up state and history. */
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes,
             Optional<LocalDate> followUpDate, List<FollowUpEvent> followUpHistory, Set<Tag> tags) {
-        requireAllNonNull(name, phone, email, address, outstandingAmount, interactionNotes, tags);
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
+                followUpDate, followUpHistory, tags, new ContactPreferences(null, null));
+    }
+
+    /** Creates a person with contact preferences. */
+    public Person(Name name, Phone phone, Email email, Address address, int debtorId,
+            OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes, Set<Tag> tags,
+            ContactPreferences contactPreferences) {
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
+                Optional.empty(), List.of(), tags, contactPreferences);
+    }
+
+    /** Creates a person with every debtor field. */
+    public Person(Name name, Phone phone, Email email, Address address, int debtorId,
+            OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes,
+            Optional<LocalDate> followUpDate, List<FollowUpEvent> followUpHistory, Set<Tag> tags,
+            ContactPreferences contactPreferences) {
+        requireAllNonNull(name, phone, email, address, outstandingAmount, interactionNotes, tags, contactPreferences);
         requireAllNonNull(followUpDate, followUpHistory);
         if (debtorId < 0) {
             throw new IllegalArgumentException(MESSAGE_INVALID_DEBTOR_ID);
@@ -85,6 +103,7 @@ public class Person {
         this.interactionNotes = List.copyOf(interactionNotes);
         this.followUpDate = followUpDate;
         this.followUpHistory = List.copyOf(followUpHistory);
+        this.contactPreferences = contactPreferences;
         this.tags.addAll(tags);
     }
 
@@ -116,7 +135,17 @@ public class Person {
      */
     public Person withDebtorId(int newDebtorId) {
         return new Person(name, phone, email, address, newDebtorId, outstandingAmount, interactionNotes,
-                followUpDate, followUpHistory, tags);
+                followUpDate, followUpHistory, tags, contactPreferences);
+    }
+
+    public ContactPreferences getContactPreferences() {
+        return contactPreferences;
+    }
+
+    /** Returns a copy with updated preferences. */
+    public Person withContactPreferences(ContactPreferences preferences) {
+        return new Person(name, phone, email, address, debtorId, outstandingAmount,
+                interactionNotes, followUpDate, followUpHistory, tags, preferences);
     }
 
     public OutstandingAmount getOutstandingAmount() {
@@ -147,7 +176,7 @@ public class Person {
         List<FollowUpEvent> updatedHistory = new ArrayList<>(followUpHistory);
         updatedHistory.add(event);
         return new Person(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
-                date, updatedHistory, tags);
+                date, updatedHistory, tags, contactPreferences);
     }
 
     /**
@@ -158,7 +187,7 @@ public class Person {
         List<InteractionNote> updatedNotes = new ArrayList<>(interactionNotes);
         updatedNotes.add(note);
         return new Person(name, phone, email, address, debtorId, outstandingAmount, updatedNotes,
-                followUpDate, followUpHistory, tags);
+                followUpDate, followUpHistory, tags, contactPreferences);
     }
 
     /**
@@ -205,6 +234,7 @@ public class Person {
                 && interactionNotes.equals(otherPerson.interactionNotes)
                 && followUpDate.equals(otherPerson.followUpDate)
                 && followUpHistory.equals(otherPerson.followUpHistory)
+                && contactPreferences.equals(otherPerson.contactPreferences)
                 && tags.equals(otherPerson.tags);
     }
 
@@ -212,7 +242,7 @@ public class Person {
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
         return Objects.hash(name, phone, email, address, outstandingAmount, interactionNotes,
-                followUpDate, followUpHistory, tags);
+                followUpDate, followUpHistory, tags, contactPreferences);
     }
 
     @Override

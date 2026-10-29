@@ -156,7 +156,7 @@ class FollowUpHistoryWorkflowTest {
     }
 
     @Test
-    void execute_saveFails_thenExitPersistsFollowUpOnce() throws Exception {
+    void execute_saveFails_rollsBackUntilCommandIsRetried() throws Exception {
         Model model = new ModelManager();
         Person debtor = model.addPerson(new PersonBuilder().build());
         Path file = temporaryFolder.resolve("addressBook.json");
@@ -179,15 +179,17 @@ class FollowUpHistoryWorkflowTest {
         assertThrows(CommandException.class,
                 String.format(LogicManager.FILE_OPS_ERROR_FORMAT, "temporary failure"), () ->
                         logic.execute(commandText));
-        assertTrue(model.getAddressBook().getPersonList().getFirst().getFollowUpDate().isPresent());
+        assertTrue(model.getAddressBook().getPersonList().getFirst().getFollowUpDate().isEmpty());
         assertTrue(baseStorage.readAddressBook().orElseThrow().getPersonList().getFirst().getFollowUpDate().isEmpty());
         assertTrue(logic.execute("exit").isExit());
+        assertTrue(baseStorage.readAddressBook().orElseThrow().getPersonList().getFirst().getFollowUpDate().isEmpty());
+        logic.execute(commandText);
         assertEquals(LocalDate.of(2026, 11, 3), baseStorage.readAddressBook().orElseThrow()
                 .getPersonList().getFirst().getFollowUpDate().orElseThrow());
     }
 
     @Test
-    void execute_accessDeniedSave_thenExitPersistsFollowUpOnce() throws Exception {
+    void execute_accessDeniedSave_rollsBackUntilCommandIsRetried() throws Exception {
         Model model = new ModelManager();
         Person debtor = model.addPerson(new PersonBuilder().build());
         Path file = temporaryFolder.resolve("deniedAddressBook.json");
@@ -210,9 +212,11 @@ class FollowUpHistoryWorkflowTest {
         assertThrows(CommandException.class,
                 String.format(LogicManager.FILE_OPS_PERMISSION_ERROR_FORMAT, "temporary denied path"), () ->
                         logic.execute(commandText));
-        assertTrue(model.getAddressBook().getPersonList().getFirst().getFollowUpDate().isPresent());
+        assertTrue(model.getAddressBook().getPersonList().getFirst().getFollowUpDate().isEmpty());
         assertTrue(baseStorage.readAddressBook().orElseThrow().getPersonList().getFirst().getFollowUpDate().isEmpty());
         assertTrue(logic.execute("exit").isExit());
+        assertTrue(baseStorage.readAddressBook().orElseThrow().getPersonList().getFirst().getFollowUpDate().isEmpty());
+        logic.execute(commandText);
         assertEquals(LocalDate.of(2026, 11, 3), baseStorage.readAddressBook().orElseThrow()
                 .getPersonList().getFirst().getFollowUpDate().orElseThrow());
     }
@@ -264,9 +268,11 @@ class FollowUpHistoryWorkflowTest {
         Logic logic = createLogic(model, failOnce);
         String command = "followup --id " + debtor.getDebtorId() + " --date 2026-11-03";
         assertThrows(CommandException.class, () -> logic.execute(command));
-        String beforeNoOp = java.nio.file.Files.readString(file);
+        assertTrue(model.getAddressBook().getPersonList().getFirst().getFollowUpDate().isEmpty());
         logic.execute(command);
-        assertEquals(beforeNoOp, java.nio.file.Files.readString(file));
+        String afterSuccess = java.nio.file.Files.readString(file);
+        logic.execute(command);
+        assertEquals(afterSuccess, java.nio.file.Files.readString(file));
         assertEquals(1, model.getAddressBook().getPersonList().getFirst().getFollowUpHistory().size());
     }
     @Test
@@ -303,7 +309,7 @@ class FollowUpHistoryWorkflowTest {
         CommandException failure = org.junit.jupiter.api.Assertions.assertThrows(CommandException.class, () ->
                 logic.execute("add n/Beth Lee p/81234568 e/beth@example.com a/2 Main Street"));
         assertTrue(failure.getMessage().contains("Preserve this file, restore valid JSON, and restart"));
-        assertEquals(1, model.getAddressBook().getPersonList().size());
+        assertEquals(0, model.getAddressBook().getPersonList().size());
         assertEquals(original, java.nio.file.Files.readString(file));
     }
     @Test
