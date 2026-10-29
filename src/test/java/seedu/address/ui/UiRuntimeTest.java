@@ -160,6 +160,8 @@ public class UiRuntimeTest {
             assertNotNull(reference);
             assertTrue(reference.isFitToWidth());
             assertTrue(reference.isFocusTraversable());
+            helpWindow.getRoot().getScene().getRoot().applyCss();
+            helpWindow.getRoot().getScene().getRoot().layout();
             assertTrue(reference.getVmax() > reference.getVmin());
             reference.setVvalue(reference.getVmin());
             KeyEvent enter = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER,
