@@ -29,6 +29,26 @@ public class ContactWorkflowTest {
     public Path directory;
 
     @Test
+    public void contactable_readOnlyViewDoesNotSaveAfterFailedMutation() throws Exception {
+        Model model = new ModelManager();
+        Person debtor = model.addPerson(new PersonBuilder().build());
+        CountingStorage storage = new CountingStorage(directory.resolve("book.json"));
+        Logic logic = new LogicManager(model,
+                new StorageManager(storage, new JsonUserPrefsStorage(directory.resolve("prefs.json"))));
+        storage.fail = true;
+        assertThrows(CommandException.class, () ->
+                logic.execute("contact --id " + debtor.getDebtorId() + " --hours 08:00-18:00"));
+        storage.fail = false;
+        logic.execute("contactable --at 09:00");
+        assertEquals(1, storage.saves);
+        assertTrue(model.getFilteredPersonList().isEmpty());
+        assertThrows(ParseException.class, () -> logic.execute("contactable --at 24:00"));
+        assertTrue(model.getFilteredPersonList().isEmpty());
+        logic.execute("list");
+        assertEquals(1, storage.saves);
+    }
+
+    @Test
     public void contact_unchangedValues_doNotReplaceOrSave() throws Exception {
         Model model = new ModelManager();
         Person debtor = model.addPerson(new PersonBuilder().build());

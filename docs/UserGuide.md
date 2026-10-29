@@ -436,3 +436,9 @@ Use `preview edit INDEX [FIELDS]` or `preview delete INDEX` to see the result wi
 ### Exporting a debtor profile: `export`
 
 Use `export --id ID` to write the profile and interaction history as UTF-8 text to `exports/debtor-ID.txt` relative to the application working directory. An existing export is never overwritten; move or rename it before exporting the same ID again. The file contains sensitive debtor information, so share and store it carefully.
+
+### Finding contactable debtors: `contactable`
+
+Use `contactable [--at HH:mm] [--method call|sms|email|letter]` to find debtors with a configured contact window that includes the given local time. Omit `--at` to use the current local time. The start is included and the end is excluded. Debtors without hours are excluded; when a method is specified, only debtors with that explicit preference match. This is a scheduling aid, not a permission check, and does not contact anyone.
+
+Example: `contactable --at 09:30 --method sms`. The command replaces the displayed list; use `list` to restore all debtors.

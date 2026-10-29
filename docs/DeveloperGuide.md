@@ -819,3 +819,7 @@ The `contact` command selects a debtor by persistent ID and replaces only the re
 ### Profile export
 
 `export --id ID` finds the debtor by persistent ID and writes the profile to a new UTF-8 file in the working-directory `exports` folder. Create-only file access prevents overwriting an existing record. The command does not modify or save the address book.
+
+### Contactability worklist
+
+The read-only `contactable` command fixes a local reference time once, then filters the existing observable debtor view by the configured window and optional method. Start times are inclusive and end times exclusive. Records without configured windows never match. The command does not persist changes; `list` restores the full view.
