@@ -119,7 +119,7 @@ How the `Logic` component works:
 
 For an in-range index, `DeleteCommand` removes the selected `Person` through `Model#deletePerson`. For persistence-bound commands, `LogicManager` executes against an isolated copy of the model that retains the active filter, saves the candidate, and only then publishes it to the live observable model. The success message includes the deleted debtor's ID, name, phone, email, address, outstanding amount, and tags. A storage failure leaves the live model and displayed list unchanged.
 
-Interaction notes are part of the `Person` record. Deleting a debtor therefore removes the profile and its complete interaction history from the active address book and, after a successful save, from the persisted data. `show --id ID` can display profiles only for active debtors, so it reports that the debtor may have been deleted after removal. The current model does not maintain undo/redo history for deletion; the next debtor ID is not reused.
+Interaction notes are part of the `Person` record. Deleting a debtor therefore removes the profile and its complete interaction history from the active address book and, after a successful save, from the persisted data. `show --id ID` can display profiles only for active debtors, so it reports that the debtor may have been deleted after removal. The model keeps up to 100 in-session address-book snapshots for undo/redo; snapshots include `nextDebtorId`, while restore preserves the allocator's high-water mark so IDs are never reused.
 
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
 
@@ -315,9 +315,36 @@ preserve the current predicate and comparator.
   financial information when the window is narrow or a value is long. The persistent ID is kept at its preferred
   width so that wrapping the adjacent name does not obscure which debtor the card represents.
 
-### \[Proposed\] Undo/redo feature
+### Undo/redo feature
 
-#### Proposed Implementation
+`ModelManager` keeps a bounded list of up to 100 `AddressBook` snapshots and a pointer to the current snapshot. It starts
+with the loaded address book, including `nextDebtorId`. A snapshot is a copy of the whole `AddressBook`, so any field
+`Person` gains is captured without changes to the history code. A new snapshot discards any redo branch; repeated
+identical states are ignored. `undo` and `redo` move the pointer, restore address-book data, and save the restored state.
+After either one, `ModelManager` resets the filtered-list predicate and the sorted-list comparator, so every debtor is
+shown in persistent-ID order.
+
+The allocator is monotonic across restores: `AddressBook.resetData` preserves the greater of its previous high-water mark,
+the restored state's next ID, and the restored records' IDs. Undoing an add removes the debtor without making its ID
+available again. History is held only in memory and starts fresh from persisted data when the application restarts.
+
+History takes part in the save transaction described under persistence. `LogicManager` runs a persistence-bound command,
+including `undo` and `redo`, on a candidate model created by `Model#createTransactionCopy`. The copy carries the data,
+the history list and pointer, the filter and the comparator. A new snapshot is committed on the candidate before the
+save. The candidate replaces the live model, history included, only after `JsonAddressBookStorage` has replaced the file.
+If saving fails, the live data, history pointer, view and previous file bytes are all unchanged. Snapshots are never
+mutated after they are recorded, so the live model and candidate can share them. The save is atomic against ordinary write
+failures but is not a promise of crash durability.
+
+`find` and `list` do not add history states. Add, edit, delete, note, and clear changes are undoable after they save
+successfully.
+
+#### Reference design diagrams
+
+The following diagrams and scenario are retained from the original design proposal. The current implementation details
+and save-failure behavior are described above.
+
+#### Original proposal (not the current implementation)
 
 The proposed undo/redo mechanism is facilitated by `VersionedAddressBook`. It extends `AddressBook` with an undo/redo history, stored internally as an `addressBookStateList` and `currentStatePointer`. Additionally, it implements the following operations:
 

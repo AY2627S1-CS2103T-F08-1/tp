@@ -43,6 +43,10 @@ while retaining the benefits of a graphical user interface (GUI).
 
    * `clear` : Deletes all debtor records.
 
+   * `undo` : Reverses the most recent saved change in this session.
+
+   * `redo` : Reapplies the most recently undone change in this session.
+
    * `exit` : Exits the app.
 
 1. Refer to the [Features](#features) section below for details of each command.
@@ -72,6 +76,9 @@ while retaining the benefits of a graphical user interface (GUI).
 
 * The `list` command accepts no parameters. Unexpected parameters are rejected with an error message so that typing
   mistakes are not silently ignored.
+
+* `undo` and `redo` also reject extra parameters. Their history lasts only until the app closes. A new saved change
+  after `undo` clears the redo history. A change that fails to save is not applied and does not enter history.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </div>
@@ -299,11 +306,23 @@ Examples:
 
 ### Clearing all entries: `clear`
 
-Clears all debtor records from OSPS. This operation has no undo or confirmation.
+Clears all debtor records from OSPS. The clear can be reversed with `undo` during the current session.
 
 The `clear` operation will be rejected if additional arguments are supplied
 
 Format: `clear`
+
+### Undoing and redoing changes: `undo`, `redo`
+
+`undo` restores the previous successfully saved debtor data. `redo` reapplies an undone change. These commands cover
+adds, edits, notes, deletes, and clears. The history is session-only and keeps at most 100 states, so you can undo up to 99 changes. Undoing or redoing
+does not rewind the next debtor ID, so IDs are never reused. After every successful `undo` or `redo`, OSPS clears any
+`find` filter and lists all debtors in ID order, so displayed indices refer to the full list.
+After undo, a new saved change discards redo history. If a change, `undo` or `redo` cannot be saved, OSPS reports an
+error and leaves your records, the undo and redo history, and the saved file exactly as they were. Resolve the problem
+and run the command again. `exit` does not retry a failed command.
+
+Format: `undo` or `redo`
 
 ### Exiting the program: `exit`
 
@@ -369,6 +388,8 @@ Action | Format, Examples
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find Alice 98765432`
 **List** | `list`
 **Note** | `note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT`<br> e.g., `note --id 1 --outcome reached --text Called debtor.`
+**Undo** | `undo`
+**Redo** | `redo`
 **Show** | `show --id DEBTOR_ID`<br> e.g., `show --id 3`
 **Sort** | `sort --by id\|name\|amount [--order asc\|desc]`<br> e.g., `sort --by amount --order desc`
 **Help** | `help`
