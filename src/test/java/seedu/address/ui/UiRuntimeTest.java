@@ -39,7 +39,8 @@ import seedu.address.testutil.PersonBuilder;
 @EnabledOnOs(OS.LINUX)
 public class UiRuntimeTest {
 
-    private static final long TEST_TIMEOUT_SECONDS = 5;
+    // Shared Linux runners can spend several seconds loading JavaFX fonts and CSS on a cold cache.
+    private static final long TEST_TIMEOUT_SECONDS = 30;
     private HelpWindow helpWindow;
 
     @BeforeAll
