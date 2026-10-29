@@ -67,6 +67,10 @@ public class HelpWindow extends UiPart<Stage> {
             export --id DEBTOR_ID
             Example: export --id 3
 
+            Schedule, clear or complete a debtor follow-up
+            followup --id DEBTOR_ID --date YYYY-MM-DD | --clear | --done
+            Example: followup --id 1 --date 2026-11-03
+
             Edit a debtor by displayed index
             edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/AMOUNT] [t/TAG]...
             Example: edit 2 o/S$500.00

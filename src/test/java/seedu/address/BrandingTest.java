@@ -27,6 +27,7 @@ import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.ExportCommand;
 import seedu.address.logic.commands.FindCommand;
+import seedu.address.logic.commands.FollowUpCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListAmountCommand;
 import seedu.address.logic.commands.ListCommand;
@@ -71,6 +72,9 @@ public class BrandingTest {
                     + "| delete INDEX",
                     List.of("preview edit 1 n/Alice", "preview delete 2")),
             Map.entry("export --id DEBTOR_ID", List.of("export --id 1", "export --id 3")),
+            Map.entry("followup --id DEBTOR_ID --date YYYY-MM-DD | --clear | --done",
+                    List.of("followup --id 1 --date 2026-11-03", "followup --id 1 --clear",
+                            "followup --id 1 --done")),
             Map.entry("edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/AMOUNT] [t/TAG]...",
                     List.of("edit 1 n/Alice p/92345678 e/new@example.com a/New Street o/20 t/priority",
                             "edit 2 o/S$500.00")),
@@ -86,6 +90,7 @@ public class BrandingTest {
             Map.entry("contact", ContactCommand.class),
             Map.entry("contactable", ContactableCommand.class),
             Map.entry("export", ExportCommand.class),
+            Map.entry("followup", FollowUpCommand.class),
             Map.entry("list-amount", ListAmountCommand.class),
             Map.entry("preview", PreviewCommand.class),
             Map.entry("delete", DeleteCommand.class),

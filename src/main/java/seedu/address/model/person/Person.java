@@ -3,11 +3,13 @@ package seedu.address.model.person;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import seedu.address.commons.util.ToStringBuilder;
@@ -31,6 +33,8 @@ public class Person {
     private final int debtorId;
     private final OutstandingAmount outstandingAmount;
     private final List<InteractionNote> interactionNotes;
+    private final Optional<LocalDate> followUpDate;
+    private final List<FollowUpEvent> followUpHistory;
     private final ContactPreferences contactPreferences;
     private final Set<Tag> tags = new HashSet<>();
 
@@ -57,20 +61,36 @@ public class Person {
         this(name, phone, email, address, debtorId, outstandingAmount, List.of(), tags);
     }
 
-    /**
-     * Creates a person with all debtor fields, including interaction notes.
-     */
+    /** Creates a person with all debtor fields, including interaction notes. */
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes, Set<Tag> tags) {
-        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, tags,
-                new ContactPreferences(null, null));
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
+                Optional.empty(), List.of(), tags, new ContactPreferences(null, null));
+    }
+
+    /** Creates a person with every debtor field, including follow-up state and history. */
+    public Person(Name name, Phone phone, Email email, Address address, int debtorId,
+            OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes,
+            Optional<LocalDate> followUpDate, List<FollowUpEvent> followUpHistory, Set<Tag> tags) {
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
+                followUpDate, followUpHistory, tags, new ContactPreferences(null, null));
     }
 
     /** Creates a person with contact preferences. */
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes, Set<Tag> tags,
             ContactPreferences contactPreferences) {
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
+                Optional.empty(), List.of(), tags, contactPreferences);
+    }
+
+    /** Creates a person with every debtor field. */
+    public Person(Name name, Phone phone, Email email, Address address, int debtorId,
+            OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes,
+            Optional<LocalDate> followUpDate, List<FollowUpEvent> followUpHistory, Set<Tag> tags,
+            ContactPreferences contactPreferences) {
         requireAllNonNull(name, phone, email, address, outstandingAmount, interactionNotes, tags, contactPreferences);
+        requireAllNonNull(followUpDate, followUpHistory);
         if (debtorId < 0) {
             throw new IllegalArgumentException(MESSAGE_INVALID_DEBTOR_ID);
         }
@@ -81,6 +101,8 @@ public class Person {
         this.debtorId = debtorId;
         this.outstandingAmount = outstandingAmount;
         this.interactionNotes = List.copyOf(interactionNotes);
+        this.followUpDate = followUpDate;
+        this.followUpHistory = List.copyOf(followUpHistory);
         this.contactPreferences = contactPreferences;
         this.tags.addAll(tags);
     }
@@ -112,8 +134,8 @@ public class Person {
      * Returns a copy of this person with the supplied persistent debtor ID.
      */
     public Person withDebtorId(int newDebtorId) {
-        return new Person(name, phone, email, address, newDebtorId, outstandingAmount,
-                interactionNotes, tags, contactPreferences);
+        return new Person(name, phone, email, address, newDebtorId, outstandingAmount, interactionNotes,
+                followUpDate, followUpHistory, tags, contactPreferences);
     }
 
     public ContactPreferences getContactPreferences() {
@@ -123,7 +145,7 @@ public class Person {
     /** Returns a copy with updated preferences. */
     public Person withContactPreferences(ContactPreferences preferences) {
         return new Person(name, phone, email, address, debtorId, outstandingAmount,
-                interactionNotes, tags, preferences);
+                interactionNotes, followUpDate, followUpHistory, tags, preferences);
     }
 
     public OutstandingAmount getOutstandingAmount() {
@@ -137,6 +159,26 @@ public class Person {
         return interactionNotes;
     }
 
+    /** Returns this debtor's pending follow-up date, if one is scheduled. */
+    public Optional<LocalDate> getFollowUpDate() {
+        return followUpDate;
+    }
+
+    /** Returns follow-up changes in insertion order. */
+    public List<FollowUpEvent> getFollowUpHistory() {
+        return followUpHistory;
+    }
+
+    /** Returns a copy with the supplied pending date and one appended history event. */
+    public Person withFollowUpChange(Optional<LocalDate> date, FollowUpEvent event) {
+        requireNonNull(date);
+        requireNonNull(event);
+        List<FollowUpEvent> updatedHistory = new ArrayList<>(followUpHistory);
+        updatedHistory.add(event);
+        return new Person(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
+                date, updatedHistory, tags, contactPreferences);
+    }
+
     /**
      * Returns a copy of this person with {@code note} appended to the interaction history.
      */
@@ -144,8 +186,8 @@ public class Person {
         requireNonNull(note);
         List<InteractionNote> updatedNotes = new ArrayList<>(interactionNotes);
         updatedNotes.add(note);
-        return new Person(name, phone, email, address, debtorId, outstandingAmount,
-                updatedNotes, tags, contactPreferences);
+        return new Person(name, phone, email, address, debtorId, outstandingAmount, updatedNotes,
+                followUpDate, followUpHistory, tags, contactPreferences);
     }
 
     /**
@@ -190,6 +232,8 @@ public class Person {
                 && address.equals(otherPerson.address)
                 && outstandingAmount.equals(otherPerson.outstandingAmount)
                 && interactionNotes.equals(otherPerson.interactionNotes)
+                && followUpDate.equals(otherPerson.followUpDate)
+                && followUpHistory.equals(otherPerson.followUpHistory)
                 && contactPreferences.equals(otherPerson.contactPreferences)
                 && tags.equals(otherPerson.tags);
     }
@@ -197,7 +241,8 @@ public class Person {
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, outstandingAmount, interactionNotes, tags, contactPreferences);
+        return Objects.hash(name, phone, email, address, outstandingAmount, interactionNotes,
+                followUpDate, followUpHistory, tags, contactPreferences);
     }
 
     @Override

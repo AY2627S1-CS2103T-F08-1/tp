@@ -37,6 +37,8 @@ while retaining the benefits of a graphical user interface (GUI).
    * `note --id 1 --outcome payment-promised --text Called debtor, promised payment on Friday.` : Adds an
      interaction note with a structured outcome to debtor ID 1.
 
+   * `followup --id 1 --date 2026-11-03` : Schedules a follow-up for debtor ID 1.
+
    * `show --id 1` : Shows the complete profile and interaction history of debtor ID 1.
 
    * `delete 3` : Deletes the 3rd debtor shown in the current list.
@@ -208,12 +210,39 @@ Example:
 * `note --outcome callback-requested --id 1 --text Debtor requested a call tomorrow morning.`
 * `note --id 1 --text Sent a written reminder.` records a note with an `unspecified` outcome.
 
+### Scheduling a debtor follow-up: `followup`
+
+Schedules or reschedules the next follow-up date, clears a pending date, or marks a pending follow-up complete.
+Each change is timestamped in the debtor's follow-up history.
+
+Formats:
+* `followup --id DEBTOR_ID --date YYYY-MM-DD`
+* `followup --id DEBTOR_ID --clear`
+* `followup --id DEBTOR_ID --done`
+
+* `DEBTOR_ID` must be a positive persistent debtor ID.
+* Dates must be real calendar dates in exactly `YYYY-MM-DD` format, with years from `0001` through `9999`.
+* Setting the current date again is a no-op and adds no history event.
+* `--clear` and `--done` require a pending follow-up. Both clear the pending date and record the date that was cleared
+  or completed in history.
+* Scheduling a new date after `--clear` or `--done` starts a new `SCHEDULED` history event.
+* Unknown, duplicate, or conflicting options are rejected without changing debtor data.
+* Follow-up dates and history are preserved when the debtor is edited and after restarting the application. Legacy
+  data without follow-up fields loads with no pending date and an empty history.
+* If saving fails, the change is not applied to memory or disk. Resolve the storage problem and run the command again.
+
+Examples:
+* `followup --id 1 --date 2026-11-03`
+* `followup --id 1 --date 2026-11-05` reschedules a pending date.
+* `followup --id 1 --done` marks the pending follow-up complete.
+
 ### Viewing a debtor profile: `show`
 
 Shows the complete profile of the active debtor identified by persistent debtor ID. The profile includes the
-debtor's name, phone number, email address, address, outstanding amount, tags, and interaction history. Interaction
-notes are shown newest first. Each note shows its timestamp, outcome, and text. If the debtor has no notes, the profile
-states that no interaction notes are recorded.
+debtor's name, phone number, email address, address, outstanding amount, tags, contact preferences, pending follow-up
+date, interaction history, and follow-up history. Interaction notes are shown newest first, with each note's timestamp,
+outcome, and text. Follow-up events are shown oldest first. If the debtor has no notes, the profile states that no
+interaction notes are recorded.
 If two notes have exactly the same timestamp, the later-added note is shown first; neither note is removed.
 Displayed times have minute precision, so two notes showing the same time may have different stored timestamps.
 
@@ -415,6 +444,7 @@ Action | Format, Examples
 **Filter by amount** | `list-amount [min/AMOUNT] [max/AMOUNT]`<br> e.g., `list-amount min/500 max/2,000`
 **List** | `list`
 **Note** | `note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT`<br> e.g., `note --id 1 --outcome reached --text Called debtor.`
+**Follow-up** | `followup --id DEBTOR_ID --date YYYY-MM-DD` or `--clear` or `--done`<br> e.g., `followup --id 1 --date 2026-11-03`
 **Undo** | `undo`
 **Redo** | `redo`
 **Show** | `show --id DEBTOR_ID`<br> e.g., `show --id 3`

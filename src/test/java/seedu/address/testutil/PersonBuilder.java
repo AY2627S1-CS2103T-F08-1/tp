@@ -1,11 +1,14 @@
 package seedu.address.testutil;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
+import seedu.address.model.person.FollowUpEvent;
 import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.OutstandingAmount;
@@ -30,6 +33,8 @@ public class PersonBuilder {
     private Address address;
     private OutstandingAmount outstandingAmount;
     private List<InteractionNote> interactionNotes;
+    private Optional<LocalDate> followUpDate;
+    private List<FollowUpEvent> followUpHistory;
     private int debtorId;
     private Set<Tag> tags;
 
@@ -43,6 +48,8 @@ public class PersonBuilder {
         address = new Address(DEFAULT_ADDRESS);
         outstandingAmount = new OutstandingAmount();
         interactionNotes = List.of();
+        followUpDate = Optional.empty();
+        followUpHistory = List.of();
         debtorId = 0;
         tags = new HashSet<>();
     }
@@ -57,6 +64,8 @@ public class PersonBuilder {
         address = personToCopy.getAddress();
         outstandingAmount = personToCopy.getOutstandingAmount();
         interactionNotes = personToCopy.getInteractionNotes();
+        followUpDate = personToCopy.getFollowUpDate();
+        followUpHistory = personToCopy.getFollowUpHistory();
         debtorId = personToCopy.getDebtorId();
         tags = new HashSet<>(personToCopy.getTags());
     }
@@ -125,8 +134,22 @@ public class PersonBuilder {
         return this;
     }
 
+    /** Sets the pending follow-up date. */
+    public PersonBuilder withFollowUpDate(Optional<LocalDate> followUpDate) {
+        this.followUpDate = followUpDate;
+        return this;
+    }
+
+    /** Sets the follow-up history. */
+    public PersonBuilder withFollowUpHistory(List<FollowUpEvent> followUpHistory) {
+        this.followUpHistory = List.copyOf(followUpHistory);
+        return this;
+    }
+
+    /** Builds a person using the configured field values. */
     public Person build() {
-        return new Person(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, tags);
+        return new Person(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
+                followUpDate, followUpHistory, tags);
     }
 
 }
