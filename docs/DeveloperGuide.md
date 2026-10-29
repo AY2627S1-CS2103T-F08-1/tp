@@ -840,7 +840,7 @@ For the detailed release-JAR deletion matrix and evidence format, see the
 
 Use sample data in a fresh folder. In the steps below, `ID` is a persistent debtor ID shown in the list.
 
-1. Run `followup --id ID --date 2026-11-03`, then `show ID`.<br>
+1. Run `followup --id ID --date 2026-11-03`, then `show --id ID`.<br>
    Expected: The profile shows the pending follow-up date `2026-11-03` and a `SCHEDULED` history event.
 1. Run `followup --id ID --done`, then `followup --id ID --done` again.<br>
    Expected: The first command clears the pending date and records it in history. The second is rejected with
@@ -857,7 +857,7 @@ Use sample data in a fresh folder. In the steps below, `ID` is a persistent debt
 
 ### Undo, redo, clear, help and exit
 
-1. Run `delete ID` for a debtor, then `undo`.<br>
+1. Run `list`, note the persistent ID of the debtor at displayed index 1, then run `delete 1` and `undo`.<br>
    Expected: `Undid the most recent change.` The debtor is back with the same persistent ID.
 1. Run `redo`.<br>
    Expected: `Redid the most recently undone change.` The debtor is deleted again.
