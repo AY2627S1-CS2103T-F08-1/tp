@@ -21,13 +21,17 @@ import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.ContactCommand;
+import seedu.address.logic.commands.ContactableCommand;
 import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.ExitCommand;
+import seedu.address.logic.commands.ExportCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
+import seedu.address.logic.commands.ListAmountCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.NoteCommand;
+import seedu.address.logic.commands.PreviewCommand;
 import seedu.address.logic.commands.RedoCommand;
 import seedu.address.logic.commands.ShowCommand;
 import seedu.address.logic.commands.SortCommand;
@@ -58,6 +62,15 @@ public class BrandingTest {
                     List.of("contact --id 1 --method sms --hours 09:00-17:30",
                             "contact --id 1 --clear-method --clear-hours",
                             "contact --id 3 --method sms --hours 09:00-17:30")),
+            Map.entry("list-amount [min/AMOUNT] [max/AMOUNT]",
+                    List.of("list-amount min/1000", "list-amount max/S$500.00",
+                            "list-amount min/500 max/2000")),
+            Map.entry("contactable [--at HH:mm] [--method call|sms|email|letter]",
+                    List.of("contactable", "contactable --at 09:30 --method sms")),
+            Map.entry("preview edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/AMOUNT] [t/TAG]... "
+                    + "| delete INDEX",
+                    List.of("preview edit 1 n/Alice", "preview delete 2")),
+            Map.entry("export --id DEBTOR_ID", List.of("export --id 1", "export --id 3")),
             Map.entry("edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/AMOUNT] [t/TAG]...",
                     List.of("edit 1 n/Alice p/92345678 e/new@example.com a/New Street o/20 t/priority",
                             "edit 2 o/S$500.00")),
@@ -71,6 +84,10 @@ public class BrandingTest {
             Map.entry("add", AddCommand.class),
             Map.entry("clear", ClearCommand.class),
             Map.entry("contact", ContactCommand.class),
+            Map.entry("contactable", ContactableCommand.class),
+            Map.entry("export", ExportCommand.class),
+            Map.entry("list-amount", ListAmountCommand.class),
+            Map.entry("preview", PreviewCommand.class),
             Map.entry("delete", DeleteCommand.class),
             Map.entry("edit", EditCommand.class),
             Map.entry("exit", ExitCommand.class),

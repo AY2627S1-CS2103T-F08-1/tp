@@ -51,6 +51,22 @@ public class HelpWindow extends UiPart<Stage> {
             contact --id DEBTOR_ID [--method METHOD | --clear-method] [--hours HH:mm-HH:mm | --clear-hours]
             Example: contact --id 3 --method sms --hours 09:00-17:30
 
+            Filter debtors by outstanding amount
+            list-amount [min/AMOUNT] [max/AMOUNT]
+            Example: list-amount min/1000
+
+            Find debtors whose contact window includes a time
+            contactable [--at HH:mm] [--method call|sms|email|letter]
+            Example: contactable --at 09:30 --method sms
+
+            Preview an edit or deletion without saving
+            preview edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/AMOUNT] [t/TAG]... | delete INDEX
+            Example: preview delete 2
+
+            Export a debtor profile by persistent ID
+            export --id DEBTOR_ID
+            Example: export --id 3
+
             Edit a debtor by displayed index
             edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/AMOUNT] [t/TAG]...
             Example: edit 2 o/S$500.00
