@@ -15,7 +15,7 @@ public class FindCommand extends Command {
     public static final String COMMAND_WORD = "find";
 
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Finds debtors whose names contain any specified "
-            + "keyword (case-insensitive, whole-word) or whose phone number exactly matches one.\n"
+            + "keyword (case-insensitive, literal substring) or whose phone number exactly matches one.\n"
             + "Parameters: KEYWORD [MORE_KEYWORDS]...\n"
             + "Example: " + COMMAND_WORD + " alice 91234567";
 
