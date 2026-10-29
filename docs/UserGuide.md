@@ -368,7 +368,7 @@ Format: `list-stage STAGE`
   Otherwise, it reports the number of matches and the selected stage.
 * Missing, unknown, or additional arguments are rejected without changing the current view or debtor records.
 * This command does not change or save debtor data. Run `list` to restore all active debtors in persistent-ID order.
-  A restart also restores the full list.
+  `undo`, `redo` and a restart also restore the full list.
 
 Examples:
 * `list-stage contacted` displays every debtor whose stage is `contacted`.
