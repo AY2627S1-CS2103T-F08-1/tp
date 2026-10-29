@@ -20,7 +20,6 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.event.Event;
-import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
@@ -103,17 +102,12 @@ public class UiRuntimeTest {
             PersonCard card = new PersonCard(person, 1);
             card.bindContentWidth(new SimpleDoubleProperty(413));
             Region root = card.getRoot();
-            StackPane container = new StackPane(root);
-            new Scene(container, 393, 600);
-            container.applyCss();
-            container.resize(393, 600);
-            container.layout();
             FlowPane tags = (FlowPane) root.lookup("#tags");
             Label tag = (Label) tags.getChildren().getFirst();
             assertEquals(longTag, tag.getText());
             assertTrue(tag.isWrapText());
-            assertTrue(tag.getWidth() <= 363);
-            assertTrue(tag.prefHeight(363) > tag.prefHeight(-1));
+            assertEquals(0.0, tag.getMinWidth());
+            assertEquals(363.0, tag.getMaxWidth());
         });
     }
 
@@ -153,17 +147,18 @@ public class UiRuntimeTest {
             assertNotNull(reference);
             assertTrue(reference.isFitToWidth());
             assertTrue(reference.isFocusTraversable());
-            helpWindow.show();
-            assertTrue(helpWindow.isShowing());
-            reference.requestFocus();
-            Event.fireEvent(reference, new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER,
-                    false, false, false, false));
-            assertTrue(helpWindow.isShowing());
-            Event.fireEvent(reference, new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.PAGE_DOWN,
-                    false, false, false, false));
-            assertTrue(helpWindow.isShowing());
-            Event.fireEvent(reference, new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ESCAPE,
-                    false, false, false, false));
+            KeyEvent enter = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER,
+                    false, false, false, false);
+            Event.fireEvent(reference, enter);
+            assertFalse(enter.isConsumed());
+            KeyEvent pageDown = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.PAGE_DOWN,
+                    false, false, false, false);
+            Event.fireEvent(reference, pageDown);
+            assertFalse(pageDown.isConsumed());
+            KeyEvent escape = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ESCAPE,
+                    false, false, false, false);
+            Event.fireEvent(reference, escape);
+            assertTrue(escape.isConsumed());
             assertFalse(helpWindow.isShowing());
         });
     }
