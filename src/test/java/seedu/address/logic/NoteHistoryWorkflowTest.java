@@ -49,13 +49,15 @@ public class NoteHistoryWorkflowTest {
         String firstText = "Called debtor; callback at 5pm?";
         String repeatedText = "Sent the same payment reminder.";
 
-        // A fixed clock reproduces separate legitimate interactions at exactly the same timestamp.
+        // Direct commands inject a fixed clock; the parser uses the system clock.
+        // The punctuation workflow below covers parsing and saving each note through LogicManager.
         new NoteCommand(debtorId, firstText, FIXED_CLOCK).execute(model);
         new NoteCommand(debtorId, repeatedText, FIXED_CLOCK).execute(model);
         new NoteCommand(debtorId, repeatedText, FIXED_CLOCK).execute(model);
         List<InteractionNote> originalNotes = model.getAddressBook().getPersonList().getFirst().getInteractionNotes();
 
         JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        // This first save deliberately persists all three fixed-clock notes together with the edit.
         createLogic(model, storage).execute("edit 1 n/Alice Updated o/0");
 
         Model reloadedModel = new ModelManager(storage.readAddressBook().orElseThrow(), new UserPrefs());
@@ -87,6 +89,9 @@ public class NoteHistoryWorkflowTest {
         logic.execute("note --text " + text + " --id " + debtor.getDebtorId());
         logic.execute("note --id " + debtor.getDebtorId() + " --text " + text);
         List<InteractionNote> originalNotes = model.getAddressBook().getPersonList().getFirst().getInteractionNotes();
+        // Each parsed note command must save its mutation before the later edit.
+        assertEquals(originalNotes, storage.readAddressBook().orElseThrow()
+                .getPersonList().getFirst().getInteractionNotes());
         logic.execute("edit 1 a/Updated Street");
 
         Model reloadedModel = new ModelManager(storage.readAddressBook().orElseThrow(), new UserPrefs());
@@ -119,7 +124,7 @@ public class NoteHistoryWorkflowTest {
         JsonAddressBookStorage diskStorage = new JsonAddressBookStorage(filePath);
         diskStorage.saveAddressBook(model.getAddressBook());
         String originalSavedData = Files.readString(filePath);
-        RecoveringAddressBookStorage storage = new RecoveringAddressBookStorage(filePath, failure);
+        FailOnceBeforeWriteAddressBookStorage storage = new FailOnceBeforeWriteAddressBookStorage(filePath, failure);
         Logic logic = createLogic(model, storage);
         String text = "Called debtor; promised payment.";
         String expectedMessage = failure instanceof AccessDeniedException
@@ -153,11 +158,11 @@ public class NoteHistoryWorkflowTest {
     }
 
     /** Simulates a write failure before modifying the file, followed by restored write access. */
-    private static class RecoveringAddressBookStorage extends JsonAddressBookStorage {
+    private static class FailOnceBeforeWriteAddressBookStorage extends JsonAddressBookStorage {
         private final IOException failure;
         private int saveAttempts;
 
-        RecoveringAddressBookStorage(Path filePath, IOException failure) {
+        FailOnceBeforeWriteAddressBookStorage(Path filePath, IOException failure) {
             super(filePath);
             this.failure = failure;
         }

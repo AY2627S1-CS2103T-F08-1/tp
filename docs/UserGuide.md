@@ -158,6 +158,7 @@ Format: `note --id DEBTOR_ID --text NOTE_TEXT`
   guaranteed to be on disk or to survive a restart. Resolve the save problem and verify the data after saving
   successfully. Check the profile before entering the note again to avoid adding a duplicate.
   Once the save problem is resolved, the next successful data-changing command or the `exit` command retries saving.
+  If the `exit` retry fails, OSPS reports an error and does not complete the exit.
   Read-only commands such as `show` and `list` do not retry a failed save.
 
 Example:

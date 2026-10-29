@@ -177,7 +177,8 @@ The `Storage` component,
   JSON `null` notes, are reported as data-loading errors.
 
 Interaction notes retain their insertion order in JSON, including identical text and timestamps. Profile formatting
-sorts notes by descending timestamp and uses reverse insertion order for ties. Editing a debtor preserves the full
+reverses a copy of the insertion-ordered list before applying the ordered stream's stable sort by descending
+timestamp. Stability preserves reverse insertion order for equal timestamps. Editing a debtor preserves the full
 history. `NoteHistoryWorkflowTest` verifies these behaviours together across editing, JSON reload and `show`.
 
 `LogicManager` applies a valid `note` command to the in-memory model before saving. If saving fails, it reports a
