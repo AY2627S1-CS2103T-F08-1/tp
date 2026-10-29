@@ -34,6 +34,7 @@ public class FollowUpCommand extends Command {
     private final Operation operation;
     private final Optional<LocalDate> date;
     private final Clock clock;
+    private boolean hasChanges;
 
     /** Creates a command to schedule a follow-up date. */
     public FollowUpCommand(int debtorId, LocalDate date) {
@@ -59,11 +60,17 @@ public class FollowUpCommand extends Command {
     @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
+        hasChanges = false;
         Person target = model.getAddressBook().getPersonList().stream()
                 .filter(person -> person.getDebtorId() == debtorId).findFirst()
                 .orElseThrow(() -> new CommandException(String.format(MESSAGE_DEBTOR_NOT_FOUND, debtorId)));
         if (operation != Operation.SCHEDULE && target.getFollowUpDate().isEmpty()) {
             throw new CommandException(String.format(MESSAGE_NO_PENDING_FOLLOW_UP, debtorId));
+        }
+
+        if (operation == Operation.SCHEDULE && target.getFollowUpDate().equals(date)) {
+            return new CommandResult(String.format(MESSAGE_SUCCESS, "already scheduled", debtorId,
+                    date.map(value -> " for " + value).orElse("")));
         }
 
         FollowUpEvent.Action action;
@@ -89,11 +96,17 @@ public class FollowUpCommand extends Command {
             default -> throw new IllegalStateException("Unknown follow-up operation");
         }
 
-        FollowUpEvent event = new FollowUpEvent(LocalDateTime.now(clock), action,
-                operation == Operation.SCHEDULE ? updatedDate : target.getFollowUpDate());
+        FollowUpEvent event = new FollowUpEvent(LocalDateTime.now(clock), action, target.getFollowUpDate(),
+                updatedDate);
         model.setPerson(target, target.withFollowUpChange(updatedDate, event));
+        hasChanges = true;
         String dateText = updatedDate.map(value -> " for " + value).orElse("");
         return new CommandResult(String.format(MESSAGE_SUCCESS, verb, debtorId, dateText));
+    }
+
+    @Override
+    public boolean shouldSaveAddressBook() {
+        return hasChanges;
     }
 
     @Override

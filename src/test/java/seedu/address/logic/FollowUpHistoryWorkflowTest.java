@@ -147,9 +147,11 @@ class FollowUpHistoryWorkflowTest {
         assertEquals(FOLLOW_UP_DATE.plusDays(4), restored.getFollowUpHistory().get(3).getDate().orElseThrow());
         assertEquals(FOLLOW_UP_DATE.plusDays(6), restored.getFollowUpHistory().getLast().getDate().orElseThrow());
         String profile = Messages.formatProfile(restored);
-        assertTrue(profile.indexOf("] SCHEDULED 2026-11-03") < profile.indexOf("] RESCHEDULED 2026-11-05"));
-        assertTrue(profile.indexOf("] RESCHEDULED 2026-11-05") < profile.indexOf("] RESCHEDULED 2026-11-07"));
-        assertTrue(profile.indexOf("] RESCHEDULED 2026-11-07") < profile.indexOf("] CLEARED 2026-11-07"));
+        String firstReschedule = "] RESCHEDULED 2026-11-03 -> 2026-11-05";
+        String secondReschedule = "] RESCHEDULED 2026-11-05 -> 2026-11-07";
+        assertTrue(profile.indexOf("] SCHEDULED 2026-11-03") < profile.indexOf(firstReschedule));
+        assertTrue(profile.indexOf(firstReschedule) < profile.indexOf(secondReschedule));
+        assertTrue(profile.indexOf(secondReschedule) < profile.indexOf("] CLEARED 2026-11-07"));
         assertTrue(profile.indexOf("] CLEARED 2026-11-07") < profile.indexOf("] COMPLETED 2026-11-09"));
     }
 
@@ -241,6 +243,136 @@ class FollowUpHistoryWorkflowTest {
         assertEquals(1, surviving.getFollowUpHistory().size());
     }
 
+    @Test
+    void execute_sameDateIsNoOpWithoutEventOrSaveRetry() throws Exception {
+        Model model = new ModelManager();
+        Person debtor = model.addPerson(new PersonBuilder().build());
+        Path file = temporaryFolder.resolve("same-date.json");
+        JsonAddressBookStorage baseStorage = new JsonAddressBookStorage(file);
+        baseStorage.saveAddressBook(model.getAddressBook());
+        JsonAddressBookStorage failOnce = new JsonAddressBookStorage(file) {
+            private int attempts;
+            @Override
+            public void saveAddressBook(seedu.address.model.ReadOnlyAddressBook book)
+                    throws java.io.IOException {
+                if (++attempts == 1) {
+                    throw new java.io.IOException("temporary failure");
+                }
+                super.saveAddressBook(book);
+            }
+        };
+        Logic logic = createLogic(model, failOnce);
+        String command = "followup --id " + debtor.getDebtorId() + " --date 2026-11-03";
+        assertThrows(CommandException.class, () -> logic.execute(command));
+        String beforeNoOp = java.nio.file.Files.readString(file);
+        logic.execute(command);
+        assertEquals(beforeNoOp, java.nio.file.Files.readString(file));
+        assertEquals(1, model.getAddressBook().getPersonList().getFirst().getFollowUpHistory().size());
+    }
+    @Test
+    void execute_lifecycleEventsCapturePreviousAndNewDates() throws Exception {
+        Model model = new ModelManager();
+        Person debtor = model.addPerson(new PersonBuilder().build());
+        int id = debtor.getDebtorId();
+        Clock clock = Clock.fixed(Instant.parse("2026-10-29T10:00:00Z"), ZoneId.of("UTC"));
+        new FollowUpCommand(id, FollowUpCommand.Operation.SCHEDULE, Optional.of(FOLLOW_UP_DATE), clock).execute(model);
+        new FollowUpCommand(id, FollowUpCommand.Operation.SCHEDULE, Optional.of(FOLLOW_UP_DATE.plusDays(2)), clock)
+                .execute(model);
+        new FollowUpCommand(id, FollowUpCommand.Operation.CLEAR, Optional.empty(), clock).execute(model);
+        List<FollowUpEvent> events = model.getAddressBook().getPersonList().getFirst().getFollowUpHistory();
+        assertTrue(events.get(0).getPreviousDate().isEmpty());
+        assertEquals(Optional.of(FOLLOW_UP_DATE), events.get(0).getNewDate());
+        assertEquals(Optional.of(FOLLOW_UP_DATE), events.get(1).getPreviousDate());
+        assertEquals(Optional.of(FOLLOW_UP_DATE.plusDays(2)), events.get(1).getNewDate());
+        assertEquals(Optional.of(FOLLOW_UP_DATE.plusDays(2)), events.get(2).getPreviousDate());
+        assertTrue(events.get(2).getNewDate().isEmpty());
+    }
+
+    @Test
+    void execute_malformedSourceSurvivesMutatingCommand() throws Exception {
+        Path file = temporaryFolder.resolve("malformed.json");
+        String original = "{\"persons\":[{\"name\":\"Alice Tan\",\"phone\":\"81234567\","
+                + "\"email\":\"alice@example.com\",\"address\":\"1 Main Street\","
+                + "\"followUpHistory\":[null],\"tags\":[]}]}";
+        java.nio.file.Files.writeString(file, original);
+        StorageManager storage = new StorageManager(new JsonAddressBookStorage(file),
+                new JsonUserPrefsStorage(temporaryFolder.resolve("userPrefs.json")));
+        assertThrows(seedu.address.commons.exceptions.DataLoadingException.class, storage::readAddressBook);
+        Model model = new ModelManager();
+        Logic logic = new LogicManager(model, storage);
+        CommandException failure = org.junit.jupiter.api.Assertions.assertThrows(CommandException.class, () ->
+                logic.execute("add n/Beth Lee p/81234568 e/beth@example.com a/2 Main Street"));
+        assertTrue(failure.getMessage().contains("Preserve this file, restore valid JSON, and restart"));
+        assertEquals(1, model.getAddressBook().getPersonList().size());
+        assertEquals(original, java.nio.file.Files.readString(file));
+    }
+    @Test
+    void execute_reusedCommand_marksNoOpAsNotNeedingSave() throws Exception {
+        Model model = new ModelManager();
+        Person debtor = model.addPerson(new PersonBuilder().build());
+        FollowUpCommand command = new FollowUpCommand(debtor.getDebtorId(), FOLLOW_UP_DATE);
+        command.execute(model);
+        assertTrue(command.shouldSaveAddressBook());
+        command.execute(model);
+        org.junit.jupiter.api.Assertions.assertFalse(command.shouldSaveAddressBook());
+    }
+    @Test
+    void read_legacyDateOnlyEventsRemainReadable() throws Exception {
+        Path file = temporaryFolder.resolve("legacy-events.json");
+        java.nio.file.Files.writeString(file, """
+                {"persons":[{"name":"Alice Tan","phone":"81234567","email":"alice@example.com",
+                "address":"1 Main Street","followUpHistory":[
+                {"timestamp":"2026-10-29T09:59:00","action":"SCHEDULED","date":"2026-11-03"},
+                {"timestamp":"2026-10-29T10:00:00","action":"RESCHEDULED","date":"2026-11-05"},
+                {"timestamp":"2026-10-29T10:01:00","action":"CLEARED","date":"2026-11-05"}],"tags":[]}]}
+                """);
+        Person restored = new JsonAddressBookStorage(file).readAddressBook().orElseThrow().getPersonList().getFirst();
+        List<FollowUpEvent> events = restored.getFollowUpHistory();
+        assertTrue(events.get(0).getPreviousDate().isEmpty());
+        assertEquals(Optional.of(FOLLOW_UP_DATE), events.get(0).getNewDate());
+        assertEquals(Optional.of(FOLLOW_UP_DATE), events.get(1).getPreviousDate());
+        assertEquals(Optional.of(FOLLOW_UP_DATE.plusDays(2)), events.get(1).getNewDate());
+        assertEquals(Optional.of(FOLLOW_UP_DATE.plusDays(2)), events.get(2).getPreviousDate());
+        assertTrue(events.get(2).getNewDate().isEmpty());
+    }
+
+    @Test
+    void read_yearZeroFollowUpDate_rejectsData() throws Exception {
+        Path file = temporaryFolder.resolve("year-zero.json");
+        java.nio.file.Files.writeString(file, """
+                {"persons":[{"name":"Alice Tan","phone":"81234567","email":"alice@example.com",
+                "address":"1 Main Street","followUpDate":"0000-01-01","tags":[]}]}
+                """);
+        assertThrows(seedu.address.commons.exceptions.DataLoadingException.class, () ->
+                new JsonAddressBookStorage(file).readAddressBook());
+    }
+
+    @Test
+    void storage_nextDebtorIdSurvivesRestartAndAllocatesExplicitly() throws Exception {
+        Model model = new ModelManager();
+        model.addPerson(new PersonBuilder().withName("Alice Tan").build());
+        seedu.address.model.AddressBook book = (seedu.address.model.AddressBook) model.getAddressBook();
+        book.setNextDebtorId(9);
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("next-id.json"));
+        storage.saveAddressBook(model.getAddressBook());
+        Model reloaded = new ModelManager(storage.readAddressBook().orElseThrow(), new UserPrefs());
+        assertEquals(9, reloaded.getAddressBook().getNextDebtorId());
+        Person added = reloaded.addPerson(new PersonBuilder().withName("Beth Lee").withPhone("81234568")
+                .withEmail("beth@example.com").build());
+        assertEquals(9, added.getDebtorId());
+        assertEquals(10, reloaded.getAddressBook().getNextDebtorId());
+    }
+    @Test
+    void read_impossibleLifecycleTransition_rejectsData() throws Exception {
+        Path file = temporaryFolder.resolve("impossible-transition.json");
+        java.nio.file.Files.writeString(file, """
+                {"persons":[{"name":"Alice Tan","phone":"81234567","email":"alice@example.com",
+                "address":"1 Main Street","followUpHistory":[{"timestamp":"2026-10-29T10:00:00",
+                "action":"CLEARED","previousDate":null,"newDate":"2026-11-03"}],"tags":[]}]}
+                """);
+        assertThrows(seedu.address.commons.exceptions.DataLoadingException.class, () ->
+                new JsonAddressBookStorage(file).readAddressBook());
+    }
     private Logic createLogic(Model model, JsonAddressBookStorage storage) {
         return new LogicManager(model, new StorageManager(storage,
                 new JsonUserPrefsStorage(temporaryFolder.resolve("userPrefs.json"))));

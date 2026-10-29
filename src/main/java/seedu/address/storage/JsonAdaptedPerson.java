@@ -181,16 +181,25 @@ class JsonAdaptedPerson {
         }
         final Optional<LocalDate> modelFollowUpDate;
         try {
-            modelFollowUpDate = followUpDate == null ? Optional.empty() : Optional.of(LocalDate.parse(followUpDate));
+            modelFollowUpDate = followUpDate == null ? Optional.empty() : Optional.of(parseFollowUpDate(followUpDate));
         } catch (DateTimeParseException exception) {
             throw new IllegalValueException("Follow-up date must be a valid ISO local date.");
         }
         final List<FollowUpEvent> modelFollowUpHistory = new ArrayList<>();
+        Optional<LocalDate> eventCurrentDate = Optional.empty();
         for (JsonAdaptedFollowUpEvent event : followUpHistory) {
             if (event == null) {
                 throw new IllegalValueException("Follow-up history entry cannot be null.");
             }
-            modelFollowUpHistory.add(event.toModelType());
+            FollowUpEvent modelEvent = event.toModelType(eventCurrentDate);
+            if (!modelEvent.getPreviousDate().equals(eventCurrentDate)) {
+                throw new IllegalValueException("Follow-up history contains a discontinuous date transition.");
+            }
+            modelFollowUpHistory.add(modelEvent);
+            eventCurrentDate = modelEvent.getNewDate();
+        }
+        if (!modelFollowUpHistory.isEmpty() && !eventCurrentDate.equals(modelFollowUpDate)) {
+            throw new IllegalValueException("Follow-up history does not match the current follow-up date.");
         }
         if (debtorId != null && debtorId < 0) {
             throw new IllegalValueException(Person.MESSAGE_INVALID_DEBTOR_ID);
@@ -203,4 +212,14 @@ class JsonAdaptedPerson {
                 modelFollowUpDate, modelFollowUpHistory, modelTags);
     }
 
+    private LocalDate parseFollowUpDate(String value) {
+        if (!value.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            throw new DateTimeParseException("Invalid ISO follow-up date", value, 0);
+        }
+        LocalDate parsed = LocalDate.parse(value);
+        if (parsed.getYear() < 1 || parsed.getYear() > 9999) {
+            throw new DateTimeParseException("Follow-up year must be 0001–9999", value, 0);
+        }
+        return parsed;
+    }
 }

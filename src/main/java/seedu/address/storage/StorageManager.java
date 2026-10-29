@@ -18,6 +18,7 @@ public class StorageManager implements Storage {
 
     private static final Logger logger = LogsCenter.getLogger(StorageManager.class);
     private JsonAddressBookStorage addressBookStorage;
+    private boolean addressBookLoadFailed;
     private JsonUserPrefsStorage userPrefsStorage;
 
     /**
@@ -56,12 +57,22 @@ public class StorageManager implements Storage {
     @Override
     public Optional<ReadOnlyAddressBook> readAddressBook() throws DataLoadingException {
         logger.fine("Attempting to read data from file: " + addressBookStorage.getAddressBookFilePath());
-        return addressBookStorage.readAddressBook();
+        try {
+            return addressBookStorage.readAddressBook();
+        } catch (DataLoadingException exception) {
+            addressBookLoadFailed = true;
+            throw exception;
+        }
     }
 
     @Override
     public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
         logger.fine("Attempting to write to data file: " + addressBookStorage.getAddressBookFilePath());
+        if (addressBookLoadFailed) {
+            throw new IOException("Address book could not be loaded from "
+                    + addressBookStorage.getAddressBookFilePath()
+                    + ". Preserve this file, restore valid JSON, and restart before saving changes.");
+        }
         addressBookStorage.saveAddressBook(addressBook);
     }
 

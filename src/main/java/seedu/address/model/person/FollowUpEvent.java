@@ -9,7 +9,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Objects;
 import java.util.Optional;
 
-/** A timestamped change to a debtor's scheduled follow-up. */
+/** An immutable transition between two scheduled follow-up dates. */
 public final class FollowUpEvent {
 
     /** The kind of follow-up state change represented by an event. */
@@ -24,19 +24,29 @@ public final class FollowUpEvent {
 
     private final LocalDateTime timestamp;
     private final Action action;
-    private final Optional<LocalDate> date;
+    private final Optional<LocalDate> previousDate;
+    private final Optional<LocalDate> newDate;
 
-    /** Creates an event with its timestamp, action, and the date affected by that action. */
-    public FollowUpEvent(LocalDateTime timestamp, Action action, Optional<LocalDate> date) {
+    /** Creates a lifecycle event with its previous and resulting dates. */
+    public FollowUpEvent(LocalDateTime timestamp, Action action, Optional<LocalDate> previousDate,
+            Optional<LocalDate> newDate) {
         requireNonNull(timestamp);
         requireNonNull(action);
-        requireNonNull(date);
-        if (date.isEmpty()) {
-            throw new IllegalArgumentException("Follow-up event date does not match its action.");
+        requireNonNull(previousDate);
+        requireNonNull(newDate);
+        if (!isValidTransition(action, previousDate, newDate)) {
+            throw new IllegalArgumentException("Follow-up event dates do not match its action.");
         }
         this.timestamp = timestamp;
         this.action = action;
-        this.date = date;
+        this.previousDate = previousDate;
+        this.newDate = newDate;
+    }
+
+    /** Backwards-compatible constructor for callers using the former single affected date. */
+    public FollowUpEvent(LocalDateTime timestamp, Action action, Optional<LocalDate> date) {
+        this(timestamp, action,
+                legacyPreviousDate(action, date), legacyNewDate(action, date));
     }
 
     public LocalDateTime getTimestamp() {
@@ -47,20 +57,99 @@ public final class FollowUpEvent {
         return action;
     }
 
+    public Optional<LocalDate> getPreviousDate() {
+        return previousDate;
+    }
+
+    public Optional<LocalDate> getNewDate() {
+        return newDate;
+    }
+
+    /** Returns the date shown by legacy profile and client code. */
     public Optional<LocalDate> getDate() {
-        return date;
+        return newDate.isPresent() ? newDate : previousDate;
     }
 
     public String getStorageTimestamp() {
         return timestamp.format(STORAGE_FORMATTER);
     }
 
-    /** Creates an event from its stored ISO timestamp, action name, and ISO date. */
+    private static Optional<LocalDate> legacyPreviousDate(Action action, Optional<LocalDate> date) {
+        if (action == Action.RESCHEDULED) {
+            throw new IllegalArgumentException("A rescheduled event requires its previous date.");
+        }
+        return action == Action.CLEARED || action == Action.COMPLETED ? date : Optional.empty();
+    }
+
+    private static Optional<LocalDate> legacyNewDate(Action action, Optional<LocalDate> date) {
+        return action == Action.CLEARED || action == Action.COMPLETED ? Optional.empty() : date;
+    }
+
+    /** Creates an event from a stored timestamp, action and previous/new date pair. */
+    public static FollowUpEvent fromStorage(String timestamp, String action, String previousDate, String newDate) {
+        return new FollowUpEvent(parseTimestamp(timestamp), parseAction(action),
+                Optional.ofNullable(previousDate).map(FollowUpEvent::parseDate),
+                Optional.ofNullable(newDate).map(FollowUpEvent::parseDate));
+    }
+
+    /** Creates an event from a previously stored single-date lifecycle record. */
     public static FollowUpEvent fromStorage(String timestamp, String action, String date) {
+        return fromLegacyStorage(timestamp, action, date, Optional.empty());
+    }
+
+    /** Migrates an earlier date-only event using the state established by prior history entries. */
+    public static FollowUpEvent fromLegacyStorage(String timestamp, String action, String date,
+            Optional<LocalDate> currentDate) {
+        Action parsedAction = parseAction(action);
+        Optional<LocalDate> parsedDate = Optional.ofNullable(date).map(FollowUpEvent::parseDate);
+        if (parsedAction == Action.RESCHEDULED && currentDate.isEmpty()) {
+            throw new IllegalArgumentException("Legacy rescheduled event has no prior scheduled date.");
+        }
+        Optional<LocalDate> previousDate = parsedAction == Action.CLEARED || parsedAction == Action.COMPLETED
+                ? parsedDate : parsedAction == Action.RESCHEDULED ? currentDate : Optional.empty();
+        Optional<LocalDate> newDate = parsedAction == Action.CLEARED || parsedAction == Action.COMPLETED
+                ? Optional.empty() : parsedDate;
+        return new FollowUpEvent(parseTimestamp(timestamp), parsedAction, previousDate, newDate);
+    }
+
+    private static boolean isValidTransition(Action action, Optional<LocalDate> previousDate,
+            Optional<LocalDate> newDate) {
+        return switch (action) {
+            case SCHEDULED -> previousDate.isEmpty() && newDate.isPresent();
+            case RESCHEDULED -> previousDate.isPresent() && newDate.isPresent();
+            case CLEARED, COMPLETED -> previousDate.isPresent() && newDate.isEmpty();
+        };
+    }
+
+    private static LocalDateTime parseTimestamp(String timestamp) {
         try {
-            return new FollowUpEvent(LocalDateTime.parse(timestamp, STORAGE_FORMATTER), Action.valueOf(action),
-                    Optional.ofNullable(date).map(LocalDate::parse));
-        } catch (DateTimeParseException | NullPointerException | IllegalArgumentException exception) {
+            return LocalDateTime.parse(timestamp, STORAGE_FORMATTER);
+        } catch (DateTimeParseException | NullPointerException exception) {
+            throw new IllegalArgumentException("Follow-up event contains an invalid timestamp, action or date.",
+                    exception);
+        }
+    }
+
+    private static Action parseAction(String action) {
+        try {
+            return Action.valueOf(action);
+        } catch (IllegalArgumentException | NullPointerException exception) {
+            throw new IllegalArgumentException("Follow-up event contains an invalid timestamp, action or date.",
+                    exception);
+        }
+    }
+
+    private static LocalDate parseDate(String date) {
+        try {
+            if (!date.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                throw new DateTimeParseException("Not a four-digit ISO date", date, 0);
+            }
+            LocalDate parsed = LocalDate.parse(date);
+            if (parsed.getYear() < 1 || parsed.getYear() > 9999) {
+                throw new DateTimeParseException("Year is outside 0001–9999", date, 0);
+            }
+            return parsed;
+        } catch (DateTimeParseException | NullPointerException exception) {
             throw new IllegalArgumentException("Follow-up event contains an invalid timestamp, action or date.",
                     exception);
         }
@@ -74,17 +163,24 @@ public final class FollowUpEvent {
         if (!(other instanceof FollowUpEvent otherEvent)) {
             return false;
         }
-        return timestamp.equals(otherEvent.timestamp) && action == otherEvent.action && date.equals(otherEvent.date);
+        return timestamp.equals(otherEvent.timestamp) && action == otherEvent.action
+                && previousDate.equals(otherEvent.previousDate) && newDate.equals(otherEvent.newDate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(timestamp, action, date);
+        return Objects.hash(timestamp, action, previousDate, newDate);
     }
 
     @Override
     public String toString() {
         DateTimeFormatter displayFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        return "[" + timestamp.format(displayFormatter) + "] " + action + date.map(value -> " " + value).orElse("");
+        String dates = switch (action) {
+            case SCHEDULED -> newDate.map(value -> " " + value).orElse("");
+            case RESCHEDULED -> previousDate.flatMap(from -> newDate.map(to -> " " + from + " -> " + to))
+                    .orElse("");
+            case CLEARED, COMPLETED -> previousDate.map(value -> " " + value).orElse("");
+        };
+        return "[" + timestamp.format(displayFormatter) + "] " + action + dates;
     }
 }

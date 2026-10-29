@@ -181,7 +181,8 @@ Formats:
 * `followup --id DEBTOR_ID --done`
 
 * `DEBTOR_ID` must be a positive persistent debtor ID.
-* Dates must be valid calendar dates in exactly `YYYY-MM-DD` format.
+* Dates must be real calendar dates in exactly `YYYY-MM-DD` format, with years from `0001` through `9999`.
+* Setting the current date again is a no-op and adds no history event.
 * `--clear` and `--done` require a pending follow-up. Both clear the pending date and record the date that was cleared
   or completed in history.
 * Scheduling a new date after `--clear` or `--done` starts a new `SCHEDULED` history event.
