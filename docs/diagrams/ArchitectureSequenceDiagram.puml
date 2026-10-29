@@ -20,7 +20,7 @@ activate model MODEL_COLOR
 model -[MODEL_COLOR]-> logic : candidate
 deactivate model
 
-logic -[LOGIC_COLOR]> model : execute on candidate:\ndeletePerson(p)
+logic -[LOGIC_COLOR]> model : command.execute(candidate)\n(deletes p)
 activate model MODEL_COLOR
 
 model -[MODEL_COLOR]-> logic

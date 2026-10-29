@@ -14,7 +14,7 @@ end box
 box Model MODEL_COLOR_T1
 participant "m:ModelManager" as Model MODEL_COLOR
 participant "c:ModelManager\n(candidate copy)" as Candidate MODEL_COLOR
-participant "a:AddressBook" as AddressBook MODEL_COLOR
+participant "a:AddressBook\n(of c)" as AddressBook MODEL_COLOR
 end box
 
 box Storage STORAGE_COLOR_T1
@@ -99,6 +99,7 @@ else INDEX is a positive decimal integer
         deactivate DeleteCommand
 
         LogicManager -> Candidate : commitAddressBook()
+        Candidate --> LogicManager
         note right of Candidate
             The undo history entry lives on the candidate,
             so a failed save discards it too.
