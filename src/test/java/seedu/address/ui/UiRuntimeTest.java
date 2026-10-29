@@ -19,6 +19,7 @@ import org.junit.jupiter.api.condition.OS;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
+import javafx.event.Event;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
@@ -47,6 +48,7 @@ public class UiRuntimeTest {
         @Override
         public void hide() {
             hideCalled = true;
+            super.hide();
         }
     }
 
@@ -158,23 +160,20 @@ public class UiRuntimeTest {
             assertNotNull(reference);
             assertTrue(reference.isFitToWidth());
             assertTrue(reference.isFocusTraversable());
-            // ScrollPane movement is owned by JavaFX. The app contract is that the control accepts
-            // a scroll position and HelpWindow leaves navigation keys for the control to handle.
+            assertTrue(reference.getVmax() > reference.getVmin());
             reference.setVvalue(reference.getVmin());
-            reference.setVvalue(reference.getVmax());
-            assertEquals(reference.getVmax(), reference.getVvalue());
             KeyEvent enter = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER,
                     false, false, false, false);
-            helpWindow.handleKeyPress(enter);
-            assertFalse(enter.isConsumed());
+            Event.fireEvent(reference, enter);
+            assertFalse(recordingHelpWindow.hideCalled);
             KeyEvent pageDown = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.PAGE_DOWN,
                     false, false, false, false);
-            helpWindow.handleKeyPress(pageDown);
-            assertFalse(pageDown.isConsumed());
+            Event.fireEvent(reference, pageDown);
+            assertTrue(reference.getVvalue() > reference.getVmin());
+            assertFalse(recordingHelpWindow.hideCalled);
             KeyEvent escape = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ESCAPE,
                     false, false, false, false);
-            helpWindow.handleKeyPress(escape);
-            assertTrue(escape.isConsumed());
+            Event.fireEvent(reference, escape);
             assertTrue(recordingHelpWindow.hideCalled);
         });
     }
