@@ -33,6 +33,24 @@ public class PackagedJarSmokeTest {
 
     @Test
     @Timeout(150)
+    public void launch_malformedJson_preservesDataUntilRepairAndRestart() throws Exception {
+        assertUnreadableDataProtected("{not valid JSON");
+    }
+
+    @Test
+    @Timeout(150)
+    public void launch_nullJsonRoot_preservesDataUntilRepairAndRestart() throws Exception {
+        assertUnreadableDataProtected("null");
+    }
+
+    @Test
+    @Timeout(150)
+    public void launch_missingPersons_preservesDataUntilRepairAndRestart() throws Exception {
+        assertUnreadableDataProtected("{}");
+    }
+
+    @Test
+    @Timeout(150)
     public void launchElsewhereThenRestart_packagedJar_retainsFilesInJarHome() throws Exception {
         Path source = Path.of("build", "libs", "osps.jar").toAbsolutePath();
         assertTrue(Files.isRegularFile(source), "Build shadowJar before running this test");
@@ -54,6 +72,25 @@ public class PackagedJarSmokeTest {
         assertApplicationFilesStayInHome(appFolder, launchFolder);
         runPackagedJar(appFolder, appJar, agentJar, "reload");
         assertEquals(savedData, Files.readString(data), "Read-only restart must retain the exact saved records");
+        assertEquals(-1, Files.mismatch(source, appJar), "Testing must not modify the application JAR");
+    }
+
+    private void assertUnreadableDataProtected(String invalidData) throws Exception {
+        Path source = Path.of("build", "libs", "osps.jar").toAbsolutePath();
+        Path appFolder = Files.createDirectory(temporaryFolder.resolve("damaged data fixture"));
+        Path appJar = Files.copy(source, appFolder.resolve("osps.jar"));
+        Files.writeString(appFolder.resolve("AUDIT_DISPOSABLE"), "Owned temporary test fixture");
+        Path data = Files.createDirectory(appFolder.resolve("data")).resolve("addressbook.json");
+        Files.writeString(data, invalidData);
+        Path agentJar = createAgentJar();
+
+        runPackagedJar(appFolder, appJar, agentJar, "corrupt");
+        assertEquals(invalidData, Files.readString(data), "Startup and rejected edits must preserve unreadable data");
+
+        // Recovery is an explicit user action; the app must not replace the damaged file automatically.
+        Files.writeString(data, "{\"persons\": []}");
+        runPackagedJar(appFolder, appJar, agentJar, "save");
+        assertTrue(Files.readString(data).contains("Packaged Smoke"), "Repair and restart must re-enable saves");
         assertEquals(-1, Files.mismatch(source, appJar), "Testing must not modify the application JAR");
     }
 
