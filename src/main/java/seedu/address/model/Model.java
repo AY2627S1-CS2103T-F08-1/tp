@@ -69,4 +69,14 @@ public interface Model {
      * @throws NullPointerException if {@code predicate} is null.
      */
     void updateFilteredPersonList(Predicate<Person> predicate);
+
+    /** Returns an isolated model with the same address-book data and active view for a save transaction. */
+    default Model createTransactionCopy() {
+        throw new UnsupportedOperationException("This model does not support save transactions.");
+    }
+
+    /** Publishes data and view state from a successfully persisted transaction candidate. */
+    default void publishTransaction(Model candidate) {
+        throw new UnsupportedOperationException("This model does not support save transactions.");
+    }
 }

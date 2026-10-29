@@ -24,6 +24,7 @@ public class ModelManager implements Model {
     private final UserPrefs userPrefs;
     private final FilteredList<Person> filteredPersons;
     private final SortedList<Person> sortedPersons;
+    private Predicate<Person> personListPredicate = PREDICATE_SHOW_ALL_PERSONS;
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -112,7 +113,25 @@ public class ModelManager implements Model {
     @Override
     public void updateFilteredPersonList(Predicate<Person> predicate) {
         requireNonNull(predicate);
+        personListPredicate = predicate;
         filteredPersons.setPredicate(predicate);
+    }
+
+    @Override
+    public Model createTransactionCopy() {
+        ModelManager candidate = new ModelManager(addressBook, userPrefs);
+        candidate.updateFilteredPersonList(personListPredicate);
+        return candidate;
+    }
+
+    @Override
+    public void publishTransaction(Model candidate) {
+        requireNonNull(candidate);
+        if (!(candidate instanceof ModelManager candidateManager)) {
+            throw new IllegalArgumentException("Transaction candidate must be a ModelManager.");
+        }
+        addressBook.resetData(candidateManager.addressBook);
+        updateFilteredPersonList(candidateManager.personListPredicate);
     }
 
     @Override
