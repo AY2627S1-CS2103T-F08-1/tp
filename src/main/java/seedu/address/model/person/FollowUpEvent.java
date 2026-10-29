@@ -14,6 +14,8 @@ public final class FollowUpEvent {
 
     public static final String MESSAGE_INVALID_DATE =
             "Follow-up date must use the valid YYYY-MM-DD format.";
+    public static final String MESSAGE_INVALID_STORAGE =
+            "Follow-up event contains an invalid timestamp, action or date.";
 
     /** The kind of follow-up state change represented by an event. */
     public enum Action {
@@ -107,37 +109,35 @@ public final class FollowUpEvent {
         try {
             parsed = LocalDateTime.parse(timestamp, STORAGE_FORMATTER);
         } catch (DateTimeParseException exception) {
-            throw new IllegalArgumentException("Follow-up event contains an invalid timestamp, action or date.",
-                    exception);
+            throw new IllegalArgumentException(MESSAGE_INVALID_STORAGE, exception);
         }
         if (parsed.getYear() < 1 || parsed.getYear() > 9999) {
-            throw new IllegalArgumentException("Follow-up event contains an invalid timestamp, action or date.");
+            throw new IllegalArgumentException(MESSAGE_INVALID_STORAGE);
         }
         return parsed;
     }
 
     private static Action parseAction(String action) {
+        requireNonNull(action);
         try {
             return Action.valueOf(action);
-        } catch (IllegalArgumentException | NullPointerException exception) {
-            throw new IllegalArgumentException("Follow-up event contains an invalid timestamp, action or date.",
-                    exception);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException(MESSAGE_INVALID_STORAGE, exception);
         }
     }
 
     private static LocalDate parseDate(String date) {
         if (!date.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            throw new IllegalArgumentException("Follow-up event contains an invalid timestamp, action or date.");
+            throw new IllegalArgumentException(MESSAGE_INVALID_STORAGE);
         }
         final LocalDate parsed;
         try {
             parsed = LocalDate.parse(date);
         } catch (DateTimeParseException exception) {
-            throw new IllegalArgumentException("Follow-up event contains an invalid timestamp, action or date.",
-                    exception);
+            throw new IllegalArgumentException(MESSAGE_INVALID_STORAGE, exception);
         }
         if (parsed.getYear() < 1) {
-            throw new IllegalArgumentException("Follow-up event contains an invalid timestamp, action or date.");
+            throw new IllegalArgumentException(MESSAGE_INVALID_STORAGE);
         }
         return parsed;
     }
