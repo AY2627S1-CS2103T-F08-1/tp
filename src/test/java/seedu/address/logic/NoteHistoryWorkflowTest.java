@@ -1,6 +1,7 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 
@@ -127,17 +128,17 @@ public class NoteHistoryWorkflowTest {
     }
 
     @Test
-    public void execute_noteSaveFailsThenRecovers_exitSavesExactlyOneNote() throws Exception {
+    public void execute_noteSaveFailsThenRecovers_reissueSavesOneNote() throws Exception {
         assertNoteSaveRecovery(new IOException("temporary write failure"));
     }
 
     @Test
-    public void execute_noteSaveDeniedThenRecovers_exitSavesExactlyOneNote() throws Exception {
+    public void execute_noteSaveDeniedThenRecovers_reissueSavesOneNote() throws Exception {
         assertNoteSaveRecovery(new AccessDeniedException("temporary permission failure"));
     }
 
     /**
-     * Checks that a failed save retains the note in memory and a later exit retries without duplicating it.
+     * Checks that a failed save leaves the note out of memory and disk, then reissuing saves it once.
      */
     private void assertNoteSaveRecovery(IOException failure) throws Exception {
         Model model = new ModelManager();
@@ -155,22 +156,28 @@ public class NoteHistoryWorkflowTest {
 
         assertThrows(CommandException.class, expectedMessage, () ->
                 logic.execute("note --id " + debtor.getDebtorId() + " --text " + text));
-        List<InteractionNote> pendingNotes = model.getAddressBook().getPersonList().getFirst().getInteractionNotes();
-        assertEquals(1, pendingNotes.size());
-        assertEquals(text, pendingNotes.getFirst().getText());
+        List<InteractionNote> unchangedNotes = model.getAddressBook().getPersonList().getFirst().getInteractionNotes();
+        assertTrue(unchangedNotes.isEmpty());
+        assertEquals(2, model.getAddressBook().getNextDebtorId());
         assertEquals(originalSavedData, Files.readString(filePath));
         assertTrue(diskStorage.readAddressBook().orElseThrow().getPersonList()
                 .getFirst().getInteractionNotes().isEmpty());
 
-        assertTrue(logic.execute("show --id " + debtor.getDebtorId()).getFeedbackToUser().contains(text));
+        String profile = logic.execute("show --id " + debtor.getDebtorId()).getFeedbackToUser();
+        assertFalse(profile.contains(text));
         assertThrows(ParseException.class, () -> logic.execute("note --id " + debtor.getDebtorId() + " --text"));
         assertEquals(1, storage.saveAttempts);
         assertEquals(originalSavedData, Files.readString(filePath));
 
         assertTrue(logic.execute("exit").isExit());
+        assertEquals(1, storage.saveAttempts);
+
+        logic.execute("note --id " + debtor.getDebtorId() + " --text " + text);
         assertEquals(2, storage.saveAttempts);
-        assertEquals(pendingNotes, diskStorage.readAddressBook().orElseThrow()
-                .getPersonList().getFirst().getInteractionNotes());
+        List<InteractionNote> savedNotes = diskStorage.readAddressBook().orElseThrow()
+                .getPersonList().getFirst().getInteractionNotes();
+        assertEquals(1, savedNotes.size());
+        assertEquals(text, savedNotes.getFirst().getText());
     }
 
     /** Creates a logic instance using real JSON storage inside the temporary test directory. */

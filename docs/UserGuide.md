@@ -192,12 +192,8 @@ Format: `note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT`
 * The note is saved with the debtor and is preserved after restarting the application.
 * Repeating the same note records a separate interaction each time. Editing the debtor preserves all existing notes.
 * Recording an outcome does not change the debtor's outstanding amount or any other debtor field.
-* If saving fails, OSPS reports an error, but the note remains in memory during the current session. It is not
-  guaranteed to be on disk or to survive a restart. Resolve the save problem and verify the data after saving
-  successfully. Check the profile before entering the note again to avoid adding a duplicate.
-  Once the save problem is resolved, the next successful data-changing command or the `exit` command retries saving.
-  If the `exit` retry fails, OSPS reports an error and does not complete the exit.
-  Read-only commands such as `show` and `list` do not retry a failed save.
+* If saving fails, OSPS reports an error and does not add the note to the in-memory record or replace the saved file.
+  Resolve the save problem, then run the note command again. The `exit` command does not retry a failed command.
 
 Example:
 * `note --id 1 --outcome reached --text Confirmed the debtor's identity.`
@@ -318,6 +314,10 @@ Format: `exit`
 ### Saving the data
 
 OSPS automatically saves data after every successful data-changing command. You do not need to save manually.
+
+If a data-changing command cannot be saved, OSPS reports an error and leaves the in-memory records and existing data
+file unchanged. Resolve the problem and re-enter that command. OSPS replaces the data file only when the file system
+supports an atomic replacement; otherwise the save fails without overwriting the existing file.
 
 ### Editing the data file
 
