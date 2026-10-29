@@ -96,6 +96,20 @@ public class ArgumentTokenizerTest {
         argMultimap = ArgumentTokenizer.tokenize("p/100", pSlash);
         assertPreamblePresent(argMultimap, "p/100");
         assertFalse(argMultimap.getValue(pSlash).isPresent());
+
+        // other Unicode spaces are ordinary text, not separators
+        argMultimap = ArgumentTokenizer.tokenize("n/Alice p/123", pSlash);
+        assertFalse(argMultimap.getValue(pSlash).isPresent());
+    }
+
+    @Test
+    public void tokenize_tabBeforeLongOption_boundaryStillChecked() {
+        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize("x\t--id\t5", longId);
+        assertPreamblePresent(argMultimap, "x");
+        assertArgumentPresent(argMultimap, longId, "5");
+
+        argMultimap = ArgumentTokenizer.tokenize("x\t--idx 5", longId);
+        assertFalse(argMultimap.getValue(longId).isPresent());
     }
 
     @Test

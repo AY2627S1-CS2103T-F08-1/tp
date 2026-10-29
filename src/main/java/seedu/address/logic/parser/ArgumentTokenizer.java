@@ -60,7 +60,7 @@ public class ArgumentTokenizer {
     /**
      * Returns the index of the first occurrence of {@code prefix} in
      * {@code argsString} starting from index {@code fromIndex}. An occurrence
-     * is valid if there is a whitespace character (e.g. a space or tab) before {@code prefix}. Returns -1 if no
+     * is valid if there is a space, tab or line break before {@code prefix}. Returns -1 if no
      * such occurrence can be found.
      *
      * E.g if {@code argsString} = "e/hip/900", {@code prefix} = "p/" and
@@ -74,7 +74,7 @@ public class ArgumentTokenizer {
         while (prefixIndex != -1) {
             int positionAfterPrefix = prefixIndex + prefix.length();
             boolean hasWhitespaceBefore = prefixIndex > 0
-                    && Character.isWhitespace(argsString.charAt(prefixIndex - 1));
+                    && isPrefixSeparator(argsString.charAt(prefixIndex - 1));
             boolean hasValidLongOptionBoundary = !prefix.startsWith("--")
                     || positionAfterPrefix == argsString.length()
                     || Character.isWhitespace(argsString.charAt(positionAfterPrefix));
@@ -84,6 +84,14 @@ public class ArgumentTokenizer {
             prefixIndex = argsString.indexOf(prefix, prefixIndex + 1);
         }
         return -1;
+    }
+
+    /**
+     * Returns true for the whitespace characters that {@link String#trim()} also removes from argument values, so a
+     * separator is never left behind in a value. Other Unicode spaces are ordinary text.
+     */
+    private static boolean isPrefixSeparator(char character) {
+        return character == ' ' || character == '\t' || character == '\n' || character == '\r';
     }
 
     /**
