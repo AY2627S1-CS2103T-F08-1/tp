@@ -22,6 +22,7 @@ class FollowUpCommandParserTest {
     void parse_nonStrictDate_rejectsCommand() {
         assertThrows(ParseException.class, () -> new FollowUpCommandParser().parse(" --id 7 --date 2026-2-3"));
         assertThrows(ParseException.class, () -> new FollowUpCommandParser().parse(" --id 7 --date 2026-02-30"));
+        assertThrows(ParseException.class, () -> new FollowUpCommandParser().parse(" --id 7 --date 0000-01-01"));
     }
 
     @Test

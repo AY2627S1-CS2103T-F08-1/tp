@@ -79,7 +79,11 @@ public class FollowUpCommandParser implements Parser<FollowUpCommand> {
             throw new ParseException(MESSAGE_INVALID_DATE);
         }
         try {
-            return new FollowUpCommand(id, FollowUpCommand.Operation.SCHEDULE, Optional.of(LocalDate.parse(dateText)));
+            LocalDate parsedDate = LocalDate.parse(dateText);
+            if (parsedDate.getYear() < 1 || parsedDate.getYear() > 9999) {
+                throw new ParseException(MESSAGE_INVALID_DATE);
+            }
+            return new FollowUpCommand(id, FollowUpCommand.Operation.SCHEDULE, Optional.of(parsedDate));
         } catch (DateTimeParseException exception) {
             throw new ParseException(MESSAGE_INVALID_DATE);
         }
