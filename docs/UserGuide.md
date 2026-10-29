@@ -73,7 +73,7 @@ while retaining the benefits of a graphical user interface (GUI).
 * Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
-* Extraneous parameters for commands that take no parameters, such as `help`, `exit`, and `clear`, are ignored.<br>
+* Extraneous parameters for `help` and `exit` are ignored. `clear` and `list` reject them with an error message.<br>
   For example, `help 123` is interpreted as `help`.
 
 * The `list` command accepts no parameters. Unexpected parameters are rejected with an error message so that typing

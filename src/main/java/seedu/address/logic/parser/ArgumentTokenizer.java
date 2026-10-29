@@ -51,7 +51,7 @@ public class ArgumentTokenizer {
         while (prefixPosition != -1) {
             PrefixPosition extendedPrefix = new PrefixPosition(prefix, prefixPosition);
             positions.add(extendedPrefix);
-            prefixPosition = findPrefixPosition(argsString, prefix.getPrefix(), prefixPosition);
+            prefixPosition = findPrefixPosition(argsString, prefix.getPrefix(), prefixPosition + 1);
         }
 
         return positions;
@@ -60,7 +60,7 @@ public class ArgumentTokenizer {
     /**
      * Returns the index of the first occurrence of {@code prefix} in
      * {@code argsString} starting from index {@code fromIndex}. An occurrence
-     * is valid if there is a whitespace before {@code prefix}. Returns -1 if no
+     * is valid if there is a whitespace character (e.g. a space or tab) before {@code prefix}. Returns -1 if no
      * such occurrence can be found.
      *
      * E.g if {@code argsString} = "e/hip/900", {@code prefix} = "p/" and
@@ -70,17 +70,18 @@ public class ArgumentTokenizer {
      * {@code fromIndex} = 0, this method returns 5.
      */
     private static int findPrefixPosition(String argsString, String prefix, int fromIndex) {
-        int prefixIndex = argsString.indexOf(" " + prefix, fromIndex);
+        int prefixIndex = argsString.indexOf(prefix, fromIndex);
         while (prefixIndex != -1) {
-            int candidatePosition = prefixIndex + 1; // +1 as offset for whitespace
-            int positionAfterPrefix = candidatePosition + prefix.length();
+            int positionAfterPrefix = prefixIndex + prefix.length();
+            boolean hasWhitespaceBefore = prefixIndex > 0
+                    && Character.isWhitespace(argsString.charAt(prefixIndex - 1));
             boolean hasValidLongOptionBoundary = !prefix.startsWith("--")
                     || positionAfterPrefix == argsString.length()
                     || Character.isWhitespace(argsString.charAt(positionAfterPrefix));
-            if (hasValidLongOptionBoundary) {
-                return candidatePosition;
+            if (hasWhitespaceBefore && hasValidLongOptionBoundary) {
+                return prefixIndex;
             }
-            prefixIndex = argsString.indexOf(" " + prefix, candidatePosition + 1);
+            prefixIndex = argsString.indexOf(prefix, prefixIndex + 1);
         }
         return -1;
     }

@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 public class ArgumentTokenizerTest {
@@ -78,6 +80,17 @@ public class ArgumentTokenizerTest {
         assertPreambleEmpty(argMultimap);
         assertArgumentPresent(argMultimap, pSlash, "Argument value");
 
+    }
+
+    @Test
+    public void tokenize_nonSpaceWhitespaceBeforePrefix_prefixRecognised() {
+        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize("a/Unit 12\tp/100\np/200", pSlash);
+        assertEquals(List.of("100", "200"), argMultimap.getAllValues(pSlash));
+
+        // a tab before the prefix ends the preamble
+        argMultimap = ArgumentTokenizer.tokenize("x\tp/100", pSlash);
+        assertArgumentPresent(argMultimap, pSlash, "100");
+        assertPreamblePresent(argMultimap, "x");
     }
 
     @Test
