@@ -385,3 +385,7 @@ Examples:
 * `contact --id 3 --clear-hours`
 
 Unchanged fields retain their previous values. Use `show --id 3` to see the preferences.
+
+### Previewing an edit or deletion: `preview`
+
+Use `preview edit INDEX [FIELDS]` or `preview delete INDEX` to see the result without changing or saving data. INDEX refers to the current displayed list, including filtering and sorting. Run the original command to apply it.
