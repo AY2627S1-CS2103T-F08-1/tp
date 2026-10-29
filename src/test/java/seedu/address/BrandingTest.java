@@ -31,6 +31,7 @@ import seedu.address.logic.commands.FollowUpCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListAmountCommand;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.ListStageCommand;
 import seedu.address.logic.commands.NoteCommand;
 import seedu.address.logic.commands.PreviewCommand;
 import seedu.address.logic.commands.RedoCommand;
@@ -53,6 +54,7 @@ public class BrandingTest {
                     List.of("add n/Alice p/91234567 e/alice@example.com a/Example Street o/10 t/client",
                             "add n/Olaf Go p/91234567 e/olaf@example.com a/Antarctica o/S$1250.00")),
             Map.entry("list", List.of("list")),
+            Map.entry("list-stage STAGE", List.of("list-stage contacted", "list-stage BROKEN-PROMISE")),
             Map.entry("find KEYWORD [MORE_KEYWORDS]...", List.of("find Alice Bob", "find Alice 91234567")),
             Map.entry("sort --by id|name|amount [--order asc|desc]",
                     List.of("sort --by id", "sort --by name --order asc", "sort --by amount --order desc")),
@@ -98,6 +100,7 @@ public class BrandingTest {
             Map.entry("stage", StageCommand.class),
             Map.entry("summary", SummaryCommand.class),
             Map.entry("list-amount", ListAmountCommand.class),
+            Map.entry("list-stage", ListStageCommand.class),
             Map.entry("preview", PreviewCommand.class),
             Map.entry("delete", DeleteCommand.class),
             Map.entry("edit", EditCommand.class),
