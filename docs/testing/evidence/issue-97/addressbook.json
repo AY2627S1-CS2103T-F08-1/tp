@@ -1,0 +1,25 @@
+{
+  "persons" : [ {
+    "name" : "Alpha Updated",
+    "phone" : "98880001",
+    "email" : "alpha@example.com",
+    "address" : "Alpha Street",
+    "debtorId" : 1,
+    "outstandingAmount" : "0.00",
+    "interactionNotes" : [ {
+      "timestamp" : "2026-10-29T02:24:35.405751",
+      "text" : "Called debtor; callback at 5pm?"
+    }, {
+      "timestamp" : "2026-10-29T02:24:35.407478",
+      "text" : "Called debtor; callback at 5pm?"
+    }, {
+      "timestamp" : "2026-10-29T02:24:35.4083",
+      "text" : "Use the --identifier portal.  Follow-up?"
+    }, {
+      "timestamp" : "2026-10-29T02:24:35.410211",
+      "text" : "Contacted while hidden by the filter."
+    } ],
+    "tags" : [ ]
+  } ],
+  "nextDebtorId" : 3
+}

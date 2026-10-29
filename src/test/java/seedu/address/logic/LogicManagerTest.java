@@ -120,8 +120,13 @@ public class LogicManagerTest {
 
         for (String invalidCommand : List.of(
                 "note --id " + debtor.getDebtorId() + " --text    ",
+                "note --id " + debtor.getDebtorId() + " --text \u2003",
                 "note --id 0 --text Should not be saved.",
+                "note --id -1 --text Should not be saved.",
+                "note --id 2147483648 --text Should not be saved.",
                 "note --id " + debtor.getDebtorId() + " --id 2 --text Should not be saved.",
+                "note --id " + debtor.getDebtorId() + " --text Use --id 2 to identify the debtor.",
+                "note --id " + debtor.getDebtorId() + " --text Use --text to enter a note.",
                 "note --id " + debtor.getDebtorId() + " --unknown value --text Should not be saved.")) {
             assertThrows(ParseException.class, () -> logic.execute(invalidCommand));
             assertEquals(originalPersons, model.getAddressBook().getPersonList());

@@ -1,0 +1,35 @@
+RELEASE DATA PATH: /private/tmp/osps97-process-restart-rst64p4d/data/addressbook.json
+> list
+1 active debtor listed.
+> show --id 1
+Debtor profile
+ID: 1
+Name: Alpha Updated
+Phone: 98880001
+Email: alpha@example.com
+Address: Alpha Street
+Outstanding: S$0.00
+Tags: None
+Interaction history (newest first):
+- [2026-10-29 03:06] Contacted while hidden by the filter.
+- [2026-10-29 03:06] Use the --identifier portal.  Follow-up?
+- [2026-10-29 03:06] Called debtor; callback at 5pm?
+- [2026-10-29 03:06] Called debtor; callback at 5pm?
+> exit
+Exiting OSPS as requested ...
+Oct 29, 2026 3:06:29 AM seedu.address.MainApp init
+INFO: =============================[ Initializing AddressBook ]===========================
+Oct 29, 2026 3:06:29 AM seedu.address.MainApp initPrefs
+INFO: Using preference file : preferences.json
+Oct 29, 2026 3:06:29 AM seedu.address.commons.util.JsonUtil readJsonFile
+INFO: JSON file preferences.json found.
+Oct 29, 2026 3:06:29 AM seedu.address.MainApp initModelManager
+INFO: Using data file : data/addressbook.json
+Oct 29, 2026 3:06:29 AM seedu.address.commons.util.JsonUtil readJsonFile
+INFO: JSON file data/addressbook.json found.
+Oct 29, 2026 3:06:29 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][list]
+Oct 29, 2026 3:06:29 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][show]
+Oct 29, 2026 3:06:29 AM seedu.address.logic.LogicManager execute
+INFO: ----------------[USER COMMAND][exit]

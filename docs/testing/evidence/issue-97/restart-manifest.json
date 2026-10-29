@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-29",
+  "jar_sha256": "352d399f6e5c97aa4068fe7330d6063b61005c8d50825ecbd9cb5da524f0ce27",
+  "java": "openjdk version \"25.0.3\" 2026-04-21 LTS\nOpenJDK Runtime Environment Zulu25.34+17-CA (build 25.0.3+9-LTS)\nOpenJDK 64-Bit Server VM Zulu25.34+17-CA (build 25.0.3+9-LTS, mixed mode, sharing)",
+  "scope": "Two separate JVM processes running released MainApp.init and command/storage classes; no JavaFX window or UI screenshot",
+  "temporary_working_directory": "/private/tmp/osps97-process-restart-rst64p4d",
+  "phases": {
+    "first-process": [
+      "clear",
+      "add n/Alpha Tester p/98880001 e/alpha@example.com a/Alpha Street o/123.45",
+      "add n/Beta Tester p/98880002 e/beta@example.com a/Beta Street o/50",
+      "note --id 1 --text Called debtor; callback at 5pm?",
+      "note --text Called debtor; callback at 5pm? --id 1",
+      "note --id 1 --text Use the --identifier portal.  Follow-up?",
+      "find Beta",
+      "note --id 1 --text Contacted while hidden by the filter.",
+      "list",
+      "edit 1 n/Alpha Updated o/0",
+      "find Beta",
+      "delete 1",
+      "exit"
+    ],
+    "second-process": [
+      "list",
+      "show --id 1",
+      "exit"
+    ]
+  },
+  "result": "PASS"
+}
