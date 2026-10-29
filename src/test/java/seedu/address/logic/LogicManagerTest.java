@@ -627,6 +627,17 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_savingCommandWithNoChange_doesNotSave() throws Exception {
+        SaveTrackingAddressBookStorage addressBookStorage = new SaveTrackingAddressBookStorage(
+                temporaryFolder.resolve("noChangeAddressBook.json"));
+        Logic noChangeLogic = createLogic(new ModelManager(), addressBookStorage);
+
+        noChangeLogic.execute("clear");
+
+        assertEquals(0, addressBookStorage.getSaveAttemptCount());
+    }
+
+    @Test
     public void execute_validCommand_success() throws Exception {
         String listCommand = ListCommand.COMMAND_WORD;
         assertCommandSuccess(listCommand,

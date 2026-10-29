@@ -9,6 +9,8 @@ import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
 import static seedu.address.testutil.TypicalPersons.CARL;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -195,5 +197,39 @@ public class ModelManagerTest {
         UserPrefs differentUserPrefs = new UserPrefs();
         differentUserPrefs.setGuiSettings(new GuiSettings(1, 2, 3, 4));
         assertFalse(modelManager.equals(new ModelManager(addressBook, differentUserPrefs)));
+    }
+
+    @Test
+    public void createTransactionCopy_isIsolatedUntilPublished() {
+        modelManager.addPerson(ALICE);
+        modelManager.updateFilteredPersonList(new NameContainsKeywordsPredicate(List.of("Alice")));
+        Model candidate = modelManager.createTransactionCopy();
+
+        assertEquals(modelManager.getFilteredPersonList(), candidate.getFilteredPersonList());
+        candidate.addPerson(BENSON);
+        assertEquals(1, modelManager.getAddressBook().getPersonList().size());
+
+        modelManager.publishTransaction(candidate);
+        assertEquals(2, modelManager.getAddressBook().getPersonList().size());
+        assertEquals(candidate.getFilteredPersonList(), modelManager.getFilteredPersonList());
+    }
+
+    @Test
+    public void publishTransaction_invalidCandidate_throws() {
+        assertThrows(NullPointerException.class, () -> modelManager.publishTransaction(null));
+        assertThrows(IllegalArgumentException.class, () -> modelManager.publishTransaction(unsupportedModel()));
+    }
+
+    @Test
+    public void transactionDefaults_unsupportedModel_throwUnsupportedOperationException() {
+        Model unsupported = unsupportedModel();
+        assertThrows(UnsupportedOperationException.class, unsupported::createTransactionCopy);
+        assertThrows(UnsupportedOperationException.class, () -> unsupported.publishTransaction(modelManager));
+    }
+
+    /** Returns a {@code Model} that only provides the interface's default methods. */
+    private static Model unsupportedModel() {
+        InvocationHandler defaultsOnly = (proxy, method, args) -> InvocationHandler.invokeDefault(proxy, method, args);
+        return (Model) Proxy.newProxyInstance(Model.class.getClassLoader(), new Class<?>[] {Model.class}, defaultsOnly);
     }
 }
