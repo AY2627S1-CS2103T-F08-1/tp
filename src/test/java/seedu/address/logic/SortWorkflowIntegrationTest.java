@@ -105,6 +105,16 @@ public class SortWorkflowIntegrationTest {
     }
 
     @Test
+    public void listAmountAfterSort_replacesFilterAndResetsToIdOrder() throws Exception {
+        logic.execute("sort --by amount --order desc");
+        assertEquals(List.of(4, 3, 2, 1), displayedIds());
+
+        logic.execute("list-amount min/20");
+
+        assertEquals(List.of(2, 3, 4), displayedIds());
+    }
+
+    @Test
     public void addAfterFilterAndSort_resetsMembershipAndIdOrder() throws Exception {
         logic.execute("find Alice");
         logic.execute("sort --by amount --order desc");

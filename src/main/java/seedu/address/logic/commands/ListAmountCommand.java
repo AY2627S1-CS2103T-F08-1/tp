@@ -6,6 +6,7 @@ import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.Model;
 import seedu.address.model.person.OutstandingAmountInRangePredicate;
 import seedu.address.model.person.OutstandingAmountRange;
+import seedu.address.model.person.PersonSort;
 
 /** Lists debtors whose outstanding amounts lie within an inclusive range. */
 public final class ListAmountCommand extends Command {
@@ -35,7 +36,7 @@ public final class ListAmountCommand extends Command {
     @Override
     public CommandResult execute(Model model) {
         requireNonNull(model);
-        model.updateFilteredPersonList(predicate);
+        model.updatePersonView(predicate, PersonSort.DEFAULT_COMPARATOR);
         int matchCount = model.getFilteredPersonList().size();
         return new CommandResult(getResultMessage(matchCount, predicate.getRange()));
     }
