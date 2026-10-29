@@ -18,6 +18,7 @@ public class StageCommand extends Command {
 
     private final int debtorId;
     private final RecoveryStage stage;
+    private boolean changed;
 
     /** Creates a command to set the stage of the debtor identified by {@code debtorId}. */
     public StageCommand(int debtorId, RecoveryStage stage) {
@@ -35,6 +36,12 @@ public class StageCommand extends Command {
             return new CommandResult(String.format(MESSAGE_UNCHANGED, debtorId, stage));
         }
         model.setPerson(target, target.withRecoveryStage(stage));
+        changed = true;
         return new CommandResult(String.format(MESSAGE_SUCCESS, debtorId, stage));
+    }
+
+    @Override
+    public boolean shouldSaveAddressBook() {
+        return changed;
     }
 }

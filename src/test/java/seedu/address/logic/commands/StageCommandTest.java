@@ -26,8 +26,10 @@ class StageCommandTest {
     void execute_sameStageIsReadOnly() throws Exception {
         ModelManager model = new ModelManager();
         Person debtor = model.addPerson(new PersonBuilder().build());
-        CommandResult result = new StageCommand(debtor.getDebtorId(), RecoveryStage.NEW).execute(model);
+        StageCommand command = new StageCommand(debtor.getDebtorId(), RecoveryStage.NEW);
+        CommandResult result = command.execute(model);
 
         assertEquals("Recovery stage for debtor ID 1 is already new.", result.getFeedbackToUser());
+        assertEquals(false, command.shouldSaveAddressBook());
     }
 }
