@@ -351,6 +351,30 @@ Examples:
 * `list-amount max/S$500.00` displays debtors owing at most `S$500.00`, including zero balances.
 * `list-amount min/250 max/2,000.00` displays balances from `S$250.00` to `S$2,000.00`, inclusive.
 
+### Filtering debtors by recovery stage: `list-stage`
+
+Displays debtors in one recovery stage so you can focus on a particular group of cases.
+
+Format: `list-stage STAGE`
+
+* Supply exactly one of `new`, `contacted`, `negotiating`, `disputed`, `broken-promise`, or `settled`.
+  Stage names are case-insensitive; for example, `list-stage CONTACTED` is valid.
+* This replaces the current filter and sort order. Matching debtors appear in ascending persistent debtor-ID order.
+* The stage is set manually with `stage`; it is independent of the outstanding balance. A `settled` debtor can still
+  have a non-zero recorded balance, and is included by `list-stage settled`.
+* Changing a debtor's stage refreshes the filtered list. The displayed index always refers to that current list:
+  `edit 1` or `delete 1` targets the first visible debtor, while `stage --id ID --value STAGE` uses a persistent ID.
+* If there are no matches, OSPS reports `No debtors are in recovery stage STAGE. Use list to see all debtors.`
+  Otherwise, it reports the number of matches and the selected stage.
+* Missing, unknown, or additional arguments are rejected without changing the current view or debtor records.
+* This command does not change or save debtor data. Run `list` to restore all active debtors in persistent-ID order.
+  A restart also restores the full list.
+
+Examples:
+* `list-stage contacted` displays every debtor whose stage is `contacted`.
+* `list-stage broken-promise` displays cases marked as having a broken promise.
+* After `list-stage disputed`, `summary` summarises only the matching debtors; `summary --all` covers all debtors.
+
 ### Deleting a debtor: `delete`
 
 Deletes the specified debtor from OSPS.
@@ -460,6 +484,7 @@ Action | Format, Examples
 **Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [o/OUTSTANDING_AMOUNT] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find Alice 98765432`
 **Filter by amount** | `list-amount [min/AMOUNT] [max/AMOUNT]`<br> e.g., `list-amount min/500 max/2,000`
+**Filter by stage** | `list-stage STAGE`<br> e.g., `list-stage contacted`
 **List** | `list`
 **Note** | `note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT`<br> e.g., `note --id 1 --outcome reached --text Called debtor.`
 **Follow-up** | `followup --id DEBTOR_ID --date YYYY-MM-DD` or `--clear` or `--done`<br> e.g., `followup --id 1 --date 2026-11-03`

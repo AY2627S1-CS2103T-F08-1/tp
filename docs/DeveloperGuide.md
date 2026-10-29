@@ -351,8 +351,9 @@ reuses `ParserUtil#parseOutstandingAmount`, rejects duplicate or missing bounds,
 exceed the maximum. It compares the underlying `BigDecimal` values, avoiding rounding and string-comparison errors.
 
 `ListAmountCommand` wraps the range in an `OutstandingAmountInRangePredicate` and supplies it to the same
-`ModelManager#updateFilteredPersonList` path used by `find`. Consequently, the existing observable `FilteredList` and
-ID-ordered `SortedList` update the cards without reordering persistent data. A later `list` command restores the
+`ModelManager#updatePersonView` path used by `find`, together with `PersonSort.DEFAULT_COMPARATOR`. This resets any
+previous sort to persistent-ID order. The observable `FilteredList` and `SortedList` update the cards without
+reordering persistent data. A later `list` command restores the
 show-all predicate. Because the command overrides `shouldSaveAddressBook` with `false`, changing the view does not
 write JSON or retry a previously failed write.
 
@@ -364,6 +365,23 @@ write JSON or retry a previously failed write.
   consistent with `add` and `edit`, prevents negative amounts, and centralises precision validation.
 * **Keep filtering session-only instead of persisting it:** The command represents a temporary work view rather than
   debtor data. Restarts and `list` therefore return to the complete ID-ordered list.
+
+### Filtering by recovery stage
+
+`ListStageCommandParser` passes the complete argument to `RecoveryStage.parse`, which accepts one case-insensitive
+canonical stage. Missing, unknown, or extra values produce a `ParseException` before the model changes. The parser
+reuses the existing enum validation rather than maintaining a separate set of accepted stage names.
+
+`ListStageCommand` supplies a `RecoveryStagePredicate` and `PersonSort.DEFAULT_COMPARATOR` to
+`Model#updatePersonView`. The predicate compares the person's stored stage, independently of their outstanding
+amount. This replaces any earlier filter and sort order; the existing observable lists refresh when a saved stage
+change moves a person into or out of the selected group. Displayed-index commands continue to use the resulting view,
+while persistent-ID commands can target a hidden debtor.
+
+The command returns separate empty, singular, and plural messages and overrides `shouldSaveAddressBook` with `false`.
+Filtering therefore neither writes the JSON file nor creates an undo entry or retries a failed save. The filter is
+session-only: `list`, undo/redo, or a restart restores the default view. `ListStageWorkflowTest` covers stage changes,
+filtered edit/delete, summary scopes, failed saves, undo/redo, and preservation of profile fields through storage.
 
 ### Undo/redo feature
 
@@ -782,6 +800,30 @@ regression checks, but they do not replace exploratory testing on each supported
 1. Run `list-amount`, `list-amount min/501 max/500`, `list-amount min/-1`, and
    `list-amount min/1 min/2`.<br>
    Expected: Each command gives a precise error and leaves both the records and current view unchanged.
+
+### Filtering by recovery stage
+
+Use a disposable data folder and run `clear` to remove the sample data. Add three debtors with distinct phone numbers
+and email addresses, and note their
+persistent IDs as A, B, and C. Substitute those numeric IDs in the commands below; they are not displayed indexes.
+
+1. Set A and C to `contacted` using `stage --id A --value contacted` and `stage --id C --value contacted`.
+   Leave B as `new`.<br>
+   Expected: `show --id A`, `show --id B`, and `show --id C` report the corresponding stages.
+1. Run `sort --by id --order desc`, then `list-stage CONTACTED`.<br>
+   Expected: Only A and C are visible, in ascending persistent-ID order. The feedback reports two matching debtors.
+1. Run `summary`, then `summary --all`.<br>
+   Expected: The first summary counts the two visible debtors; the second counts all three. Neither changes the view.
+1. Run `list-stage`, `list-stage unknown`, and `list-stage contacted new`.<br>
+   Expected: Each is rejected; the same two debtors remain visible and no data changes.
+1. Run `stage --id A --value disputed`.<br>
+   Expected: A disappears from the contacted worklist. C remains visible at displayed index 1.
+1. Run `edit 1 n/Updated Contact`, then `show --id C`.<br>
+   Expected: Only C's name changes. Its stage, balance, contact preferences, notes and follow-up history are preserved.
+1. Run `list-stage negotiating`.<br>
+   Expected: The list is empty and feedback explains that no debtors match, with a suggestion to use `list`.
+1. Run `list`, then exit and relaunch the app.<br>
+   Expected: All three debtors are visible in persistent-ID order; their updated names and stages survive the restart.
 
 ### Showing profiles and recording interaction history
 
