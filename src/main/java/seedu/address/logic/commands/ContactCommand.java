@@ -17,6 +17,7 @@ public class ContactCommand extends Command {
     private final String method;
     private final boolean changeHours;
     private final String hours;
+    private boolean changed;
 
     /** Creates a command for the requested preference changes. */
     public ContactCommand(int id, boolean changeMethod, String method, boolean changeHours, String hours) {
@@ -28,7 +29,13 @@ public class ContactCommand extends Command {
     }
 
     @Override
+    public boolean shouldSaveAddressBook() {
+        return changed;
+    }
+
+    @Override
     public CommandResult execute(Model model) throws CommandException {
+        changed = false;
         Optional<Person> match = model.getAddressBook().getPersonList().stream()
                 .filter(person -> person.getDebtorId() == id).findFirst();
         if (match.isEmpty()) {
@@ -38,7 +45,11 @@ public class ContactCommand extends Command {
         ContactPreferences old = target.getContactPreferences();
         ContactPreferences updated = new ContactPreferences(changeMethod ? method : old.getMethod(),
                 changeHours ? hours : old.getHours());
+        if (old.equals(updated)) {
+            return new CommandResult(String.format("Contact preferences for debtor ID %d are unchanged.", id));
+        }
         model.setPerson(target, target.withContactPreferences(updated));
+        changed = true;
         return new CommandResult(String.format("Updated contact preferences for debtor ID %d.", id));
     }
 }

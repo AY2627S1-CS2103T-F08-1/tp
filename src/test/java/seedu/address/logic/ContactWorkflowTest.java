@@ -1,26 +1,92 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
+import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.person.ContactPreferences;
 import seedu.address.model.person.Person;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
+import seedu.address.testutil.PersonBuilder;
 
 public class ContactWorkflowTest {
     @TempDir
     public Path directory;
+
+    @Test
+    public void contact_unchangedValues_doNotReplaceOrSave() throws Exception {
+        Model model = new ModelManager();
+        Person debtor = model.addPerson(new PersonBuilder().build());
+        CountingStorage storage = new CountingStorage(directory.resolve("book.json"));
+        Logic logic = new LogicManager(model,
+                new StorageManager(storage, new JsonUserPrefsStorage(directory.resolve("prefs.json"))));
+
+        logic.execute("contact --id " + debtor.getDebtorId() + " --clear-method --clear-hours");
+        assertSame(debtor, model.getAddressBook().getPersonList().getFirst());
+        assertEquals(0, storage.saves);
+        assertTrue(Files.notExists(directory.resolve("book.json")));
+
+        logic.execute("contact --id " + debtor.getDebtorId() + " --method sms");
+        Person updated = model.getAddressBook().getPersonList().getFirst();
+        assertEquals(1, storage.saves);
+        logic.execute("contact --id " + debtor.getDebtorId() + " --method SMS --clear-hours");
+        assertSame(updated, model.getAddressBook().getPersonList().getFirst());
+        assertEquals(1, storage.saves);
+    }
+
+    @Test
+    public void contact_noOpAfterFailedSave_doesNotRetryPendingWrite() throws Exception {
+        Model model = new ModelManager();
+        Person debtor = model.addPerson(new PersonBuilder().build());
+        CountingStorage storage = new CountingStorage(directory.resolve("book.json"));
+        Logic logic = new LogicManager(model,
+                new StorageManager(storage, new JsonUserPrefsStorage(directory.resolve("prefs.json"))));
+        storage.fail = true;
+        assertThrows(CommandException.class, () ->
+                logic.execute("contact --id " + debtor.getDebtorId() + " --method call"));
+        Person updated = model.getAddressBook().getPersonList().getFirst();
+        assertEquals(1, storage.saves);
+        storage.fail = false;
+        logic.execute("contact --id " + debtor.getDebtorId() + " --clear-hours");
+        assertSame(updated, model.getAddressBook().getPersonList().getFirst());
+        assertEquals(1, storage.saves);
+        assertTrue(Files.notExists(directory.resolve("book.json")));
+        logic.execute("exit");
+        assertEquals(2, storage.saves);
+    }
+
+    private static class CountingStorage extends JsonAddressBookStorage {
+        private int saves;
+        private boolean fail;
+
+        CountingStorage(Path path) {
+            super(path);
+        }
+
+        @Override
+        public void saveAddressBook(ReadOnlyAddressBook book) throws IOException {
+            saves++;
+            if (fail) {
+                throw new IOException("simulated failure");
+            }
+            super.saveAddressBook(book);
+        }
+    }
 
     @Test
     public void contact_editNoteAndReload_preservesPreferences() throws Exception {
