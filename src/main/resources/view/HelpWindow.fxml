@@ -24,7 +24,8 @@
         <children>
           <Label fx:id="helpMessage" wrapText="true" />
           <Button fx:id="copyButton" mnemonicParsing="false" onAction="#copyUrl" text="Copy User Guide URL" />
-          <ScrollPane fitToWidth="true" focusTraversable="true" prefHeight="420.0" VBox.vgrow="ALWAYS">
+          <ScrollPane fx:id="commandReferenceScroll" fitToWidth="true" focusTraversable="true"
+                      prefHeight="420.0" VBox.vgrow="ALWAYS">
             <content>
               <Label fx:id="commandReference" wrapText="true" />
             </content>

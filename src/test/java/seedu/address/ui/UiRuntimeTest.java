@@ -173,6 +173,11 @@ public class UiRuntimeTest {
             Event.fireEvent(reference, pageDown);
             assertTrue(reference.getVvalue() > reference.getVmin());
             assertFalse(recordingHelpWindow.hideCalled);
+            KeyEvent pageUp = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.PAGE_UP,
+                    false, false, false, false);
+            Event.fireEvent(reference, pageUp);
+            assertEquals(reference.getVmin(), reference.getVvalue());
+            assertFalse(recordingHelpWindow.hideCalled);
             KeyEvent escape = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ESCAPE,
                     false, false, false, false);
             Event.fireEvent(reference, escape);

@@ -5,9 +5,9 @@ import java.util.logging.Logger;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import seedu.address.commons.core.LogsCenter;
@@ -75,6 +75,7 @@ public class HelpWindow extends UiPart<Stage> {
 
     private static final Logger logger = LogsCenter.getLogger(HelpWindow.class);
     private static final String FXML = "HelpWindow.fxml";
+    private static final double SCROLL_PAGE_INCREMENT = 0.25;
 
     @FXML
     private Button copyButton;
@@ -84,6 +85,9 @@ public class HelpWindow extends UiPart<Stage> {
 
     @FXML
     private Label commandReference;
+
+    @FXML
+    private ScrollPane commandReferenceScroll;
 
     /**
      * Creates a new HelpWindow.
@@ -104,12 +108,30 @@ public class HelpWindow extends UiPart<Stage> {
         this(new Stage());
     }
 
-    /** Closes the command reference for Escape while leaving other navigation keys untouched. */
+    /** Handles closing and page-wise keyboard scrolling for the command reference. */
     void handleKeyPress(KeyEvent event) {
-        if (event.getCode() == KeyCode.ESCAPE) {
-            hide();
-            event.consume();
+        switch (event.getCode()) {
+            case ESCAPE:
+                hide();
+                event.consume();
+                break;
+            case PAGE_DOWN:
+                scrollBy(SCROLL_PAGE_INCREMENT);
+                event.consume();
+                break;
+            case PAGE_UP:
+                scrollBy(-SCROLL_PAGE_INCREMENT);
+                event.consume();
+                break;
+            default:
+                break;
         }
+    }
+
+    private void scrollBy(double increment) {
+        double nextValue = Math.clamp(commandReferenceScroll.getVvalue() + increment,
+                commandReferenceScroll.getVmin(), commandReferenceScroll.getVmax());
+        commandReferenceScroll.setVvalue(nextValue);
     }
 
     /**
