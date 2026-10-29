@@ -23,8 +23,10 @@ import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListAmountCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.NoteCommand;
+import seedu.address.logic.commands.RedoCommand;
 import seedu.address.logic.commands.ShowCommand;
 import seedu.address.logic.commands.SortCommand;
+import seedu.address.logic.commands.UndoCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.OutstandingAmount;
@@ -128,6 +130,18 @@ public class AddressBookParserTest {
     public void parseCommand_show() throws Exception {
         ShowCommand command = (ShowCommand) parser.parseCommand(ShowCommand.COMMAND_WORD + " --id 3");
         assertEquals(new ShowCommand(3), command);
+    }
+
+    @Test
+    public void parseCommand_undoRedo() throws Exception {
+        assertTrue(parser.parseCommand("undo") instanceof UndoCommand);
+        assertTrue(parser.parseCommand("redo") instanceof RedoCommand);
+    }
+
+    @Test
+    public void parseCommand_undoRedoWithArguments_throwsParseException() {
+        assertThrows(ParseException.class, () -> parser.parseCommand("undo 1"));
+        assertThrows(ParseException.class, () -> parser.parseCommand("redo 1"));
     }
 
     @Test
