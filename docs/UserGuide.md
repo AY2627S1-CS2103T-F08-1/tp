@@ -73,7 +73,7 @@ while retaining the benefits of a graphical user interface (GUI).
 * Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
-* Extraneous parameters for commands that take no parameters, such as `help`, `exit`, and `clear`, are ignored.<br>
+* Extraneous parameters for `help` and `exit` are ignored. `clear` and `list` reject them with an error message.<br>
   For example, `help 123` is interpreted as `help`.
 
 * The `list` command accepts no parameters. Unexpected parameters are rejected with an error message so that typing
@@ -126,6 +126,7 @@ A debtor can have any number of tags, including zero.
 * Leading and trailing spaces around command values are removed. Phone numbers accept digits only (at least
   three); spaces within a number, hyphens and `+` are rejected. Country codes and leading zeroes are not
   normalised, so `6591234567` and `91234567` are treated as different numbers.
+* Email local parts may contain an apostrophe, such as `o'connor@example.com`, but not at the start or end.
 * Email addresses accept ASCII Punycode domain labels such as `person@xn--bcher-kva.de`. Domain labels may
   contain consecutive internal hyphens but must start and end with letters or digits.
 * Addresses must not be blank, including addresses containing only Unicode spaces.
