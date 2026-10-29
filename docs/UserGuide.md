@@ -23,6 +23,7 @@ while retaining the benefits of a graphical user interface (GUI).
 1. Copy the file to the folder you want to use as the _home folder_ for OSPS.
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar osps.jar`.<br>
+   OSPS stores its data, preferences, logs and exports in the folder containing the JAR, wherever you launch it from.<br>
    The OSPS window should appear in a few seconds with sample debtor data on a first run.
 
    ![OSPS interface showing debtor profiles and outstanding amounts](images/Ui.png)
@@ -433,18 +434,16 @@ supports an atomic replacement; otherwise the save fails without overwriting the
 
 ### Editing the data file
 
-OSPS data is saved as `data/addressbook.json` relative to the **current working folder** (the folder your terminal
-is in when you launch OSPS). This can differ from the folder containing `osps.jar`. Always launch from the same
-working folder to use the same records, including after upgrading the JAR. For example:
+OSPS keeps all of its files in the **home folder**, the folder that contains `osps.jar`. This does not depend on the
+folder your terminal is in when you launch OSPS. Records are saved to `data/addressbook.json`, and `preferences.json`,
+the log file `osps.log.0` and the `exports` folder are in the same home folder. For example, if the JAR is at
+`~/Downloads/osps/osps.jar`, records are saved to `~/Downloads/osps/data/addressbook.json`.
 
-```bash
-cd ~/Downloads/osps-data
-java -jar ../osps.jar
-```
-
-Create `osps-data` first if it does not exist. In this example, records are saved to
-`~/Downloads/osps-data/data/addressbook.json`; `preferences.json` is also in `osps-data`.
-Launching from another folder uses a separate dataset. Advanced users may update data directly by editing that JSON file.
+To keep your records when you move to a newer JAR, copy the `data` folder (and `preferences.json` if you want your
+window settings) into the folder that contains the new JAR. If you used an earlier version and launched it from a
+different folder than the one containing the JAR (for example by following an older instruction to `cd` into a separate
+data folder), copy that folder's `data` and `preferences.json` into the JAR's folder. The folder containing the JAR
+must be writable, otherwise OSPS cannot save your records or preferences. Advanced users may update data directly by editing the JSON file.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 If OSPS detects that the data file cannot be loaded, it starts with no debtor records. Some unsupported manual edits
@@ -459,7 +458,8 @@ Malformed JSON can also cause OSPS to fail to start.
 
 **Q**: How do I transfer my data to another computer?<br>
 **A**: Install OSPS on the other computer and overwrite the data file it creates with the `data/addressbook.json` file
-from your previous OSPS working folder. Launch OSPS from the destination working folder each time.
+from your previous OSPS home folder. Place it at `data/addressbook.json` inside the folder that contains the
+`osps.jar` you will run (copying the whole `data` folder next to the JAR does this).
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -515,7 +515,7 @@ Use `preview edit INDEX [FIELDS]` or `preview delete INDEX` to see the result wi
 
 ### Exporting a debtor profile: `export`
 
-Use `export --id ID` to write the profile and interaction history as UTF-8 text to `exports/debtor-ID.txt` relative to the application working directory. An existing export is never overwritten; move or rename it before exporting the same ID again. The file contains sensitive debtor information, so share and store it carefully.
+Use `export --id ID` to write the profile and interaction history as UTF-8 text to `exports/debtor-ID.txt` inside the OSPS home folder (the folder containing `osps.jar`). An existing export is never overwritten; move or rename it before exporting the same ID again. The file contains sensitive debtor information, so share and store it carefully.
 
 ### Finding contactable debtors: `contactable`
 
