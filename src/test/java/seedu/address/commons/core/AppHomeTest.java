@@ -48,6 +48,19 @@ public class AppHomeTest {
     }
 
     @Test
+    public void homeOf_folderNameWithSpacesPercentAndUnicode_returnsThatFolder() throws Exception {
+        Path jarHome = Files.createDirectory(testFolder.resolve("my jar %41 é"));
+        Path jar = Files.createFile(jarHome.resolve("osps.jar"));
+
+        assertEquals(jarHome.toAbsolutePath(), AppHome.homeOf(jar, Path.of("elsewhere")));
+    }
+
+    @Test
+    public void resolve_whenRunningFromClasses_usesWorkingDirectory() {
+        assertEquals(Path.of("").toAbsolutePath().resolve("x"), AppHome.resolve("x"));
+    }
+
+    @Test
     public void resolve_returnsAbsolutePathEndingWithRequestedParts() {
         Path resolved = AppHome.resolve("data", "addressbook.json");
 

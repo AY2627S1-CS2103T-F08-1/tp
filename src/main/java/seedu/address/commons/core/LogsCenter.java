@@ -66,7 +66,7 @@ public class LogsCenter {
     }
 
     /** Returns the log file location inside the application home, escaped as a {@code FileHandler} pattern. */
-    private static String logFilePattern() {
+    static String logFilePattern() {
         return AppHome.resolve(LOG_FILE).toString().replace("%", "%%");
     }
 
@@ -90,13 +90,22 @@ public class LogsCenter {
         baseLogger.addHandler(consoleHandler);
 
         // add a FileHandler to log to a file
+        addFileHandler(baseLogger, logFilePattern());
+    }
+
+    /**
+     * Adds a {@code FileHandler} writing to {@code pattern} to {@code target}. If the file cannot be opened, for
+     * example because the application home is read-only, logging continues to the console only.
+     * Uses {@code target} rather than this class's {@code logger}, which is not yet assigned during class loading.
+     */
+    static void addFileHandler(Logger target, String pattern) {
         try {
-            FileHandler fileHandler = new FileHandler(logFilePattern(), MAX_FILE_SIZE_IN_BYTES, MAX_FILE_COUNT, true);
+            FileHandler fileHandler = new FileHandler(pattern, MAX_FILE_SIZE_IN_BYTES, MAX_FILE_COUNT, true);
             fileHandler.setFormatter(new SimpleFormatter());
             fileHandler.setLevel(Level.ALL);
-            baseLogger.addHandler(fileHandler);
+            target.addHandler(fileHandler);
         } catch (IOException e) {
-            logger.warning("Error adding file handler for logger.");
+            target.warning("Error adding file handler for logger.");
         }
     }
 

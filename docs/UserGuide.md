@@ -440,7 +440,10 @@ the log file `osps.log.0` and the `exports` folder are in the same home folder. 
 `~/Downloads/osps/osps.jar`, records are saved to `~/Downloads/osps/data/addressbook.json`.
 
 To keep your records when you move to a newer JAR, copy the `data` folder (and `preferences.json` if you want your
-window settings) into the folder that contains the new JAR. Advanced users may update data directly by editing the JSON file.
+window settings) into the folder that contains the new JAR. If you used an earlier version and launched it from a
+different folder than the one containing the JAR (for example by following an older instruction to `cd` into a separate
+data folder), copy that folder's `data` and `preferences.json` into the JAR's folder. The folder containing the JAR
+must be writable, otherwise OSPS cannot save your records or preferences. Advanced users may update data directly by editing the JSON file.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 If OSPS detects that the data file cannot be loaded, it starts with no debtor records. Some unsupported manual edits

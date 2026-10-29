@@ -4,6 +4,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.CodeSource;
+import java.util.Locale;
 
 /**
  * Locates the folder that owns the application's files: preferences, data, logs and exports.
@@ -28,7 +29,7 @@ public final class AppHome {
      */
     static Path homeOf(Path codeSource, Path workingDirectory) {
         boolean isJar = codeSource != null && Files.isRegularFile(codeSource)
-                && codeSource.getFileName().toString().toLowerCase().endsWith(JAR_EXTENSION);
+                && codeSource.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(JAR_EXTENSION);
         Path parent = isJar ? codeSource.toAbsolutePath().getParent() : null;
         return parent != null ? parent : workingDirectory.toAbsolutePath();
     }
