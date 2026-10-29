@@ -23,9 +23,15 @@ public class StageCommandParser implements Parser<StageCommand> {
         if (!StringUtil.isNonZeroUnsignedInteger(idText)) {
             throw new ParseException("Debtor ID must be a positive integer.");
         }
+        final int debtorId;
+        try {
+            debtorId = Integer.parseInt(idText);
+        } catch (NumberFormatException exception) {
+            throw new ParseException("Debtor ID must be a positive integer.");
+        }
         try {
             RecoveryStage stage = RecoveryStage.parse(values.getValue(PREFIX_STAGE_VALUE).get());
-            return new StageCommand(Integer.parseInt(idText), stage);
+            return new StageCommand(debtorId, stage);
         } catch (IllegalArgumentException exception) {
             throw new ParseException(RecoveryStage.MESSAGE_CONSTRAINTS);
         }
