@@ -35,9 +35,10 @@ public class MainApp extends Application {
     public static final String APP_NAME = "OSPS";
     public static final String VERSION = "v1.5";
 
+    static final Path USER_PREFS_FILE_PATH = AppHome.resolve("preferences.json");
+    static final Path ADDRESS_BOOK_FILE_PATH = AppHome.resolve("data", "addressbook.json");
+
     private static final Logger logger = LogsCenter.getLogger(MainApp.class);
-    private static final Path USER_PREFS_FILE_PATH = AppHome.resolve("preferences.json");
-    private static final Path ADDRESS_BOOK_FILE_PATH = AppHome.resolve("data", "addressbook.json");
 
     protected Ui ui;
     protected Logic logic;

@@ -3,6 +3,8 @@ package seedu.address.commons.core;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.net.URI;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -44,7 +46,7 @@ public class AppHomeTest {
 
         assertEquals(workingDirectory.toAbsolutePath(),
                 AppHome.homeOf(testFolder.resolve("missing.jar"), workingDirectory));
-        assertEquals(workingDirectory.toAbsolutePath(), AppHome.homeOf(null, workingDirectory));
+        assertEquals(workingDirectory.toAbsolutePath(), AppHome.homeOf((Path) null, workingDirectory));
     }
 
     @Test
@@ -53,6 +55,31 @@ public class AppHomeTest {
         Path jar = Files.createFile(jarHome.resolve("osps.jar"));
 
         assertEquals(jarHome.toAbsolutePath(), AppHome.homeOf(jar, Path.of("elsewhere")));
+    }
+
+    @Test
+    public void homeOf_regularFileThatIsNotAJar_returnsWorkingDirectory() throws Exception {
+        Path notJar = Files.createFile(testFolder.resolve("osps.zip"));
+        Path workingDirectory = Files.createDirectory(testFolder.resolve("work"));
+
+        assertEquals(workingDirectory.toAbsolutePath(), AppHome.homeOf(notJar, workingDirectory));
+    }
+
+    @Test
+    public void homeOf_jarLocationUrl_decodesSpacesPercentAndUnicode() throws Exception {
+        Path jarHome = Files.createDirectory(testFolder.resolve("my jar %41 é"));
+        Path jar = Files.createFile(jarHome.resolve("osps.jar"));
+
+        assertEquals(jarHome.toAbsolutePath(), AppHome.homeOf(jar.toUri().toURL(), Path.of("elsewhere")));
+    }
+
+    @Test
+    public void homeOf_missingOrNonFileLocationUrl_returnsWorkingDirectory() throws Exception {
+        Path workingDirectory = Files.createDirectory(testFolder.resolve("work"));
+
+        assertEquals(workingDirectory.toAbsolutePath(), AppHome.homeOf((URL) null, workingDirectory));
+        assertEquals(workingDirectory.toAbsolutePath(),
+                AppHome.homeOf(URI.create("http://example.com/osps.jar").toURL(), workingDirectory));
     }
 
     @Test

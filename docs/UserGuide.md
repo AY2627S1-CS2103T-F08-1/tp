@@ -458,7 +458,8 @@ Malformed JSON can also cause OSPS to fail to start.
 
 **Q**: How do I transfer my data to another computer?<br>
 **A**: Install OSPS on the other computer and overwrite the data file it creates with the `data/addressbook.json` file
-from your previous OSPS home folder, so that it sits next to the `osps.jar` you will run.
+from your previous OSPS home folder. Place it at `data/addressbook.json` inside the folder that contains the
+`osps.jar` you will run (copying the whole `data` folder next to the JAR does this).
 
 --------------------------------------------------------------------------------------------------------------------
 

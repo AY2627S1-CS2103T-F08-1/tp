@@ -1,10 +1,12 @@
 package seedu.address.commons.core;
 
-import java.net.URISyntaxException;
+import java.net.URI;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.CodeSource;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Locates the folder that owns the application's files: preferences, data, logs and exports.
@@ -24,25 +26,32 @@ public final class AppHome {
     }
 
     /**
-     * Returns the folder containing {@code codeSource} if it is a JAR file, otherwise {@code workingDirectory}.
+     * Returns the folder containing the JAR at {@code codeSource}, or {@code workingDirectory} if {@code codeSource}
+     * is missing, is not a {@code file:} location or is not a JAR file.
      * Exposed so the choice can be tested without launching a JAR.
      */
+    static Path homeOf(URL codeSource, Path workingDirectory) {
+        Path location = null;
+        if (codeSource != null) {
+            try {
+                location = Path.of(URI.create(codeSource.toString()));
+            } catch (RuntimeException e) {
+                // Not a local file location, so there is no JAR folder to use; fall back to the working directory.
+                location = null;
+            }
+        }
+        return homeOf(location, workingDirectory);
+    }
+
     static Path homeOf(Path codeSource, Path workingDirectory) {
         boolean isJar = codeSource != null && Files.isRegularFile(codeSource)
                 && codeSource.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(JAR_EXTENSION);
-        Path parent = isJar ? codeSource.toAbsolutePath().getParent() : null;
-        return parent != null ? parent : workingDirectory.toAbsolutePath();
+        return isJar ? codeSource.toAbsolutePath().getParent() : workingDirectory.toAbsolutePath();
     }
 
     private static Path locateHome() {
-        Path workingDirectory = Path.of("");
-        try {
-            CodeSource source = AppHome.class.getProtectionDomain().getCodeSource();
-            Path codeSource = source == null ? null : Path.of(source.getLocation().toURI());
-            return homeOf(codeSource, workingDirectory);
-        } catch (URISyntaxException | RuntimeException e) {
-            // Without a usable code location, fall back to the working directory rather than failing to start.
-            return homeOf(null, workingDirectory);
-        }
+        URL location = Optional.ofNullable(AppHome.class.getProtectionDomain().getCodeSource())
+                .map(CodeSource::getLocation).orElse(null);
+        return homeOf(location, Path.of(""));
     }
 }
