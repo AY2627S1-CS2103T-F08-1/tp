@@ -20,6 +20,7 @@ import seedu.address.model.person.exceptions.DuplicatePersonException;
 public class AddressBook implements ReadOnlyAddressBook {
 
     public static final String MESSAGE_DUPLICATE_DEBTOR_ID = "Debtor ID must be unique.";
+    public static final String MESSAGE_DEBTOR_ID_OUT_OF_RANGE = "Debtor ID exceeds the supported range.";
 
     private final UniquePersonList persons = new UniquePersonList();
     private int nextDebtorId = 1;
@@ -136,6 +137,9 @@ public class AddressBook implements ReadOnlyAddressBook {
     public void setNextDebtorId(int nextDebtorId) {
         if (nextDebtorId < this.nextDebtorId) {
             throw new IllegalArgumentException("Next debtor ID cannot be reused.");
+        }
+        if (nextDebtorId == Integer.MAX_VALUE) {
+            throw new IllegalArgumentException(MESSAGE_DEBTOR_ID_OUT_OF_RANGE);
         }
         this.nextDebtorId = nextDebtorId;
     }

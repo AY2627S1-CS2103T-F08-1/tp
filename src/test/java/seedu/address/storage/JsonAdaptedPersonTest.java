@@ -1,6 +1,7 @@
 package seedu.address.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static seedu.address.storage.JsonAdaptedPerson.DEBTOR_ID_OUT_OF_RANGE_MESSAGE;
 import static seedu.address.storage.JsonAdaptedPerson.MISSING_FIELD_MESSAGE_FORMAT;
 import static seedu.address.storage.JsonAdaptedPerson.NULL_TAG_MESSAGE;
 import static seedu.address.testutil.Assert.assertThrows;
@@ -110,6 +111,14 @@ public class JsonAdaptedPersonTest {
                 INVALID_DEBTOR_ID, VALID_OUTSTANDING_AMOUNT, List.of(), VALID_TAGS);
 
         assertThrows(IllegalValueException.class, Person.MESSAGE_INVALID_DEBTOR_ID, person::toModelType);
+    }
+
+    @Test
+    public void toModelType_maximumDebtorId_throwsIllegalValueException() {
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                Integer.MAX_VALUE, VALID_OUTSTANDING_AMOUNT, List.of(), VALID_TAGS);
+
+        assertThrows(IllegalValueException.class, DEBTOR_ID_OUT_OF_RANGE_MESSAGE, person::toModelType);
     }
 
     @Test

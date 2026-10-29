@@ -55,6 +55,12 @@ public class JsonAddressBookStorageTest {
     }
 
     @Test
+    public void readAddressBook_nullDocument_throwsDataLoadingException() {
+        assertThrows(DataLoadingException.class, () -> readAddressBook("nullAddressBook.json"));
+    }
+
+
+    @Test
     public void readAddressBook_invalidPersonAddressBook_throwDataLoadingException() {
         assertThrows(DataLoadingException.class, () -> readAddressBook("invalidPersonAddressBook.json"));
     }
@@ -95,6 +101,21 @@ public class JsonAddressBookStorageTest {
     @Test
     public void readAddressBook_nullInteractionNote_throwsDataLoadingException() {
         assertThrows(DataLoadingException.class, () -> readAddressBook("nullInteractionNoteAddressBook.json"));
+    }
+
+    @Test
+    public void readAddressBook_maximumDebtorId_throwsDataLoadingException() {
+        assertThrows(DataLoadingException.class, () -> readAddressBook("maximumDebtorIdAddressBook.json"));
+    }
+
+    @Test
+    public void readAddressBook_maximumNextDebtorId_throwsDataLoadingException() {
+        assertThrows(DataLoadingException.class, () -> readAddressBook("maximumNextDebtorIdAddressBook.json"));
+    }
+
+    @Test
+    public void readAddressBook_reusedNextDebtorId_throwsDataLoadingException() {
+        assertThrows(DataLoadingException.class, () -> readAddressBook("reusedNextDebtorIdAddressBook.json"));
     }
 
     @Test

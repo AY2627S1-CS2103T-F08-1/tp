@@ -97,8 +97,7 @@ Format: `help`
 ### Adding a debtor: `add`
 
 Adds a debtor to OSPS. The outstanding amount is optional, may be zero, and defaults to `S$0.00`.
-Each debtor is assigned a unique ID, which is shown in the debtor list. IDs are assigned from 1 again after
-using `clear`.
+Each debtor is assigned a unique ID, which is shown in the debtor list. New ID are assigned in increasing numerical order and are not reused after deletion or `clear`.
 
 Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [o/OUTSTANDING_AMOUNT] [t/TAG]…​`
 
@@ -262,7 +261,9 @@ Examples:
 
 ### Clearing all entries: `clear`
 
-Clears all debtor records from OSPS.
+Clears all debtor records from OSPS. This operation has no undo or confirmation.
+
+The `clear` operation will be rejected if additional arguments are supplied
 
 Format: `clear`
 
@@ -297,6 +298,7 @@ may prevent startup; restore a backup if this happens. When OSPS starts with no 
 the invalid file remains on disk until you run a data-changing command. Back up the file before editing it.<br>
 Furthermore, certain edits can cause OSPS to behave unexpectedly (for example, if a value is outside the accepted
 range). Edit the data file only if you are confident that you can update it correctly.
+Malformed JSON can also cause OSPS to fail to start.
 </div>
 
 ## FAQ
