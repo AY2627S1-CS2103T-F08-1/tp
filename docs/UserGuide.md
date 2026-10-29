@@ -87,7 +87,8 @@ Each debtor card shows both a displayed index and a persistent debtor ID. In a h
 
 ### Viewing help: `help`
 
-Shows a message explaining how to access the help page.
+Opens a scrollable, keyboard-accessible in-app command reference. It includes the syntax and a short example for
+each released command. The window also retains a button to copy the link to this online User Guide.
 
 ![help message](images/helpMessage.png)
 

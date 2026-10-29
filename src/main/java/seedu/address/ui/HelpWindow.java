@@ -19,6 +19,46 @@ public class HelpWindow extends UiPart<Stage> {
             "https://ay2627s1-cs2103t-f08-1.github.io/tp/UserGuide.html";
     public static final String HELP_MESSAGE = "Refer to the user guide: " + USERGUIDE_URL;
 
+    public static final String COMMAND_REFERENCE = """
+            COMMAND REFERENCE
+
+            Add a debtor
+            add n/NAME p/PHONE e/EMAIL a/ADDRESS [o/AMOUNT] [t/TAG]...
+            Example: add n/Olaf Go p/91234567 e/olaf@example.com a/Antarctica o/S$1250.00
+
+            List all debtors
+            list
+
+            Find debtors by name or full phone number
+            find KEYWORD [MORE_KEYWORDS]...
+            Example: find Alice 91234567
+
+            Show a debtor profile by persistent ID
+            show --id DEBTOR_ID
+            Example: show --id 3
+
+            Add an interaction note by persistent ID
+            note --id DEBTOR_ID --text NOTE_TEXT
+            Example: note --id 3 --text Called debtor, promised payment on Friday.
+
+            Edit a debtor by displayed index
+            edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/AMOUNT] [t/TAG]...
+            Example: edit 2 o/S$500.00
+
+            Delete a debtor by displayed index
+            delete INDEX
+            Example: delete 2
+
+            Clear all debtors
+            clear
+
+            Open this command reference
+            help
+
+            Exit OSPS
+            exit
+            """;
+
     private static final Logger logger = LogsCenter.getLogger(HelpWindow.class);
     private static final String FXML = "HelpWindow.fxml";
 
@@ -28,6 +68,9 @@ public class HelpWindow extends UiPart<Stage> {
     @FXML
     private Label helpMessage;
 
+    @FXML
+    private Label commandReference;
+
     /**
      * Creates a new HelpWindow.
      *
@@ -36,6 +79,7 @@ public class HelpWindow extends UiPart<Stage> {
     public HelpWindow(Stage root) {
         super(FXML, root);
         helpMessage.setText(HELP_MESSAGE);
+        commandReference.setText(COMMAND_REFERENCE);
     }
 
     /**

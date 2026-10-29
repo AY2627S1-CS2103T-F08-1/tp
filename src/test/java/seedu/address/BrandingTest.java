@@ -1,6 +1,7 @@
 package seedu.address;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -22,5 +23,19 @@ public class BrandingTest {
     public void helpUrl_pointsToTeamUserGuide() {
         assertEquals("https://ay2627s1-cs2103t-f08-1.github.io/tp/UserGuide.html",
                 HelpWindow.USERGUIDE_URL);
+    }
+
+    @Test
+    public void commandReference_listsEveryReleasedCommand() {
+        assertTrue(HelpWindow.COMMAND_REFERENCE.contains("add n/NAME"));
+        assertTrue(HelpWindow.COMMAND_REFERENCE.contains("list\n"));
+        assertTrue(HelpWindow.COMMAND_REFERENCE.contains("find KEYWORD"));
+        assertTrue(HelpWindow.COMMAND_REFERENCE.contains("show --id DEBTOR_ID"));
+        assertTrue(HelpWindow.COMMAND_REFERENCE.contains("note --id DEBTOR_ID"));
+        assertTrue(HelpWindow.COMMAND_REFERENCE.contains("edit INDEX"));
+        assertTrue(HelpWindow.COMMAND_REFERENCE.contains("delete INDEX"));
+        assertTrue(HelpWindow.COMMAND_REFERENCE.contains("clear\n"));
+        assertTrue(HelpWindow.COMMAND_REFERENCE.contains("help\n"));
+        assertTrue(HelpWindow.COMMAND_REFERENCE.contains("exit\n"));
     }
 }
