@@ -3,7 +3,9 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
@@ -18,12 +20,15 @@ import seedu.address.model.person.Person;
  * Represents the in-memory model of the address book data.
  */
 public class ModelManager implements Model {
+    private static final int MAX_HISTORY_SIZE = 100;
     private static final Logger logger = LogsCenter.getLogger(ModelManager.class);
 
     private final AddressBook addressBook;
     private final UserPrefs userPrefs;
     private final FilteredList<Person> filteredPersons;
     private final SortedList<Person> sortedPersons;
+    private final List<AddressBook> addressBookHistory = new ArrayList<>();
+    private int historyPointer;
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -37,6 +42,7 @@ public class ModelManager implements Model {
         this.userPrefs = new UserPrefs(userPrefs);
         filteredPersons = new FilteredList<>(this.addressBook.getPersonList());
         sortedPersons = new SortedList<>(filteredPersons, Comparator.comparingInt(Person::getDebtorId));
+        addressBookHistory.add(new AddressBook(this.addressBook));
     }
 
     public ModelManager() {
@@ -113,6 +119,55 @@ public class ModelManager implements Model {
     public void updateFilteredPersonList(Predicate<Person> predicate) {
         requireNonNull(predicate);
         filteredPersons.setPredicate(predicate);
+    }
+
+    @Override
+    public void commitAddressBook() {
+        commitAddressBook(addressBook);
+    }
+
+    @Override
+    public void commitAddressBook(ReadOnlyAddressBook state) {
+        AddressBook current = new AddressBook(state);
+        AddressBook latest = addressBookHistory.get(historyPointer);
+        if (latest.equals(current) && latest.getNextDebtorId() == current.getNextDebtorId()) {
+            return;
+        }
+        while (addressBookHistory.size() > historyPointer + 1) {
+            addressBookHistory.removeLast();
+        }
+        addressBookHistory.add(current);
+        historyPointer++;
+        if (addressBookHistory.size() > MAX_HISTORY_SIZE) {
+            addressBookHistory.removeFirst();
+            historyPointer--;
+        }
+    }
+
+    @Override
+    public boolean canUndoAddressBook() {
+        return historyPointer > 0;
+    }
+
+    @Override
+    public void undoAddressBook() {
+        if (!canUndoAddressBook()) {
+            throw new IllegalStateException("No address-book state to undo.");
+        }
+        addressBook.resetData(addressBookHistory.get(--historyPointer));
+    }
+
+    @Override
+    public boolean canRedoAddressBook() {
+        return historyPointer < addressBookHistory.size() - 1;
+    }
+
+    @Override
+    public void redoAddressBook() {
+        if (!canRedoAddressBook()) {
+            throw new IllegalStateException("No address-book state to redo.");
+        }
+        addressBook.resetData(addressBookHistory.get(++historyPointer));
     }
 
     @Override

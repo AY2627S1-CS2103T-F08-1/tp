@@ -19,7 +19,9 @@ import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.NoteCommand;
+import seedu.address.logic.commands.RedoCommand;
 import seedu.address.logic.commands.ShowCommand;
+import seedu.address.logic.commands.UndoCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 
 /**
@@ -70,6 +72,20 @@ public class AddressBookParser {
             case ShowCommand.COMMAND_WORD -> new ShowCommandParser().parse(arguments);
             case ExitCommand.COMMAND_WORD -> new ExitCommand();
             case HelpCommand.COMMAND_WORD -> new HelpCommand();
+            case UndoCommand.COMMAND_WORD -> {
+                if (!arguments.trim().isEmpty()) {
+                    throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT,
+                            UndoCommand.COMMAND_WORD + ": Undoes the most recent change.\nParameters: none"));
+                }
+                yield new UndoCommand();
+            }
+            case RedoCommand.COMMAND_WORD -> {
+                if (!arguments.trim().isEmpty()) {
+                    throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT,
+                            RedoCommand.COMMAND_WORD + ": Redoes the most recently undone change.\nParameters: none"));
+                }
+                yield new RedoCommand();
+            }
             default -> {
                 logger.finer("Command parsing failed for command word: "
                         + CommandLogFormatter.getCommandWord(userInput));

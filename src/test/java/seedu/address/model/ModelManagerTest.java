@@ -102,6 +102,59 @@ public class ModelManagerTest {
         assertEquals(List.of(2, 3, 4), getDisplayedDebtorIds(modelManager));
     }
 
+    @Test
+    public void undoRedo_restoresDataButNeverReusesIdsAndKeepsFilter() {
+        modelManager.addPerson(ALICE);
+        modelManager.commitAddressBook();
+        int firstId = modelManager.getAddressBook().getPersonList().get(0).getDebtorId();
+        modelManager.updateFilteredPersonList(person -> person.getName().fullName.contains("Benson"));
+        modelManager.deletePerson(modelManager.getAddressBook().getPersonList().get(0));
+        modelManager.commitAddressBook();
+
+        assertTrue(modelManager.canUndoAddressBook());
+        modelManager.undoAddressBook();
+        assertEquals(1, modelManager.getAddressBook().getPersonList().size());
+        assertEquals(0, modelManager.getFilteredPersonList().size());
+        assertTrue(modelManager.canRedoAddressBook());
+        modelManager.redoAddressBook();
+        assertEquals(0, modelManager.getAddressBook().getPersonList().size());
+        modelManager.undoAddressBook();
+        modelManager.deletePerson(modelManager.getAddressBook().getPersonList().get(0));
+        modelManager.commitAddressBook();
+        Person next = modelManager.addPerson(BENSON);
+        assertTrue(next.getDebtorId() > firstId);
+    }
+
+    @Test
+    public void undoRedo_historyIsBoundedToOneHundredStatesAndNewBranchClearsRedo() {
+        for (int i = 0; i < 100; i++) {
+            Person debtor = new PersonBuilder().withName("Debtor " + i)
+                    .withPhone(String.format("8%07d", i))
+                    .withEmail("debtor" + i + "@example.com").build();
+            modelManager.addPerson(debtor);
+            modelManager.commitAddressBook();
+        }
+
+        for (int i = 0; i < 99; i++) {
+            assertTrue(modelManager.canUndoAddressBook());
+            modelManager.undoAddressBook();
+        }
+        assertFalse(modelManager.canUndoAddressBook());
+        assertEquals(1, modelManager.getAddressBook().getPersonList().size());
+
+        for (int i = 0; i < 99; i++) {
+            assertTrue(modelManager.canRedoAddressBook());
+            modelManager.redoAddressBook();
+        }
+        assertFalse(modelManager.canRedoAddressBook());
+        assertEquals(100, modelManager.getAddressBook().getPersonList().size());
+
+        modelManager.undoAddressBook();
+        modelManager.deletePerson(modelManager.getAddressBook().getPersonList().getLast());
+        modelManager.commitAddressBook();
+        assertFalse(modelManager.canRedoAddressBook());
+    }
+
     private static List<Integer> getDisplayedDebtorIds(ModelManager modelManager) {
         return modelManager.getFilteredPersonList().stream().map(Person::getDebtorId).toList();
     }

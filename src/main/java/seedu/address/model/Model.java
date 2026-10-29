@@ -69,4 +69,28 @@ public interface Model {
      * @throws NullPointerException if {@code predicate} is null.
      */
     void updateFilteredPersonList(Predicate<Person> predicate);
+
+    /** Records the current address-book state when it differs from the latest history entry. */
+    default void commitAddressBook() {
+    }
+
+    /** Records a previously captured address-book state after it becomes durable. */
+    default void commitAddressBook(ReadOnlyAddressBook state) {
+    }
+
+    /** Returns whether an earlier address-book state can be restored. */
+    default boolean canUndoAddressBook() {
+        return false;
+    }
+
+    /** Restores the preceding address-book state. */
+    default void undoAddressBook() { throw new IllegalStateException("Undo is not supported."); }
+
+    /** Returns whether a later address-book state can be restored. */
+    default boolean canRedoAddressBook() {
+        return false;
+    }
+
+    /** Restores the next address-book state. */
+    default void redoAddressBook() { throw new IllegalStateException("Redo is not supported."); }
 }

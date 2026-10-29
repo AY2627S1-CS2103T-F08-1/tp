@@ -20,6 +20,8 @@ import seedu.address.storage.Storage;
  * The main LogicManager of the app.
  */
 public class LogicManager implements Logic {
+    public static final String MESSAGE_PENDING_SAVE_BLOCKS_HISTORY_NAVIGATION = "Cannot undo or redo while a previous "
+            + "change is waiting to be saved. Run a successful change or exit first.";
     public static final String FILE_OPS_ERROR_FORMAT = "Could not save data due to the following error: %s";
 
     public static final String FILE_OPS_PERMISSION_ERROR_FORMAT =
@@ -31,6 +33,7 @@ public class LogicManager implements Logic {
     private final Storage storage;
     private final AddressBookParser addressBookParser;
     private boolean hasUnsavedAddressBookChanges;
+    private boolean hasUncommittedHistoryState;
 
     /**
      * Constructs a {@code LogicManager} with the given {@code Model} and {@code Storage}.
@@ -47,24 +50,43 @@ public class LogicManager implements Logic {
 
         CommandResult commandResult;
         Command command = addressBookParser.parseCommand(commandText);
+        if (hasUncommittedHistoryState && command.isHistoryNavigation()) {
+            throw new CommandException(MESSAGE_PENDING_SAVE_BLOCKS_HISTORY_NAVIGATION);
+        }
         commandResult = command.execute(model);
 
-        if (command.shouldSaveAddressBook()) {
+        boolean shouldSaveAddressBook = command.shouldSaveAddressBook();
+        if (shouldSaveAddressBook) {
             hasUnsavedAddressBookChanges = true;
         }
 
-        if (hasUnsavedAddressBookChanges && (command.shouldSaveAddressBook() || commandResult.isExit())) {
+        if (hasUnsavedAddressBookChanges && (shouldSaveAddressBook || commandResult.isExit())) {
             try {
                 storage.saveAddressBook(model.getAddressBook());
                 hasUnsavedAddressBookChanges = false;
+                if (hasUncommittedHistoryState) {
+                    model.commitAddressBook();
+                    hasUncommittedHistoryState = false;
+                }
+                if (shouldSaveAddressBook && command.shouldCommitAddressBook()) {
+                    model.commitAddressBook();
+                }
             } catch (AccessDeniedException e) {
+                rememberFailedSaveState(command);
                 throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
             } catch (IOException ioe) {
+                rememberFailedSaveState(command);
                 throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
             }
         }
 
         return commandResult;
+    }
+
+    private void rememberFailedSaveState(Command command) {
+        if (command.shouldSaveAddressBook() && command.shouldCommitAddressBook()) {
+            hasUncommittedHistoryState = true;
+        }
     }
 
     @Override
