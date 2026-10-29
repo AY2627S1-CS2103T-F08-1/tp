@@ -345,3 +345,9 @@ Examples:
 * `contact --id 3 --clear-hours`
 
 Unchanged fields retain their previous values. Use `show --id 3` to see the preferences.
+
+### Finding contactable debtors: `contactable`
+
+Use `contactable [--at HH:mm] [--method call|sms|email|letter]` to find debtors with a configured contact window that includes the given local time. Omit `--at` to use the current local time. The start is included and the end is excluded. Debtors without hours are excluded; when a method is specified, only debtors with that explicit preference match. This is a scheduling aid, not a permission check, and does not contact anyone.
+
+Example: `contactable --at 09:30 --method sms`. The command replaces the displayed list; use `list` to restore all debtors.

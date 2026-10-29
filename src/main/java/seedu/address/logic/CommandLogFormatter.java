@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.ContactCommand;
+import seedu.address.logic.commands.ContactableCommand;
 import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.ExitCommand;
@@ -30,6 +31,7 @@ public final class CommandLogFormatter {
             AddCommand.COMMAND_WORD,
             ClearCommand.COMMAND_WORD,
             ContactCommand.COMMAND_WORD,
+            ContactableCommand.COMMAND_WORD,
             DeleteCommand.COMMAND_WORD,
             EditCommand.COMMAND_WORD,
             ExitCommand.COMMAND_WORD,
