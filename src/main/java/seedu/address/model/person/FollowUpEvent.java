@@ -16,6 +16,8 @@ public final class FollowUpEvent {
             "Follow-up date must use the valid YYYY-MM-DD format.";
     public static final String MESSAGE_INVALID_STORAGE =
             "Follow-up event contains an invalid timestamp, action or date.";
+    public static final String MESSAGE_INVALID_LEGACY_RESCHEDULE =
+            "Legacy rescheduled event has no prior scheduled date.";
 
     /** The kind of follow-up state change represented by an event. */
     public enum Action {
@@ -86,7 +88,7 @@ public final class FollowUpEvent {
         Action parsedAction = parseAction(action);
         Optional<LocalDate> parsedDate = Optional.ofNullable(date).map(FollowUpEvent::parseDate);
         if (parsedAction == Action.RESCHEDULED && currentDate.isEmpty()) {
-            throw new IllegalArgumentException("Legacy rescheduled event has no prior scheduled date.");
+            throw new IllegalArgumentException(MESSAGE_INVALID_LEGACY_RESCHEDULE);
         }
         Optional<LocalDate> previousDate = parsedAction == Action.CLEARED || parsedAction == Action.COMPLETED
                 ? parsedDate : parsedAction == Action.RESCHEDULED ? currentDate : Optional.empty();
