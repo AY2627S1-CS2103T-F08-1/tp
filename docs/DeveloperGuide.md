@@ -400,7 +400,7 @@ The following activity diagram summarizes what happens when a user executes a ne
 
 ### Deferred data archiving
 
-Data archiving is not implemented in v1.4. Deleting a debtor currently removes that debtor and their interaction
+Data archiving is not implemented in v1.5. Deleting a debtor currently removes that debtor and their interaction
 history from the active address book, while the monotonically increasing debtor-ID counter prevents a deleted ID from
 being reused.
 
