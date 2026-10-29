@@ -7,8 +7,10 @@ import static seedu.address.storage.JsonAdaptedPerson.NULL_TAG_MESSAGE;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.BENSON;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
@@ -74,6 +76,27 @@ public class JsonAdaptedPersonTest {
         Person debtor = new PersonBuilder(BENSON).withInteractionNotes(List.of(note)).build();
 
         assertEquals(debtor, new JsonAdaptedPerson(debtor).toModelType());
+    }
+
+    @Test
+    public void toModelType_promisedPaymentDateRoundTrip_returnsPerson() throws Exception {
+        Person debtor = new PersonBuilder(BENSON)
+                .withPromisedPaymentDate(Optional.of(LocalDate.of(2026, 11, 3))).build();
+
+        assertEquals(debtor, new JsonAdaptedPerson(debtor).toModelType());
+    }
+
+    @Test
+    public void toModelType_missingPromisedPaymentDate_loadsAsUnset() throws Exception {
+        assertEquals(Optional.empty(), new JsonAdaptedPerson(BENSON).toModelType().getPromisedPaymentDate());
+    }
+
+    @Test
+    public void toModelType_invalidPromisedPaymentDate_throwsIllegalValueException() {
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                1, VALID_OUTSTANDING_AMOUNT, List.of(), null, List.of(), "2026-02-30", VALID_TAGS);
+
+        assertThrows(IllegalValueException.class, person::toModelType);
     }
 
     @Test

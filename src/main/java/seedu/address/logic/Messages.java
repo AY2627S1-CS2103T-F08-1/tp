@@ -112,6 +112,9 @@ public class Messages {
                 .append("Tags: ").append(formattedTags).append('\n')
                 .append("Follow-up: ").append(person.getFollowUpDate().map(Object::toString).orElse("None"))
                 .append('\n')
+                .append("Promised payment: ")
+                .append(person.getPromisedPaymentDate().map(Object::toString).orElse("None"))
+                .append('\n')
                 .append("Interaction history (newest first):");
 
         if (person.getInteractionNotes().isEmpty()) {

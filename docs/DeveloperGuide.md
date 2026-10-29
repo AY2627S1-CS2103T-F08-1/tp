@@ -141,7 +141,7 @@ does not cause ID reuse after restart. `clear` deliberately resets allocation. M
 are allocated on load.
 
 `EditCommand` creates a replacement immutable `Person`, preserving its ID, outstanding amount, notes, pending follow-up
-date and follow-up history.
+date, follow-up history and promised payment date.
 Duplicate checks compare exact phone/email values against all other active debtors, including filtered-out
 records. Email matching is currently case-sensitive; phone country codes are not normalised.
 
@@ -210,6 +210,23 @@ history. Invalid dates, timestamps, actions, or event entries are reported as da
 command changes the model before `LogicManager` saves it. A save failure is reported without rolling back the in-memory
 change; the next successful data-changing command or `exit` retries the save, while read-only commands do not. As with
 other address-book writes, a failure during the file write itself does not guarantee that the previous file is intact.
+
+### Promised payment date
+
+`AddressBookParser` routes `promise` to `PromiseCommandParser`. The parser requires one positive persistent debtor ID
+and exactly one action: a strict real `--date YYYY-MM-DD` from year 0001 through 9999, or `--clear`. Past dates remain
+valid because an agent can record an earlier agreement. `PromiseCommand` searches the complete address book, so a
+current list filter does not affect ID lookup.
+
+`Person` stores the value as an independent `Optional<LocalDate>`. Every immutable copy path, including debtor-ID
+allocation, edits, notes, and follow-up changes, carries the value forward. Setting the same date or clearing an unset
+date returns explicit no-change feedback; the command then reports itself as read-only so `LogicManager` does not write
+the address book. The field does not modify balances, follow-ups, note outcomes, or recovery state.
+
+`JsonAdaptedPerson` stores the optional value as `promisedPaymentDate`. An absent or JSON `null` value loads as unset
+for compatibility with older files. A present malformed value follows the existing structured data-loading error path,
+which leaves the invalid file untouched. `PromiseWorkflowTest` covers other mutations, filtered ID lookup, profile
+display, save/reload, and clearing the persisted value.
 
 ### Contact validation and preference recovery
 

@@ -35,6 +35,7 @@ public class PersonBuilder {
     private List<InteractionNote> interactionNotes;
     private Optional<LocalDate> followUpDate;
     private List<FollowUpEvent> followUpHistory;
+    private Optional<LocalDate> promisedPaymentDate;
     private int debtorId;
     private Set<Tag> tags;
 
@@ -50,6 +51,7 @@ public class PersonBuilder {
         interactionNotes = List.of();
         followUpDate = Optional.empty();
         followUpHistory = List.of();
+        promisedPaymentDate = Optional.empty();
         debtorId = 0;
         tags = new HashSet<>();
     }
@@ -66,6 +68,7 @@ public class PersonBuilder {
         interactionNotes = personToCopy.getInteractionNotes();
         followUpDate = personToCopy.getFollowUpDate();
         followUpHistory = personToCopy.getFollowUpHistory();
+        promisedPaymentDate = personToCopy.getPromisedPaymentDate();
         debtorId = personToCopy.getDebtorId();
         tags = new HashSet<>(personToCopy.getTags());
     }
@@ -146,10 +149,16 @@ public class PersonBuilder {
         return this;
     }
 
+    /** Sets the promised payment date. */
+    public PersonBuilder withPromisedPaymentDate(Optional<LocalDate> promisedPaymentDate) {
+        this.promisedPaymentDate = promisedPaymentDate;
+        return this;
+    }
+
     /** Builds a person using the configured field values. */
     public Person build() {
         return new Person(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
-                followUpDate, followUpHistory, tags);
+                followUpDate, followUpHistory, promisedPaymentDate, tags);
     }
 
 }

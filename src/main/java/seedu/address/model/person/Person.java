@@ -35,6 +35,7 @@ public class Person {
     private final List<InteractionNote> interactionNotes;
     private final Optional<LocalDate> followUpDate;
     private final List<FollowUpEvent> followUpHistory;
+    private final Optional<LocalDate> promisedPaymentDate;
     private final Set<Tag> tags = new HashSet<>();
 
     /**
@@ -71,8 +72,17 @@ public class Person {
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes,
             Optional<LocalDate> followUpDate, List<FollowUpEvent> followUpHistory, Set<Tag> tags) {
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
+                followUpDate, followUpHistory, Optional.empty(), tags);
+    }
+
+    /** Creates a person with every debtor field, including independent follow-up and promised-payment dates. */
+    public Person(Name name, Phone phone, Email email, Address address, int debtorId,
+            OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes,
+            Optional<LocalDate> followUpDate, List<FollowUpEvent> followUpHistory,
+            Optional<LocalDate> promisedPaymentDate, Set<Tag> tags) {
         requireAllNonNull(name, phone, email, address, outstandingAmount, interactionNotes, tags);
-        requireAllNonNull(followUpDate, followUpHistory);
+        requireAllNonNull(followUpDate, followUpHistory, promisedPaymentDate);
         if (debtorId < 0) {
             throw new IllegalArgumentException(MESSAGE_INVALID_DEBTOR_ID);
         }
@@ -85,6 +95,7 @@ public class Person {
         this.interactionNotes = List.copyOf(interactionNotes);
         this.followUpDate = followUpDate;
         this.followUpHistory = List.copyOf(followUpHistory);
+        this.promisedPaymentDate = promisedPaymentDate;
         this.tags.addAll(tags);
     }
 
@@ -116,7 +127,7 @@ public class Person {
      */
     public Person withDebtorId(int newDebtorId) {
         return new Person(name, phone, email, address, newDebtorId, outstandingAmount, interactionNotes,
-                followUpDate, followUpHistory, tags);
+                followUpDate, followUpHistory, promisedPaymentDate, tags);
     }
 
     public OutstandingAmount getOutstandingAmount() {
@@ -140,6 +151,18 @@ public class Person {
         return followUpHistory;
     }
 
+    /** Returns the date on which the debtor promised to pay, if one is recorded. */
+    public Optional<LocalDate> getPromisedPaymentDate() {
+        return promisedPaymentDate;
+    }
+
+    /** Returns a copy with the promised-payment date set or cleared. */
+    public Person withPromisedPaymentDate(Optional<LocalDate> date) {
+        requireNonNull(date);
+        return new Person(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
+                followUpDate, followUpHistory, date, tags);
+    }
+
     /** Returns a copy with the supplied pending date and one appended history event. */
     public Person withFollowUpChange(Optional<LocalDate> date, FollowUpEvent event) {
         requireNonNull(date);
@@ -147,7 +170,7 @@ public class Person {
         List<FollowUpEvent> updatedHistory = new ArrayList<>(followUpHistory);
         updatedHistory.add(event);
         return new Person(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
-                date, updatedHistory, tags);
+                date, updatedHistory, promisedPaymentDate, tags);
     }
 
     /**
@@ -158,7 +181,7 @@ public class Person {
         List<InteractionNote> updatedNotes = new ArrayList<>(interactionNotes);
         updatedNotes.add(note);
         return new Person(name, phone, email, address, debtorId, outstandingAmount, updatedNotes,
-                followUpDate, followUpHistory, tags);
+                followUpDate, followUpHistory, promisedPaymentDate, tags);
     }
 
     /**
@@ -205,6 +228,7 @@ public class Person {
                 && interactionNotes.equals(otherPerson.interactionNotes)
                 && followUpDate.equals(otherPerson.followUpDate)
                 && followUpHistory.equals(otherPerson.followUpHistory)
+                && promisedPaymentDate.equals(otherPerson.promisedPaymentDate)
                 && tags.equals(otherPerson.tags);
     }
 
@@ -212,7 +236,7 @@ public class Person {
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
         return Objects.hash(name, phone, email, address, outstandingAmount, interactionNotes,
-                followUpDate, followUpHistory, tags);
+                followUpDate, followUpHistory, promisedPaymentDate, tags);
     }
 
     @Override

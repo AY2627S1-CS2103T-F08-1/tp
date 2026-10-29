@@ -42,6 +42,7 @@ class JsonAdaptedPerson {
     private final List<JsonAdaptedInteractionNote> interactionNotes = new ArrayList<>();
     private final String followUpDate;
     private final List<JsonAdaptedFollowUpEvent> followUpHistory = new ArrayList<>();
+    private final String promisedPaymentDate;
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
 
     /**
@@ -55,6 +56,7 @@ class JsonAdaptedPerson {
             @JsonProperty("interactionNotes") List<JsonAdaptedInteractionNote> interactionNotes,
             @JsonProperty("followUpDate") String followUpDate,
             @JsonProperty("followUpHistory") List<JsonAdaptedFollowUpEvent> followUpHistory,
+            @JsonProperty("promisedPaymentDate") String promisedPaymentDate,
             @JsonProperty("tags") List<JsonAdaptedTag> tags) {
         this.name = name;
         this.phone = phone;
@@ -63,6 +65,7 @@ class JsonAdaptedPerson {
         this.debtorId = debtorId;
         this.outstandingAmount = outstandingAmount;
         this.followUpDate = followUpDate;
+        this.promisedPaymentDate = promisedPaymentDate;
         if (interactionNotes != null) {
             this.interactionNotes.addAll(interactionNotes);
         }
@@ -79,14 +82,23 @@ class JsonAdaptedPerson {
      */
     public JsonAdaptedPerson(String name, String phone, String email, String address,
             List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, null, null, null, null, null, tags);
+        this(name, phone, email, address, null, null, null, null, null, null, tags);
     }
 
     /** Backwards-compatible constructor for callers specifying debtor fields without follow-up data. */
     public JsonAdaptedPerson(String name, String phone, String email, String address, Integer debtorId,
             String outstandingAmount, List<JsonAdaptedInteractionNote> interactionNotes,
             List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, null, null, tags);
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
+                null, null, null, tags);
+    }
+
+    /** Backwards-compatible constructor for callers specifying follow-up data without a promised payment date. */
+    public JsonAdaptedPerson(String name, String phone, String email, String address, Integer debtorId,
+            String outstandingAmount, List<JsonAdaptedInteractionNote> interactionNotes,
+            String followUpDate, List<JsonAdaptedFollowUpEvent> followUpHistory, List<JsonAdaptedTag> tags) {
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
+                followUpDate, followUpHistory, null, tags);
     }
 
     /**
@@ -94,7 +106,7 @@ class JsonAdaptedPerson {
      */
     public JsonAdaptedPerson(String name, String phone, String email, String address,
             String outstandingAmount, List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, null, outstandingAmount, null, null, null, tags);
+        this(name, phone, email, address, null, outstandingAmount, null, null, null, null, tags);
     }
 
     /**
@@ -108,6 +120,7 @@ class JsonAdaptedPerson {
         debtorId = source.getDebtorId() == 0 ? null : source.getDebtorId();
         outstandingAmount = source.getOutstandingAmount().toString();
         followUpDate = source.getFollowUpDate().map(Object::toString).orElse(null);
+        promisedPaymentDate = source.getPromisedPaymentDate().map(Object::toString).orElse(null);
         interactionNotes.addAll(source.getInteractionNotes().stream()
                 .map(JsonAdaptedInteractionNote::new)
                 .collect(Collectors.toList()));
@@ -192,6 +205,19 @@ class JsonAdaptedPerson {
             }
             modelFollowUpHistory.add(event.toModelType());
         }
+        final Optional<LocalDate> modelPromisedPaymentDate;
+        try {
+            if (promisedPaymentDate != null && !promisedPaymentDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                throw new DateTimeParseException("Invalid promised payment date", promisedPaymentDate, 0);
+            }
+            modelPromisedPaymentDate = promisedPaymentDate == null
+                    ? Optional.empty() : Optional.of(LocalDate.parse(promisedPaymentDate));
+            if (modelPromisedPaymentDate.isPresent() && modelPromisedPaymentDate.get().getYear() < 1) {
+                throw new DateTimeParseException("Invalid promised payment year", promisedPaymentDate, 0);
+            }
+        } catch (DateTimeParseException exception) {
+            throw new IllegalValueException("Promised payment date must be a valid ISO date from year 0001 to 9999.");
+        }
         if (debtorId != null && debtorId < 0) {
             throw new IllegalValueException(Person.MESSAGE_INVALID_DEBTOR_ID);
         }
@@ -200,7 +226,7 @@ class JsonAdaptedPerson {
         }
         return new Person(modelName, modelPhone, modelEmail, modelAddress,
                 debtorId == null ? 0 : debtorId, modelOutstandingAmount, modelInteractionNotes,
-                modelFollowUpDate, modelFollowUpHistory, modelTags);
+                modelFollowUpDate, modelFollowUpHistory, modelPromisedPaymentDate, modelTags);
     }
 
 }
