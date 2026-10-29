@@ -34,11 +34,7 @@ public class FollowUpCommandParser implements Parser<FollowUpCommand> {
                     if (!StringUtil.isNonZeroUnsignedInteger(value)) {
                         throw new ParseException(MESSAGE_INVALID_ID);
                     }
-                    try {
-                        id = Integer.parseInt(value);
-                    } catch (NumberFormatException exception) {
-                        throw new ParseException(MESSAGE_INVALID_ID);
-                    }
+                    id = Integer.parseInt(value);
                 }
                 case "--date" -> {
                     if (dateText != null || i + 1 >= tokens.length) {
@@ -80,7 +76,7 @@ public class FollowUpCommandParser implements Parser<FollowUpCommand> {
         }
         try {
             LocalDate parsedDate = LocalDate.parse(dateText);
-            if (parsedDate.getYear() < 1 || parsedDate.getYear() > 9999) {
+            if (parsedDate.getYear() < 1) {
                 throw new ParseException(MESSAGE_INVALID_DATE);
             }
             return new FollowUpCommand(id, FollowUpCommand.Operation.SCHEDULE, Optional.of(parsedDate));

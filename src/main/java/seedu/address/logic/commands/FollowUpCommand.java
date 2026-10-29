@@ -88,12 +88,11 @@ public class FollowUpCommand extends Command {
                 updatedDate = Optional.empty();
                 verb = "cleared";
             }
-            case DONE -> {
+            default -> {
                 action = FollowUpEvent.Action.COMPLETED;
                 updatedDate = Optional.empty();
                 verb = "completed";
             }
-            default -> throw new IllegalStateException("Unknown follow-up operation");
         }
 
         FollowUpEvent event = new FollowUpEvent(LocalDateTime.now(clock), action, target.getFollowUpDate(),

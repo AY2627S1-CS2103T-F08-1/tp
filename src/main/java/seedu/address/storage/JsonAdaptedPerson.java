@@ -217,7 +217,7 @@ class JsonAdaptedPerson {
             throw new DateTimeParseException("Invalid ISO follow-up date", value, 0);
         }
         LocalDate parsed = LocalDate.parse(value);
-        if (parsed.getYear() < 1 || parsed.getYear() > 9999) {
+        if (parsed.getYear() < 1) {
             throw new DateTimeParseException("Follow-up year must be 0001–9999", value, 0);
         }
         return parsed;

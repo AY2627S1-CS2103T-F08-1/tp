@@ -43,12 +43,6 @@ public final class FollowUpEvent {
         this.newDate = newDate;
     }
 
-    /** Backwards-compatible constructor for callers using the former single affected date. */
-    public FollowUpEvent(LocalDateTime timestamp, Action action, Optional<LocalDate> date) {
-        this(timestamp, action,
-                legacyPreviousDate(action, date), legacyNewDate(action, date));
-    }
-
     public LocalDateTime getTimestamp() {
         return timestamp;
     }
@@ -74,27 +68,11 @@ public final class FollowUpEvent {
         return timestamp.format(STORAGE_FORMATTER);
     }
 
-    private static Optional<LocalDate> legacyPreviousDate(Action action, Optional<LocalDate> date) {
-        if (action == Action.RESCHEDULED) {
-            throw new IllegalArgumentException("A rescheduled event requires its previous date.");
-        }
-        return action == Action.CLEARED || action == Action.COMPLETED ? date : Optional.empty();
-    }
-
-    private static Optional<LocalDate> legacyNewDate(Action action, Optional<LocalDate> date) {
-        return action == Action.CLEARED || action == Action.COMPLETED ? Optional.empty() : date;
-    }
-
     /** Creates an event from a stored timestamp, action and previous/new date pair. */
     public static FollowUpEvent fromStorage(String timestamp, String action, String previousDate, String newDate) {
         return new FollowUpEvent(parseTimestamp(timestamp), parseAction(action),
                 Optional.ofNullable(previousDate).map(FollowUpEvent::parseDate),
                 Optional.ofNullable(newDate).map(FollowUpEvent::parseDate));
-    }
-
-    /** Creates an event from a previously stored single-date lifecycle record. */
-    public static FollowUpEvent fromStorage(String timestamp, String action, String date) {
-        return fromLegacyStorage(timestamp, action, date, Optional.empty());
     }
 
     /** Migrates an earlier date-only event using the state established by prior history entries. */
@@ -145,7 +123,7 @@ public final class FollowUpEvent {
                 throw new DateTimeParseException("Not a four-digit ISO date", date, 0);
             }
             LocalDate parsed = LocalDate.parse(date);
-            if (parsed.getYear() < 1 || parsed.getYear() > 9999) {
+            if (parsed.getYear() < 1) {
                 throw new DateTimeParseException("Year is outside 0001–9999", date, 0);
             }
             return parsed;

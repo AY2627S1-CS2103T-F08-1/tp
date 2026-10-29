@@ -34,9 +34,6 @@ class JsonAdaptedFollowUpEvent {
         legacyDate = null;
     }
 
-    public FollowUpEvent toModelType() throws IllegalValueException {
-        return toModelType(java.util.Optional.empty());
-    }
     public FollowUpEvent toModelType(java.util.Optional<java.time.LocalDate> currentDate)
             throws IllegalValueException {
         if (timestamp == null || action == null) {
