@@ -37,7 +37,9 @@ public class ContactCommandTest {
 
     @Test
     public void rejectsMalformedOptionsAndHours() {
-        for (String args : new String[] {"--id 1", "--id 0 --method call", "--id 999999999999 --method call",
+        for (String args : new String[] {"", "--method call", "--id", "--id --method call", "--id 1 --hours",
+            "--id 1 --hours --clear-method", "--id 1 --clear-hours --hours 09:00-10:00",
+            "--id 1", "--id 0 --method call", "--id 999999999999 --method call",
             "--id 1 --method call --method sms", "--id 1 --method call --clear-method",
             "--id 1 --hours 12:00-12:00", "--id 1 --hours 23:00-01:00",
             "--id 1 --hours 00:00-24:00", "--id 1 --method fax", "--id 1 --extra x"}) {
