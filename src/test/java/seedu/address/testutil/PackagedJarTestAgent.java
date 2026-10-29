@@ -86,6 +86,9 @@ public final class PackagedJarTestAgent {
         Person saved = (Person) list.getItems().getFirst();
         check(saved.getName().fullName.equals("Packaged Smoke"), "Saved debtor was not restored");
         check(saved.getOutstandingAmount().toString().equals("25.00"), "Saved amount was not restored");
+        if ("save".equals(mode)) {
+            execute(main, "export --id " + saved.getDebtorId());
+        }
         execute(main, "help");
         check(Window.getWindows().stream().filter(Window::isShowing).count() == 2, "Help did not open");
         execute(main, "exit");
