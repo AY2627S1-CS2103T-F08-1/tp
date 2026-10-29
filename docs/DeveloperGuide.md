@@ -254,7 +254,8 @@ parser, or model log records.
 ### Finding and listing debtors
 
 The `find` command filters the active debtors using one or more search keywords. Each keyword matches either a
-case-insensitive whole word in the debtor's name or the debtor's complete phone number. Matching uses `OR` semantics,
+case-insensitive literal substring in the debtor's name or the debtor's complete phone number. Matching uses `OR`
+semantics,
 so a debtor is included when any keyword matches either field.
 
 ![Interactions for `find` followed by `list`](images/FindListSequenceDiagram.png)
@@ -268,8 +269,9 @@ the search predicate with `Model#PREDICATE_SHOW_ALL_PERSONS`.
 
 #### Design considerations
 
-* **Exact phone matching instead of substring matching:** Names use case-insensitive whole-word matching because users
-  commonly remember one part of a name. Phone numbers use exact matching because a partial number can match several
+* **Exact phone matching instead of substring matching:** Names use case-insensitive literal-substring matching because
+  users commonly remember only one part of a name. The query is not interpreted as a regular expression, so punctuation
+  in a real name is safe and predictable. Phone numbers use exact matching because a partial number can match several
   debtors and make the result ambiguous. Phone values are already validated and stored as digit-only strings, so no
   additional punctuation or whitespace normalisation is needed at search time. This keeps phone searches predictable:
   the user must enter the complete stored number.
@@ -632,7 +634,9 @@ regression checks, but they do not replace exploratory testing on each supported
 1. With the sample data loaded, run `find alex DAVID`.<br>
    Expected: Only `Alex Yeoh` and `David Li` are shown, in ascending persistent-ID order.
 1. Run `find Ale`.<br>
-   Expected: No debtor is shown because name keywords must match complete words.
+   Expected: `Alex Yeoh` is shown because name keywords can match a literal substring.
+1. Run `find lex`.<br>
+   Expected: Names containing `lex` at any position are shown, regardless of letter case.
 1. Run `find 87438807`.<br>
    Expected: Only the debtor with that complete phone number is shown.
 1. Run `find 8743`.<br>
