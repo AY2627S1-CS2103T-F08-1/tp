@@ -42,6 +42,10 @@ while retaining the benefits of a graphical user interface (GUI).
 
    * `clear` : Deletes all debtor records.
 
+   * `undo` : Reverses the most recent saved change in this session.
+
+   * `redo` : Reapplies the most recently undone change in this session.
+
    * `exit` : Exits the app.
 
 1. Refer to the [Features](#features) section below for details of each command.
@@ -71,6 +75,9 @@ while retaining the benefits of a graphical user interface (GUI).
 
 * The `list` command accepts no parameters. Unexpected parameters are rejected with an error message so that typing
   mistakes are not silently ignored.
+
+* `undo` and `redo` also reject extra parameters. Their history lasts only until the app closes. A new saved change
+  after `undo` clears the redo history. Failed saves do not enter history until a later save succeeds.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </div>
@@ -264,11 +271,25 @@ Examples:
 
 ### Clearing all entries: `clear`
 
-Clears all debtor records from OSPS. This operation has no undo or confirmation.
+Clears all debtor records from OSPS. The clear can be reversed with `undo` during the current session.
 
 The `clear` operation will be rejected if additional arguments are supplied
 
 Format: `clear`
+
+### Undoing and redoing changes: `undo`, `redo`
+
+`undo` restores the previous successfully saved debtor data. `redo` reapplies an undone change. These commands cover
+adds, edits, notes, deletes, and clears. The history is session-only and keeps at most 100 states. Undoing or redoing
+does not rewind the next debtor ID, so IDs are never reused. A `find` filter remains active while data is restored.
+After undo, a new saved change discards redo history. If saving fails, the in-memory change remains; it enters history
+only after a later save succeeds. Exit retries pending saves. A successful retry may record multiple in-memory
+mutations as one saved state. Undo and redo are blocked while a failed save is pending, so they cannot discard that
+in-memory mutation before it is retried. If saving an undo or redo fails, the history move remains in memory and another
+undo or redo is allowed; the next save-triggering command or exit retries the restored data. A damaged or partial file is
+possible if the process fails during a write.
+
+Format: `undo` or `redo`
 
 ### Exiting the program: `exit`
 
@@ -330,6 +351,8 @@ Action | Format, Examples
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find Alice 98765432`
 **List** | `list`
 **Note** | `note --id DEBTOR_ID --text NOTE_TEXT`<br> e.g., `note --id 1 --text Called debtor, promised payment on Friday.`
+**Undo** | `undo`
+**Redo** | `redo`
 **Show** | `show --id DEBTOR_ID`<br> e.g., `show --id 3`
 **Help** | `help`
 **Exit** | `exit`

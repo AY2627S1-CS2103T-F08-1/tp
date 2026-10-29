@@ -119,7 +119,7 @@ How the `Logic` component works:
 
 For an in-range index, `DeleteCommand` removes the selected `Person` through `Model#deletePerson`. The model removes that person from the address book, which updates the observable displayed list. The success message includes the deleted debtor's ID, name, phone, email, address, outstanding amount, and tags. `LogicManager` then saves the updated address book; a storage failure is reported as a command error, but the in-memory removal is not rolled back.
 
-Interaction notes are part of the `Person` record. Deleting a debtor therefore removes the profile and its complete interaction history from the active address book and, after a successful save, from the persisted data. `show --id ID` can display profiles only for active debtors, so it reports that the debtor may have been deleted after removal. The current model does not maintain undo/redo history for deletion; the next debtor ID is not reused.
+Interaction notes are part of the `Person` record. Deleting a debtor therefore removes the profile and its complete interaction history from the active address book and, after a successful save, from the persisted data. `show --id ID` can display profiles only for active debtors, so it reports that the debtor may have been deleted after removal. The model keeps up to 100 in-session address-book snapshots for undo/redo; snapshots include `nextDebtorId`, while restore preserves the allocator's high-water mark so IDs are never reused.
 
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
 
@@ -282,9 +282,33 @@ the search predicate with `Model#PREDICATE_SHOW_ALL_PERSONS`.
   financial information when the window is narrow or a value is long. The persistent ID is kept at its preferred
   width so that wrapping the adjacent name does not obscure which debtor the card represents.
 
-### \[Proposed\] Undo/redo feature
+### Undo/redo feature
 
-#### Proposed Implementation
+`ModelManager` keeps a bounded list of up to 100 `AddressBook` snapshots and a pointer to the current snapshot. It starts
+with the loaded address book, including `nextDebtorId`. `LogicManager` commits a new snapshot only after the corresponding
+storage save succeeds. A new snapshot discards any redo branch; repeated identical states are ignored. `undo` and `redo`
+move the pointer, restore address-book data, and save the restored state. The filtered-list predicate remains in place.
+
+The allocator is monotonic across restores: `AddressBook.resetData` preserves the greater of its previous high-water mark,
+the restored state's next ID, and the restored records' IDs. Undoing an add removes the debtor without making its ID
+available again. History is held only in memory and starts fresh from persisted data when the application restarts.
+
+If saving a data mutation fails, the mutation remains in memory and is not immediately added to history. A later successful
+save or exit retry records the then-current state. Undo and redo are blocked while such a mutation is pending, so they
+cannot silently discard it. A successful retry can group multiple pending mutations into one history state. If saving
+fails after undo or redo, its pointer movement remains in memory and further history navigation is allowed; the data is
+retried on the next save-triggering command or exit. The storage writer is not atomic, so a process failure during a
+write can leave a partial file.
+
+`find` and `list` do not add history states. Add, edit, delete, note, and clear changes are undoable after they save
+successfully.
+
+#### Reference design diagrams
+
+The following diagrams and scenario are retained from the original design proposal. The current implementation details
+and save-failure behavior are described above.
+
+#### Original proposal (not the current implementation)
 
 The proposed undo/redo mechanism is facilitated by `VersionedAddressBook`. It extends `AddressBook` with an undo/redo history, stored internally as an `addressBookStateList` and `currentStatePointer`. Additionally, it implements the following operations:
 
