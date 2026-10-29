@@ -65,6 +65,11 @@ public class LogsCenter {
                 .forEach(logger::removeHandler);
     }
 
+    /** Returns the log file location inside the application home, escaped as a {@code FileHandler} pattern. */
+    private static String logFilePattern() {
+        return AppHome.resolve(LOG_FILE).toString().replace("%", "%%");
+    }
+
     /**
      * Creates a logger named 'osps', containing a {@code ConsoleHandler} and a {@code FileHandler}.
      * Sets it as the {@code baseLogger}, to be used as the parent logger of all other loggers.
@@ -86,7 +91,7 @@ public class LogsCenter {
 
         // add a FileHandler to log to a file
         try {
-            FileHandler fileHandler = new FileHandler(LOG_FILE, MAX_FILE_SIZE_IN_BYTES, MAX_FILE_COUNT, true);
+            FileHandler fileHandler = new FileHandler(logFilePattern(), MAX_FILE_SIZE_IN_BYTES, MAX_FILE_COUNT, true);
             fileHandler.setFormatter(new SimpleFormatter());
             fileHandler.setLevel(Level.ALL);
             baseLogger.addHandler(fileHandler);
