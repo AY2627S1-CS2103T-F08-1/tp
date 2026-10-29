@@ -168,6 +168,23 @@ Format: `note --id DEBTOR_ID --text NOTE_TEXT`
 Example:
 * `note --id 1 --text Called debtor, promised payment on Friday.`
 
+### Updating recovery stage: `stage`
+
+Sets the manual recovery stage of the debtor identified by persistent ID. Available stages are `new`, `contacted`,
+`negotiating`, `disputed`, `broken-promise`, and `settled`. A settled debtor remains visible and retains its balance,
+contact details, and history.
+
+Format: `stage --id DEBTOR_ID --value STAGE`
+
+Example: `stage --id 3 --value contacted`
+
+### Summarising the workload: `summary`
+
+Shows the current displayed workload's debtor count, outstanding total, zero-balance count, and stage counts. Use
+`summary --all` to include every active debtor. The command does not change the displayed list or save data.
+
+Formats: `summary` or `summary --all`
+
 ### Viewing a debtor profile: `show`
 
 Shows the complete profile of the active debtor identified by persistent debtor ID. The profile includes the

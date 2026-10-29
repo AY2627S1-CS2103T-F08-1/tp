@@ -108,6 +108,7 @@ public class Messages {
                 .append("Email: ").append(person.getEmail()).append('\n')
                 .append("Address: ").append(person.getAddress()).append('\n')
                 .append("Outstanding: S$").append(person.getOutstandingAmount()).append('\n')
+                .append("Recovery stage: ").append(person.getRecoveryStage()).append('\n')
                 .append("Tags: ").append(formattedTags).append('\n')
                 .append("Interaction history (newest first):");
 

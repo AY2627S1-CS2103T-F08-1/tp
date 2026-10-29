@@ -31,6 +31,7 @@ public class Person {
     private final int debtorId;
     private final OutstandingAmount outstandingAmount;
     private final List<InteractionNote> interactionNotes;
+    private final RecoveryStage recoveryStage;
     private final Set<Tag> tags = new HashSet<>();
 
     /**
@@ -53,7 +54,7 @@ public class Person {
      */
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, Set<Tag> tags) {
-        this(name, phone, email, address, debtorId, outstandingAmount, List.of(), tags);
+        this(name, phone, email, address, debtorId, outstandingAmount, List.of(), RecoveryStage.NEW, tags);
     }
 
     /**
@@ -61,7 +62,14 @@ public class Person {
      */
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes, Set<Tag> tags) {
-        requireAllNonNull(name, phone, email, address, outstandingAmount, interactionNotes, tags);
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, RecoveryStage.NEW, tags);
+    }
+
+    /** Creates a person with all debtor fields including a recovery stage. */
+    public Person(Name name, Phone phone, Email email, Address address, int debtorId,
+            OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes,
+            RecoveryStage recoveryStage, Set<Tag> tags) {
+        requireAllNonNull(name, phone, email, address, outstandingAmount, interactionNotes, recoveryStage, tags);
         if (debtorId < 0) {
             throw new IllegalArgumentException(MESSAGE_INVALID_DEBTOR_ID);
         }
@@ -72,6 +80,7 @@ public class Person {
         this.debtorId = debtorId;
         this.outstandingAmount = outstandingAmount;
         this.interactionNotes = List.copyOf(interactionNotes);
+        this.recoveryStage = recoveryStage;
         this.tags.addAll(tags);
     }
 
@@ -102,7 +111,7 @@ public class Person {
      * Returns a copy of this person with the supplied persistent debtor ID.
      */
     public Person withDebtorId(int newDebtorId) {
-        return new Person(name, phone, email, address, newDebtorId, outstandingAmount, interactionNotes, tags);
+        return new Person(name, phone, email, address, newDebtorId, outstandingAmount, interactionNotes, recoveryStage, tags);
     }
 
     public OutstandingAmount getOutstandingAmount() {
@@ -116,6 +125,17 @@ public class Person {
         return interactionNotes;
     }
 
+    /** Returns this debtor's manually selected recovery stage. */
+    public RecoveryStage getRecoveryStage() {
+        return recoveryStage;
+    }
+
+    /** Returns a copy with the given recovery stage. */
+    public Person withRecoveryStage(RecoveryStage updatedStage) {
+        requireNonNull(updatedStage);
+        return new Person(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, updatedStage, tags);
+    }
+
     /**
      * Returns a copy of this person with {@code note} appended to the interaction history.
      */
@@ -123,7 +143,7 @@ public class Person {
         requireNonNull(note);
         List<InteractionNote> updatedNotes = new ArrayList<>(interactionNotes);
         updatedNotes.add(note);
-        return new Person(name, phone, email, address, debtorId, outstandingAmount, updatedNotes, tags);
+        return new Person(name, phone, email, address, debtorId, outstandingAmount, updatedNotes, recoveryStage, tags);
     }
 
     /**
@@ -168,13 +188,14 @@ public class Person {
                 && address.equals(otherPerson.address)
                 && outstandingAmount.equals(otherPerson.outstandingAmount)
                 && interactionNotes.equals(otherPerson.interactionNotes)
+                && recoveryStage.equals(otherPerson.recoveryStage)
                 && tags.equals(otherPerson.tags);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, outstandingAmount, interactionNotes, tags);
+        return Objects.hash(name, phone, email, address, outstandingAmount, interactionNotes, recoveryStage, tags);
     }
 
     @Override
@@ -186,6 +207,7 @@ public class Person {
                 .add("address", address)
                 .add("debtorId", debtorId)
                 .add("outstandingAmount", outstandingAmount)
+                .add("recoveryStage", recoveryStage)
                 .add("tags", tags)
                 .toString();
     }

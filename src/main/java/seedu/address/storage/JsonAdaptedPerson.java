@@ -17,6 +17,7 @@ import seedu.address.model.person.Name;
 import seedu.address.model.person.OutstandingAmount;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.model.person.RecoveryStage;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -35,6 +36,7 @@ class JsonAdaptedPerson {
     private final String address;
     private final Integer debtorId;
     private final String outstandingAmount;
+    private final String recoveryStage;
     private final List<JsonAdaptedInteractionNote> interactionNotes = new ArrayList<>();
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
 
@@ -47,6 +49,7 @@ class JsonAdaptedPerson {
             @JsonProperty("debtorId") Integer debtorId,
             @JsonProperty("outstandingAmount") String outstandingAmount,
             @JsonProperty("interactionNotes") List<JsonAdaptedInteractionNote> interactionNotes,
+            @JsonProperty("recoveryStage") String recoveryStage,
             @JsonProperty("tags") List<JsonAdaptedTag> tags) {
         this.name = name;
         this.phone = phone;
@@ -54,6 +57,7 @@ class JsonAdaptedPerson {
         this.address = address;
         this.debtorId = debtorId;
         this.outstandingAmount = outstandingAmount;
+        this.recoveryStage = recoveryStage;
         if (interactionNotes != null) {
             this.interactionNotes.addAll(interactionNotes);
         }
@@ -62,12 +66,18 @@ class JsonAdaptedPerson {
         }
     }
 
+    /** Backwards-compatible constructor for callers without a recovery stage. */
+    public JsonAdaptedPerson(String name, String phone, String email, String address, Integer debtorId,
+            String outstandingAmount, List<JsonAdaptedInteractionNote> interactionNotes, List<JsonAdaptedTag> tags) {
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, null, tags);
+    }
+
     /**
      * Backwards-compatible constructor for data and tests that do not specify an amount.
      */
     public JsonAdaptedPerson(String name, String phone, String email, String address,
             List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, null, null, null, tags);
+        this(name, phone, email, address, null, null, null, null, tags);
     }
 
     /**
@@ -75,7 +85,7 @@ class JsonAdaptedPerson {
      */
     public JsonAdaptedPerson(String name, String phone, String email, String address,
             String outstandingAmount, List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, null, outstandingAmount, null, tags);
+        this(name, phone, email, address, null, outstandingAmount, null, null, tags);
     }
 
     /**
@@ -88,6 +98,7 @@ class JsonAdaptedPerson {
         address = source.getAddress().value;
         debtorId = source.getDebtorId() == 0 ? null : source.getDebtorId();
         outstandingAmount = source.getOutstandingAmount().toString();
+        recoveryStage = source.getRecoveryStage().toString();
         interactionNotes.addAll(source.getInteractionNotes().stream()
                 .map(JsonAdaptedInteractionNote::new)
                 .collect(Collectors.toList()));
@@ -157,6 +168,12 @@ class JsonAdaptedPerson {
         } catch (IllegalArgumentException exception) {
             throw new IllegalValueException(OutstandingAmount.MESSAGE_CONSTRAINTS);
         }
+        final RecoveryStage modelRecoveryStage;
+        try {
+            modelRecoveryStage = recoveryStage == null ? RecoveryStage.NEW : RecoveryStage.parse(recoveryStage);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalValueException(RecoveryStage.MESSAGE_CONSTRAINTS);
+        }
         if (debtorId != null && debtorId < 0) {
             throw new IllegalValueException(Person.MESSAGE_INVALID_DEBTOR_ID);
         }
@@ -164,7 +181,8 @@ class JsonAdaptedPerson {
             throw new IllegalValueException(DEBTOR_ID_OUT_OF_RANGE_MESSAGE);
         }
         return new Person(modelName, modelPhone, modelEmail, modelAddress,
-                debtorId == null ? 0 : debtorId, modelOutstandingAmount, modelInteractionNotes, modelTags);
+                debtorId == null ? 0 : debtorId, modelOutstandingAmount, modelInteractionNotes,
+                modelRecoveryStage, modelTags);
     }
 
 }
