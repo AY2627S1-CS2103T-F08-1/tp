@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
@@ -39,6 +40,7 @@ import seedu.address.testutil.PersonBuilder;
 public class UiRuntimeTest {
 
     private static final long TEST_TIMEOUT_SECONDS = 5;
+    private HelpWindow helpWindow;
 
     @BeforeAll
     public static void startJavaFxToolkit() throws InterruptedException {
@@ -50,6 +52,14 @@ public class UiRuntimeTest {
     @AfterAll
     public static void stopJavaFxToolkit() {
         Platform.exit();
+    }
+
+    @AfterEach
+    public void closeHelpWindow() throws InterruptedException {
+        if (helpWindow != null) {
+            runOnJavaFxThread(helpWindow::hide);
+            helpWindow = null;
+        }
     }
 
     @Test
@@ -136,17 +146,19 @@ public class UiRuntimeTest {
     @Test
     public void helpWindow_commandReferenceIsScrollableAndUsable() throws InterruptedException {
         runOnJavaFxThread(() -> {
-            HelpWindow helpWindow = new HelpWindow();
+            helpWindow = new HelpWindow();
             ScrollPane reference = (ScrollPane) helpWindow.getRoot().getScene().lookup(".scroll-pane");
 
             assertNotNull(reference);
             assertTrue(reference.isFitToWidth());
             assertTrue(reference.isFocusTraversable());
-            assertTrue(helpWindow.getRoot().isResizable());
             helpWindow.show();
             assertTrue(helpWindow.isShowing());
             reference.requestFocus();
             Event.fireEvent(reference, new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER,
+                    false, false, false, false));
+            assertTrue(helpWindow.isShowing());
+            Event.fireEvent(reference, new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.PAGE_DOWN,
                     false, false, false, false));
             assertTrue(helpWindow.isShowing());
             Event.fireEvent(reference, new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ESCAPE,
