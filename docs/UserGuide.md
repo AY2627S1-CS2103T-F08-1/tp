@@ -393,3 +393,7 @@ Action | Format, Examples
 **Sort** | `sort --by id\|name\|amount [--order asc\|desc]`<br> e.g., `sort --by amount --order desc`
 **Help** | `help`
 **Exit** | `exit`
+
+### Listing follow-ups by date: `due`
+
+Use `due` for follow-ups on or before today, or `due YYYY-MM-DD` for an inclusive cutoff. Use `due --from YYYY-MM-DD --to YYYY-MM-DD` for an inclusive range. For the next seven days, enter today as the start and six days later as the end. Results are ordered by date then persistent debtor ID; overdue, due-today and upcoming labels compare with the computer's local today. `list` restores the complete list. The view does not modify or save records.

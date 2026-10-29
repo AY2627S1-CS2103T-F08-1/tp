@@ -755,3 +755,7 @@ For the detailed release-JAR deletion matrix and evidence format, see the
    Expected: OSPS starts with no debtor records and logs a data-loading warning. The corrupted file remains untouched
    until a successful data-changing command writes a valid replacement.
 1. Restore the backup after completing the test.
+
+### Due-date worklist
+
+The read-only `due` command applies an inclusive date predicate and a follow-up-date/ID comparator to the shared observable view. It captures the local date once per invocation for status labels. Displayed-index commands operate on the same view, while `list` restores the normal ordering.
