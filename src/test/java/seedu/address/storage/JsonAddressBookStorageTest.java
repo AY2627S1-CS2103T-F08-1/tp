@@ -9,6 +9,7 @@ import static seedu.address.testutil.TypicalPersons.IDA;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -21,6 +22,7 @@ import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.RecoveryStage;
 import seedu.address.testutil.PersonBuilder;
 
 public class JsonAddressBookStorageTest {
@@ -129,6 +131,24 @@ public class JsonAddressBookStorageTest {
     }
 
     @Test
+    public void readAddressBook_legacyRecoveryStage_defaultsToNew() throws Exception {
+        ReadOnlyAddressBook restored = readAddressBook("legacyRecoveryStageAddressBook.json").orElseThrow();
+
+        assertEquals(RecoveryStage.NEW, restored.getPersonList().get(0).getRecoveryStage());
+        assertEquals(RecoveryStage.NEW, restored.getPersonList().get(1).getRecoveryStage());
+    }
+
+    @Test
+    public void readAddressBook_invalidRecoveryStage_throwsWithoutOverwritingFile() throws Exception {
+        Path filePath = TEST_DATA_FOLDER.resolve("invalidRecoveryStageAddressBook.json");
+        String originalContents = Files.readString(filePath);
+
+        assertThrows(DataLoadingException.class, () -> new JsonAddressBookStorage(filePath).readAddressBook());
+
+        assertEquals(originalContents, Files.readString(filePath));
+    }
+
+    @Test
     public void readAndSaveAddressBook_allInOrder_success() throws Exception {
         Path filePath = testFolder.resolve("TempAddressBook.json");
         AddressBook original = getTypicalAddressBook();
@@ -204,6 +224,21 @@ public class JsonAddressBookStorageTest {
         Person restoredDebtor = storage.readAddressBook(filePath).get().getPersonList().getFirst();
 
         assertEquals(notes, restoredDebtor.getInteractionNotes());
+    }
+
+    @Test
+    public void readAndSaveAddressBook_recoveryStage_roundTrips() throws Exception {
+        Path filePath = testFolder.resolve("RecoveryStageAddressBook.json");
+        AddressBook original = new AddressBook();
+        Person debtor = new PersonBuilder().withName("Alice").withPhone("91234567")
+                .withEmail("alice@example.com").build().withRecoveryStage(RecoveryStage.NEGOTIATING);
+        original.addPerson(debtor);
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(filePath);
+
+        storage.saveAddressBook(original, filePath);
+        Person restoredDebtor = storage.readAddressBook(filePath).orElseThrow().getPersonList().getFirst();
+
+        assertEquals(RecoveryStage.NEGOTIATING, restoredDebtor.getRecoveryStage());
     }
 
     @Test
