@@ -55,6 +55,10 @@ public class LogicManager implements Logic {
             model.publishTransaction(candidate);
             return commandResult;
         }
+        if (command.shouldCommitAddressBook()) {
+            // History lives on the candidate, so a failed save below discards the new entry with it.
+            candidate.commitAddressBook();
+        }
         try {
             storage.saveAddressBook(candidate.getAddressBook());
             model.publishTransaction(candidate);
