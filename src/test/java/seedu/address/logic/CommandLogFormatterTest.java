@@ -20,7 +20,7 @@ public class CommandLogFormatterTest {
     @Test
     public void getCommandWord_allKnownCommands_returnsCommandWord() {
         List<String> commandWords = List.of("add", "clear", "delete", "edit", "exit",
-                "find", "help", "list", "note", "show");
+                "find", "followup", "help", "list", "note", "show");
 
         commandWords.forEach(commandWord ->
                 assertEquals(commandWord, CommandLogFormatter.getCommandWord("  " + commandWord + " secret")));

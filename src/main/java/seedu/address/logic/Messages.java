@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import seedu.address.logic.parser.Prefix;
+import seedu.address.model.person.FollowUpEvent;
 import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Person;
 
@@ -109,17 +110,27 @@ public class Messages {
                 .append("Address: ").append(person.getAddress()).append('\n')
                 .append("Outstanding: S$").append(person.getOutstandingAmount()).append('\n')
                 .append("Tags: ").append(formattedTags).append('\n')
+                .append("Follow-up: ").append(person.getFollowUpDate().map(Object::toString).orElse("None"))
+                .append('\n')
                 .append("Interaction history (newest first):");
 
         if (person.getInteractionNotes().isEmpty()) {
-            return builder.append("\nNo interaction notes recorded.").toString();
+            builder.append("\nNo interaction notes recorded.");
+        } else {
+            List<InteractionNote> newestFirstNotes = new ArrayList<>(person.getInteractionNotes());
+            Collections.reverse(newestFirstNotes);
+            newestFirstNotes.stream()
+                    .sorted(Comparator.comparing(InteractionNote::getTimestamp).reversed())
+                    .forEach(note -> builder.append("\n- ").append(note));
         }
-
-        List<InteractionNote> newestFirstNotes = new ArrayList<>(person.getInteractionNotes());
-        Collections.reverse(newestFirstNotes);
-        newestFirstNotes.stream()
-                .sorted(Comparator.comparing(InteractionNote::getTimestamp).reversed())
-                .forEach(note -> builder.append("\n- ").append(note));
+        builder.append("\nFollow-up history (chronological, oldest first):");
+        if (person.getFollowUpHistory().isEmpty()) {
+            builder.append("\nNo follow-up history recorded.");
+        } else {
+            List<FollowUpEvent> chronologicalEvents = new ArrayList<>(person.getFollowUpHistory());
+            chronologicalEvents.sort(Comparator.comparing(FollowUpEvent::getTimestamp));
+            chronologicalEvents.forEach(event -> builder.append("\n- ").append(event));
+        }
         return builder.toString();
     }
 

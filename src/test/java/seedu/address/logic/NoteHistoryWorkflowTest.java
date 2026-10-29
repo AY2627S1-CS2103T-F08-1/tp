@@ -70,8 +70,9 @@ public class NoteHistoryWorkflowTest {
         String profile = reloadedLogic.execute("show --id " + debtorId).getFeedbackToUser();
         assertTrue(profile.contains("Name: Alice Updated"));
         assertTrue(profile.contains("Outstanding: S$0.00"));
-        assertTrue(profile.endsWith("\n- " + originalNotes.get(2)
-                + "\n- " + originalNotes.get(1) + "\n- " + originalNotes.getFirst()));
+        assertTrue(profile.contains("\n- " + originalNotes.get(2)
+                + "\n- " + originalNotes.get(1) + "\n- " + originalNotes.getFirst()
+                + "\nFollow-up history (chronological, oldest first):"));
 
         reloadedLogic.execute("edit 1 p/92345678");
         assertEquals(originalNotes, storage.readAddressBook().orElseThrow()
