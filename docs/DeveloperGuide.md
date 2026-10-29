@@ -119,7 +119,7 @@ How the `Logic` component works:
 
 For an in-range index, `DeleteCommand` removes the selected `Person` through `Model#deletePerson`. The model removes that person from the address book, which updates the observable displayed list. The success message includes the deleted debtor's ID, name, phone, email, address, outstanding amount, and tags. `LogicManager` then saves the updated address book; a storage failure is reported as a command error, but the in-memory removal is not rolled back.
 
-Interaction notes are part of the `Person` record. Deleting a debtor therefore removes the profile and its complete interaction history from the active address book and, after a successful save, from the persisted data. `show --id ID` can display profiles only for active debtors, so it reports that the debtor may have been deleted after removal. The current model does not maintain undo/redo history for deletion; the next debtor ID is not reused.
+Interaction notes and follow-up state/history are part of the `Person` record. Deleting a debtor therefore removes the profile and its complete histories from the active address book and, after a successful save, from persisted data. `show --id ID` can display profiles only for active debtors, so it reports that the debtor may have been deleted after removal. The current model does not maintain undo/redo history for deletion; the next debtor ID is not reused.
 
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
 
@@ -140,7 +140,8 @@ interaction notes. The following diagram shows the stored debtor data:
 does not cause ID reuse after restart. `clear` deliberately resets allocation. Missing IDs in legacy records
 are allocated on load.
 
-`EditCommand` creates a replacement immutable `Person`, preserving its ID, outstanding amount and notes.
+`EditCommand` creates a replacement immutable `Person`, preserving its ID, outstanding amount, notes, pending follow-up
+date and follow-up history.
 Duplicate checks compare exact phone/email values against all other active debtors, including filtered-out
 records. Email matching is currently case-sensitive; phone country codes are not normalised.
 
@@ -187,6 +188,28 @@ the file-writing path is not atomic, so a failure during writing does not guaran
 Pending changes are retried by the next successful data-changing command or the `exit` command, after storage access
 is restored. Read-only commands do not retry the write. The workflow tests simulate both an I/O failure and denied
 access before writing, then check that an exit retry saves the existing note exactly once.
+
+### Follow-up command and history
+
+`AddressBookParser` routes `followup` to `FollowUpCommandParser`. The parser accepts one positive debtor ID and exactly
+one operation: a calendar-valid `--date YYYY-MM-DD`, `--clear`, or `--done`. `FollowUpCommand` finds the debtor by its
+persistent ID, independent of the current list filter. A date command records `SCHEDULED` when no date is pending and
+`RESCHEDULED` otherwise. Clear and done require a pending date; they remove it and append a `CLEARED` or `COMPLETED`
+event containing the date that was removed. Scheduling after either operation starts a new `SCHEDULED` event. Invalid
+options, dates, IDs, and operations without a pending date are rejected before the model changes.
+
+`Person` stores the pending date as `Optional<LocalDate>` and an immutable insertion-ordered list of
+`FollowUpEvent` values. Each event records an ISO local date-time timestamp, its action, and the affected ISO date.
+JSON stores the pending date in optional `followUpDate` and the event list in `followUpHistory`, with each entry shaped
+as `{ "timestamp": "YYYY-MM-DDTHH:mm:ss", "action": "SCHEDULED|RESCHEDULED|CLEARED|COMPLETED", "date": "YYYY-MM-DD" }`.
+The timestamp comes from the system-default clock and has no stored zone or offset. Events remain in insertion order
+in JSON. `show` sorts by timestamp ascending with a stable sort, so equal timestamps retain insertion order.
+
+Older address-book JSON files that omit `followUpDate` and `followUpHistory` load with no pending date and an empty
+history. Invalid dates, timestamps, actions, or event entries are reported as data-loading errors. A valid follow-up
+command changes the model before `LogicManager` saves it. A save failure is reported without rolling back the in-memory
+change; the next successful data-changing command or `exit` retries the save, while read-only commands do not. As with
+other address-book writes, a failure during the file write itself does not guarantee that the previous file is intact.
 
 ### Contact validation and preference recovery
 
