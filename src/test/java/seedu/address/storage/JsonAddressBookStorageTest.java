@@ -98,6 +98,21 @@ public class JsonAddressBookStorageTest {
     }
 
     @Test
+    public void readAddressBook_maximumDebtorId_throwsDataLoadingException() {
+        assertThrows(DataLoadingException.class, () -> readAddressBook("maximumDebtorIdAddressBook.json"));
+    }
+
+    @Test
+    public void readAddressBook_maximumNextDebtorId_throwsDataLoadingException() {
+        assertThrows(DataLoadingException.class, () -> readAddressBook("maximumNextDebtorIdAddressBook.json"));
+    }
+
+    @Test
+    public void readAddressBook_reusedNextDebtorId_throwsDataLoadingException() {
+        assertThrows(DataLoadingException.class, () -> readAddressBook("reusedNextDebtorIdAddressBook.json"));
+    }
+
+    @Test
     public void readAddressBook_nullTag_throwsDataLoadingException() {
         assertThrows(DataLoadingException.class, () -> readAddressBook("nullTagAddressBook.json"));
     }
