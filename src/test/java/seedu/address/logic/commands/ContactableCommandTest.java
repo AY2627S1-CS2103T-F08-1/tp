@@ -9,6 +9,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,7 @@ public class ContactableCommandTest {
                 .withContactPreferences(new ContactPreferences(null, "09:00-10:00")));
         model.addPerson(new PersonBuilder().withName("Carl").withPhone("93333333")
                 .withEmail("carl@example.com").build());
+        model.updateSortedPersonList(Comparator.comparingInt(Person::getDebtorId).reversed());
         ContactableCommand all = new ContactableCommand(null, null, CLOCK);
         String result = all.execute(model).getFeedbackToUser();
         assertFalse(all.shouldSaveAddressBook());
