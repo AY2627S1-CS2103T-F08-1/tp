@@ -2,10 +2,14 @@ package seedu.address;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
@@ -16,25 +20,29 @@ import seedu.address.ui.MainWindow;
 
 public class BrandingTest {
 
-    private static final Map<String, String> RELEASED_COMMANDS = Map.ofEntries(
+    private static final Pattern LONG_OPTION = Pattern.compile("--[a-z-]+");
+    private static final Map<String, List<String>> RELEASED_COMMANDS = Map.ofEntries(
             Map.entry("add n/NAME p/PHONE e/EMAIL a/ADDRESS [o/AMOUNT] [t/TAG]...",
-                    "add n/Alice p/91234567 e/alice@example.com a/Example Street"),
-            Map.entry("list", "list"),
-            Map.entry("find KEYWORD [MORE_KEYWORDS]...", "find Alice"),
-            Map.entry("sort --by id|name|amount [--order asc|desc]", "sort --by id --order asc"),
-            Map.entry("show --id DEBTOR_ID", "show --id 1"),
+                    List.of("add n/Alice p/91234567 e/alice@example.com a/Example Street o/10 t/client")),
+            Map.entry("list", List.of("list")),
+            Map.entry("find KEYWORD [MORE_KEYWORDS]...", List.of("find Alice Bob")),
+            Map.entry("sort --by id|name|amount [--order asc|desc]",
+                    List.of("sort --by id", "sort --by name --order asc", "sort --by amount --order desc")),
+            Map.entry("show --id DEBTOR_ID", List.of("show --id 1")),
             Map.entry("note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT",
-                    "note --id 1 --text Called debtor"),
+                    List.of("note --id 1 --text Called debtor", "note --id 1 --outcome reached --text Paid")),
             Map.entry("contact --id DEBTOR_ID [--method METHOD | --clear-method] "
-                    + "[--hours HH:mm-HH:mm | --clear-hours]", "contact --id 1 --method sms"),
+                    + "[--hours HH:mm-HH:mm | --clear-hours]",
+                    List.of("contact --id 1 --method sms --hours 09:00-17:30",
+                            "contact --id 1 --clear-method --clear-hours")),
             Map.entry("edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/AMOUNT] [t/TAG]...",
-                    "edit 1 n/Alice"),
-            Map.entry("delete INDEX", "delete 1"),
-            Map.entry("clear", "clear"),
-            Map.entry("undo", "undo"),
-            Map.entry("redo", "redo"),
-            Map.entry("help", "help"),
-            Map.entry("exit", "exit"));
+                    List.of("edit 1 n/Alice p/92345678 e/new@example.com a/New Street o/20 t/priority")),
+            Map.entry("delete INDEX", List.of("delete 1")),
+            Map.entry("clear", List.of("clear")),
+            Map.entry("undo", List.of("undo")),
+            Map.entry("redo", List.of("redo")),
+            Map.entry("help", List.of("help")),
+            Map.entry("exit", List.of("exit")));
 
     @Test
     public void releaseIdentity_matchesV14Branding() {
@@ -59,9 +67,20 @@ public class BrandingTest {
     @Test
     public void commandReference_everyListedCommandIsAcceptedByParser() {
         AddressBookParser parser = new AddressBookParser();
-        RELEASED_COMMANDS.forEach((syntax, validExample) -> {
-            assertEquals(syntax.split(" ", 2)[0], validExample.split(" ", 2)[0]);
-            assertDoesNotThrow(() -> parser.parseCommand(validExample));
+        RELEASED_COMMANDS.forEach((syntax, validExamples) -> {
+            assertFalse(validExamples.isEmpty());
+            Set<String> documentedOptions = LONG_OPTION.matcher(syntax).results()
+                    .map(match -> match.group())
+                    .collect(Collectors.toSet());
+            Set<String> exercisedOptions = validExamples.stream()
+                    .flatMap(example -> LONG_OPTION.matcher(example).results())
+                    .map(match -> match.group())
+                    .collect(Collectors.toSet());
+            assertTrue(exercisedOptions.containsAll(documentedOptions));
+            validExamples.forEach(validExample -> {
+                assertEquals(syntax.split(" ", 2)[0], validExample.split(" ", 2)[0]);
+                assertDoesNotThrow(() -> parser.parseCommand(validExample));
+            });
         });
     }
 }
