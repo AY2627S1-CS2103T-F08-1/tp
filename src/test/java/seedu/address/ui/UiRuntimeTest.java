@@ -97,7 +97,7 @@ public class UiRuntimeTest {
             assertEquals(longTag, tag.getText());
             assertTrue(tag.isWrapText());
             assertTrue(tag.getWidth() <= 363);
-            assertTrue(tag.getHeight() > tag.getFont().getSize() * 2);
+            assertTrue(tag.prefHeight(363) > tag.prefHeight(-1));
         });
     }
 
