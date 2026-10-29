@@ -3,6 +3,7 @@ package seedu.address.commons.core;
 import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
@@ -67,7 +68,12 @@ public class LogsCenter {
 
     /** Returns the log file location inside the application home, escaped as a {@code FileHandler} pattern. */
     static String logFilePattern() {
-        return AppHome.resolve(LOG_FILE).toString().replace("%", "%%");
+        return toFileHandlerPattern(AppHome.resolve(LOG_FILE));
+    }
+
+    /** Escapes {@code %}, which a {@code FileHandler} pattern would otherwise read as a substitution. */
+    static String toFileHandlerPattern(Path file) {
+        return file.toString().replace("%", "%%");
     }
 
     /**
