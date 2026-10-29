@@ -170,8 +170,12 @@ public class UiRuntimeTest {
             assertFalse(recordingHelpWindow.hideCalled);
             KeyEvent pageDown = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.PAGE_DOWN,
                     false, false, false, false);
+            double viewportHeight = reference.getViewportBounds().getHeight();
+            double contentHeight = reference.getContent().getBoundsInLocal().getHeight();
+            double expectedPage = Math.clamp(viewportHeight / (contentHeight - viewportHeight),
+                    reference.getVmin(), reference.getVmax());
             Event.fireEvent(reference, pageDown);
-            assertTrue(reference.getVvalue() > reference.getVmin());
+            assertEquals(expectedPage, reference.getVvalue(), 0.001);
             assertFalse(recordingHelpWindow.hideCalled);
             KeyEvent pageUp = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.PAGE_UP,
                     false, false, false, false);

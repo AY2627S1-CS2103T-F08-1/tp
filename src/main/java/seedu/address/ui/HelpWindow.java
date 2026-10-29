@@ -75,7 +75,6 @@ public class HelpWindow extends UiPart<Stage> {
 
     private static final Logger logger = LogsCenter.getLogger(HelpWindow.class);
     private static final String FXML = "HelpWindow.fxml";
-    private static final double SCROLL_PAGE_INCREMENT = 0.25;
 
     @FXML
     private Button copyButton;
@@ -111,25 +110,31 @@ public class HelpWindow extends UiPart<Stage> {
     /** Handles closing and page-wise keyboard scrolling for the command reference. */
     void handleKeyPress(KeyEvent event) {
         switch (event.getCode()) {
-            case ESCAPE:
+            case ESCAPE -> {
                 hide();
                 event.consume();
-                break;
-            case PAGE_DOWN:
-                scrollBy(SCROLL_PAGE_INCREMENT);
+            }
+            case PAGE_DOWN -> {
+                scrollByViewport(1);
                 event.consume();
-                break;
-            case PAGE_UP:
-                scrollBy(-SCROLL_PAGE_INCREMENT);
+            }
+            case PAGE_UP -> {
+                scrollByViewport(-1);
                 event.consume();
-                break;
-            default:
-                break;
+            }
+            default -> { }
         }
     }
 
-    private void scrollBy(double increment) {
-        double nextValue = Math.clamp(commandReferenceScroll.getVvalue() + increment,
+    private void scrollByViewport(int direction) {
+        double viewportHeight = commandReferenceScroll.getViewportBounds().getHeight();
+        double contentHeight = commandReferenceScroll.getContent().getBoundsInLocal().getHeight();
+        double scrollableHeight = contentHeight - viewportHeight;
+        if (scrollableHeight <= 0) {
+            return;
+        }
+        double normalizedPage = viewportHeight / scrollableHeight;
+        double nextValue = Math.clamp(commandReferenceScroll.getVvalue() + direction * normalizedPage,
                 commandReferenceScroll.getVmin(), commandReferenceScroll.getVmax());
         commandReferenceScroll.setVvalue(nextValue);
     }
