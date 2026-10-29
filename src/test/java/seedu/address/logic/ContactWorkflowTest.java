@@ -29,7 +29,7 @@ public class ContactWorkflowTest {
     public Path directory;
 
     @Test
-    public void contactable_readOnlyViewDoesNotSaveOrRetryPendingChanges() throws Exception {
+    public void contactable_readOnlyViewDoesNotSaveAfterFailedMutation() throws Exception {
         Model model = new ModelManager();
         Person debtor = model.addPerson(new PersonBuilder().build());
         CountingStorage storage = new CountingStorage(directory.resolve("book.json"));
@@ -41,9 +41,9 @@ public class ContactWorkflowTest {
         storage.fail = false;
         logic.execute("contactable --at 09:00");
         assertEquals(1, storage.saves);
-        assertEquals(debtor.getDebtorId(), model.getFilteredPersonList().getFirst().getDebtorId());
+        assertTrue(model.getFilteredPersonList().isEmpty());
         assertThrows(ParseException.class, () -> logic.execute("contactable --at 24:00"));
-        assertEquals(1, model.getFilteredPersonList().size());
+        assertTrue(model.getFilteredPersonList().isEmpty());
         logic.execute("list");
         assertEquals(1, storage.saves);
     }

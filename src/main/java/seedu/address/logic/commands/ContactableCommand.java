@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import seedu.address.model.Model;
 import seedu.address.model.person.ContactPreferences;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.PersonSort;
 
 /** Shows debtors with a matching local contact window. */
 public class ContactableCommand extends Command {
@@ -36,7 +37,7 @@ public class ContactableCommand extends Command {
     public CommandResult execute(Model model) {
         requireNonNull(model);
         LocalTime reference = requestedTime == null ? LocalTime.now(clock).withSecond(0).withNano(0) : requestedTime;
-        model.updateFilteredPersonList(person -> matches(person, reference));
+        model.updatePersonView(person -> matches(person, reference), PersonSort.DEFAULT_COMPARATOR);
         String heading = "Contactable at " + reference.format(TIME_FORMAT)
                 + (method == null ? "" : " by " + method) + ":";
         if (model.getFilteredPersonList().isEmpty()) {
