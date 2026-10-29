@@ -40,8 +40,8 @@ class StageCommandParserTest {
     void parse_duplicateInvalidIdAndInvalidStage_rejectsInput() {
         assertParseFailure(parser, " --id 1 --id 2 --value contacted",
                 getErrorMessageForDuplicatePrefixes(PREFIX_DEBTOR_ID));
-        assertParseFailure(parser, " --id 0 --value contacted", "Debtor ID must be a positive integer.");
-        assertParseFailure(parser, " --id 2147483648 --value contacted", "Debtor ID must be a positive integer.");
+        assertParseFailure(parser, " --id 0 --value contacted", ParserUtil.MESSAGE_INVALID_DEBTOR_ID);
+        assertParseFailure(parser, " --id 2147483648 --value contacted", ParserUtil.MESSAGE_INVALID_DEBTOR_ID);
         assertParseFailure(parser, " --id 1 --value unknown", RecoveryStage.MESSAGE_CONSTRAINTS);
     }
 }

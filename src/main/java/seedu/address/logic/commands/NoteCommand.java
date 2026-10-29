@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import seedu.address.commons.util.ToStringBuilder;
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.person.ContactOutcome;
@@ -27,7 +28,6 @@ public class NoteCommand extends Command {
             + " --id 3 --outcome reached --text Called debtor, promised payment on Friday.";
 
     public static final String MESSAGE_ADD_NOTE_SUCCESS = "Added interaction note to debtor ID %1$d: %2$s";
-    public static final String MESSAGE_DEBTOR_NOT_FOUND = "No debtor with ID %1$d exists.";
 
     private final int debtorId;
     private final String noteText;
@@ -79,7 +79,7 @@ public class NoteCommand extends Command {
                 .filter(person -> person.getDebtorId() == debtorId)
                 .findFirst();
         if (debtor.isEmpty()) {
-            throw new CommandException(String.format(MESSAGE_DEBTOR_NOT_FOUND, debtorId));
+            throw new CommandException(String.format(Messages.MESSAGE_DEBTOR_NOT_FOUND, debtorId));
         }
 
         InteractionNote note = new InteractionNote(LocalDateTime.now(clock), noteText, outcome);

@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import seedu.address.commons.util.ToStringBuilder;
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.person.FollowUpEvent;
@@ -19,7 +20,6 @@ public class FollowUpCommand extends Command {
     public static final String COMMAND_WORD = "followup";
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Schedules, clears, or completes a follow-up. Parameters: --id ID --date YYYY-MM-DD | --clear | --done";
-    public static final String MESSAGE_DEBTOR_NOT_FOUND = "No debtor with ID %1$d exists.";
     public static final String MESSAGE_NO_PENDING_FOLLOW_UP = "No pending follow-up exists for debtor ID %1$d.";
     public static final String MESSAGE_SUCCESS = "Follow-up %1$s for debtor ID %2$d%3$s.";
 
@@ -63,7 +63,7 @@ public class FollowUpCommand extends Command {
         hasChanges = false;
         Person target = model.getAddressBook().getPersonList().stream()
                 .filter(person -> person.getDebtorId() == debtorId).findFirst()
-                .orElseThrow(() -> new CommandException(String.format(MESSAGE_DEBTOR_NOT_FOUND, debtorId)));
+                .orElseThrow(() -> new CommandException(String.format(Messages.MESSAGE_DEBTOR_NOT_FOUND, debtorId)));
         if (operation != Operation.SCHEDULE && target.getFollowUpDate().isEmpty()) {
             throw new CommandException(String.format(MESSAGE_NO_PENDING_FOLLOW_UP, debtorId));
         }

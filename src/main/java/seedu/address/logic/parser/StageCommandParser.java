@@ -11,8 +11,6 @@ import seedu.address.model.person.RecoveryStage;
 
 /** Parses a stage command with one persistent debtor ID and one stage value. */
 public class StageCommandParser implements Parser<StageCommand> {
-    public static final String MESSAGE_INVALID_ID = "Debtor ID must be a positive integer.";
-
     @Override
     public StageCommand parse(String args) throws ParseException {
         ArgumentMultimap values = ArgumentTokenizer.tokenize(args, PREFIX_DEBTOR_ID, PREFIX_STAGE_VALUE);
@@ -23,7 +21,7 @@ public class StageCommandParser implements Parser<StageCommand> {
         values.verifyNoDuplicatePrefixesFor(PREFIX_DEBTOR_ID, PREFIX_STAGE_VALUE);
         String idText = values.getValue(PREFIX_DEBTOR_ID).get();
         if (!StringUtil.isNonZeroUnsignedInteger(idText)) {
-            throw new ParseException(MESSAGE_INVALID_ID);
+            throw new ParseException(ParserUtil.MESSAGE_INVALID_DEBTOR_ID);
         }
         int debtorId = Integer.parseInt(idText);
         try {

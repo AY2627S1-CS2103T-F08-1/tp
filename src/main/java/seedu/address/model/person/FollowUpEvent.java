@@ -12,6 +12,9 @@ import java.util.Optional;
 /** An immutable transition between two scheduled follow-up dates. */
 public final class FollowUpEvent {
 
+    public static final String MESSAGE_INVALID_DATE =
+            "Follow-up date must use the valid YYYY-MM-DD format.";
+
     /** The kind of follow-up state change represented by an event. */
     public enum Action {
         SCHEDULED,

@@ -2,6 +2,7 @@ package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
 
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.person.Person;
@@ -12,7 +13,6 @@ public class StageCommand extends Command {
     public static final String COMMAND_WORD = "stage";
     public static final String MESSAGE_USAGE = "stage: Changes a debtor's recovery stage. "
             + "Parameters: --id DEBTOR_ID --value STAGE\nExample: stage --id 3 --value contacted";
-    public static final String MESSAGE_DEBTOR_NOT_FOUND = "No debtor with ID %1$d exists.";
     public static final String MESSAGE_SUCCESS = "Recovery stage for debtor ID %1$d set to %2$s.";
     public static final String MESSAGE_UNCHANGED = "Recovery stage for debtor ID %1$d is already %2$s.";
 
@@ -32,7 +32,7 @@ public class StageCommand extends Command {
         Person target = model.getAddressBook().getPersonList().stream()
                 .filter(person -> person.getDebtorId() == debtorId)
                 .findFirst()
-                .orElseThrow(() -> new CommandException(String.format(MESSAGE_DEBTOR_NOT_FOUND, debtorId)));
+                .orElseThrow(() -> new CommandException(String.format(Messages.MESSAGE_DEBTOR_NOT_FOUND, debtorId)));
         if (target.getRecoveryStage() == stage) {
             return new CommandResult(String.format(MESSAGE_UNCHANGED, debtorId, stage));
         }

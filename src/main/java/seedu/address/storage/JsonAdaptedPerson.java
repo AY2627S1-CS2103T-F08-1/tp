@@ -172,11 +172,10 @@ class JsonAdaptedPerson {
         } catch (IllegalArgumentException exception) {
             throw new IllegalValueException(RecoveryStage.MESSAGE_CONSTRAINTS);
         }
-        final Optional<LocalDate> modelFollowUpDate;
-        try {
-            modelFollowUpDate = followUpDate == null ? Optional.empty() : Optional.of(parseFollowUpDate(followUpDate));
-        } catch (DateTimeParseException exception) {
-            throw new IllegalValueException("Follow-up date must be a valid ISO local date.");
+        final Optional<LocalDate> modelFollowUpDate = followUpDate == null
+                ? Optional.empty() : tryParseFollowUpDate(followUpDate);
+        if (followUpDate != null && modelFollowUpDate.isEmpty()) {
+            throw new IllegalValueException(FollowUpEvent.MESSAGE_INVALID_DATE);
         }
         final List<FollowUpEvent> modelFollowUpHistory = new ArrayList<>();
         Optional<LocalDate> eventCurrentDate = Optional.empty();
@@ -206,14 +205,15 @@ class JsonAdaptedPerson {
                 contactPreferences == null ? new ContactPreferences(null, null) : contactPreferences.toModelType());
     }
 
-    private LocalDate parseFollowUpDate(String value) {
+    private Optional<LocalDate> tryParseFollowUpDate(String value) {
         if (!value.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            throw new DateTimeParseException("Invalid ISO follow-up date", value, 0);
+            return Optional.empty();
         }
-        LocalDate parsed = LocalDate.parse(value);
-        if (parsed.getYear() < 1) {
-            throw new DateTimeParseException("Follow-up year must be 0001–9999", value, 0);
+        try {
+            LocalDate parsed = LocalDate.parse(value);
+            return parsed.getYear() < 1 ? Optional.empty() : Optional.of(parsed);
+        } catch (DateTimeParseException exception) {
+            return Optional.empty();
         }
-        return parsed;
     }
 }

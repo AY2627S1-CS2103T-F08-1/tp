@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.logic.Messages;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
@@ -104,7 +105,7 @@ public class NoteCommandTest {
     public void execute_invalidDebtorId_throwsCommandException() {
         NoteCommand noteCommand = new NoteCommand(999, VALID_NOTE, EARLIER_CLOCK);
 
-        assertCommandFailure(noteCommand, model, String.format(NoteCommand.MESSAGE_DEBTOR_NOT_FOUND, 999));
+        assertCommandFailure(noteCommand, model, String.format(Messages.MESSAGE_DEBTOR_NOT_FOUND, 999));
     }
 
     @Test

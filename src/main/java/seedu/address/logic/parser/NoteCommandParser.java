@@ -23,7 +23,6 @@ import seedu.address.model.person.InteractionNote;
  */
 public class NoteCommandParser implements Parser<NoteCommand> {
 
-    public static final String MESSAGE_INVALID_DEBTOR_ID = "Debtor ID must be a positive integer.";
     public static final String MESSAGE_UNKNOWN_OPTION = "Unknown note option: %s. Use --id, --outcome, and --text.";
 
     private static final Pattern LONG_OPTION_TOKEN = Pattern.compile("(?<!\\S)--\\S+");
@@ -96,7 +95,7 @@ public class NoteCommandParser implements Parser<NoteCommand> {
 
     private int parseDebtorId(String idText) throws ParseException {
         if (!StringUtil.isNonZeroUnsignedInteger(idText)) {
-            throw new ParseException(MESSAGE_INVALID_DEBTOR_ID);
+            throw new ParseException(ParserUtil.MESSAGE_INVALID_DEBTOR_ID);
         }
         return Integer.parseInt(idText);
     }
