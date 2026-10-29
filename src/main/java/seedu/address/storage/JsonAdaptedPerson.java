@@ -82,53 +82,6 @@ class JsonAdaptedPerson {
         }
     }
 
-    /** Compatibility constructor for older callers. */
-    public JsonAdaptedPerson(String name, String phone, String email, String address, Integer debtorId,
-            String outstandingAmount, List<JsonAdaptedInteractionNote> interactionNotes, List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
-                null, null, null, tags, null);
-    }
-
-    /** Compatibility constructor for callers that specify a recovery stage only. */
-    public JsonAdaptedPerson(String name, String phone, String email, String address, Integer debtorId,
-            String outstandingAmount, List<JsonAdaptedInteractionNote> interactionNotes, String recoveryStage,
-            List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
-                recoveryStage, null, null, tags, null);
-    }
-
-    /** Compatibility constructor for callers that specify contact preferences but no follow-up data. */
-    public JsonAdaptedPerson(String name, String phone, String email, String address, Integer debtorId,
-            String outstandingAmount, List<JsonAdaptedInteractionNote> interactionNotes, List<JsonAdaptedTag> tags,
-            JsonContactPreferences contactPreferences) {
-        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
-                null, null, null, tags, contactPreferences);
-    }
-
-    /** Compatibility constructor for callers that specify follow-up data but no contact preferences. */
-    public JsonAdaptedPerson(String name, String phone, String email, String address, Integer debtorId,
-            String outstandingAmount, List<JsonAdaptedInteractionNote> interactionNotes, String followUpDate,
-            List<JsonAdaptedFollowUpEvent> followUpHistory, List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
-                null, followUpDate, followUpHistory, tags, null);
-    }
-
-    /**
-     * Backwards-compatible constructor for data and tests that do not specify an amount.
-     */
-    public JsonAdaptedPerson(String name, String phone, String email, String address,
-            List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, null, null, null, null, null, null, tags, null);
-    }
-
-    /**
-     * Backwards-compatible constructor for callers specifying an amount but no remark.
-     */
-    public JsonAdaptedPerson(String name, String phone, String email, String address,
-            String outstandingAmount, List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, null, outstandingAmount, null, null, null, null, tags, null);
-    }
-
     /**
      * Converts a given {@code Person} into this class for Jackson use.
      */

@@ -2,6 +2,7 @@ package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,17 @@ class StageCommandTest {
         CommandResult result = command.execute(model);
 
         assertEquals("Recovery stage for debtor ID 1 is already new.", result.getFeedbackToUser());
+        assertFalse(command.shouldSaveAddressBook());
+    }
+
+    @Test
+    void execute_unknownDebtorId_throwsCommandException() {
+        ModelManager model = new ModelManager();
+        StageCommand command = new StageCommand(99, RecoveryStage.CONTACTED);
+
+        CommandException exception = assertThrows(CommandException.class, () -> command.execute(model));
+
+        assertEquals("No debtor with ID 99 exists.", exception.getMessage());
         assertFalse(command.shouldSaveAddressBook());
     }
 
