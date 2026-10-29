@@ -18,6 +18,8 @@ public class SortCommandParser implements Parser<SortCommand> {
     public static final String MESSAGE_INVALID_FIELD = "Sort field must be one of: id, name, amount.";
     public static final String MESSAGE_INVALID_ORDER = "Sort order must be asc or desc.";
     public static final String MESSAGE_UNKNOWN_OPTION = "Unknown sort option: %s. Use --by and --order.";
+    public static final String MESSAGE_UNEXPECTED_ARGUMENT =
+            "Unexpected sort argument: %s. Each --by and --order option accepts exactly one value.";
 
     private static final Pattern LONG_OPTION_TOKEN = Pattern.compile("(?<!\\S)--\\S+");
 
@@ -32,7 +34,8 @@ public class SortCommandParser implements Parser<SortCommand> {
         }
         argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_SORT_BY, PREFIX_SORT_ORDER);
 
-        Field field = Field.fromToken(argMultimap.getValue(PREFIX_SORT_BY).orElseThrow())
+        String fieldValue = requireSingleValue(argMultimap.getValue(PREFIX_SORT_BY).orElseThrow());
+        Field field = Field.fromToken(fieldValue)
                 .orElseThrow(() -> new ParseException(MESSAGE_INVALID_FIELD));
         Direction direction = parseDirection(argMultimap);
         return new SortCommand(field, direction);
@@ -50,8 +53,18 @@ public class SortCommandParser implements Parser<SortCommand> {
         if (argMultimap.getValue(PREFIX_SORT_ORDER).isEmpty()) {
             return Direction.ASCENDING;
         }
-        return Direction.fromToken(argMultimap.getValue(PREFIX_SORT_ORDER).orElseThrow())
+        String orderValue = requireSingleValue(argMultimap.getValue(PREFIX_SORT_ORDER).orElseThrow());
+        return Direction.fromToken(orderValue)
                 .orElseThrow(() -> new ParseException(MESSAGE_INVALID_ORDER));
+    }
+
+    private String requireSingleValue(String value) throws ParseException {
+        int separatorIndex = value.indexOf(' ');
+        if (separatorIndex >= 0) {
+            String unexpectedArguments = value.substring(separatorIndex + 1);
+            throw new ParseException(String.format(MESSAGE_UNEXPECTED_ARGUMENT, unexpectedArguments));
+        }
+        return value;
     }
 
     private void rejectUnknownOptions(ArgumentMultimap argMultimap) throws ParseException {

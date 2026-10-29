@@ -72,14 +72,30 @@ public class SortCommandParserTest {
     public void parse_invalidField_throwsSpecificMessage() {
         assertParseFailure(parser, " --by phone", SortCommandParser.MESSAGE_INVALID_FIELD);
         assertParseFailure(parser, " --by names", SortCommandParser.MESSAGE_INVALID_FIELD);
-        assertParseFailure(parser, " --by name extra", SortCommandParser.MESSAGE_INVALID_FIELD);
     }
 
     @Test
     public void parse_blankOrInvalidOrder_throwsSpecificMessage() {
         assertParseFailure(parser, " --by id --order", SortCommandParser.MESSAGE_INVALID_ORDER);
         assertParseFailure(parser, " --by id --order ascending", SortCommandParser.MESSAGE_INVALID_ORDER);
-        assertParseFailure(parser, " --by id --order desc extra", SortCommandParser.MESSAGE_INVALID_ORDER);
+    }
+
+    @Test
+    public void parse_extraArgumentAfterField_throwsUnexpectedArgumentMessage() {
+        assertParseFailure(parser, " --by name extra",
+                String.format(SortCommandParser.MESSAGE_UNEXPECTED_ARGUMENT, "extra"));
+    }
+
+    @Test
+    public void parse_extraArgumentAfterOrder_throwsUnexpectedArgumentMessage() {
+        assertParseFailure(parser, " --by id --order desc extra",
+                String.format(SortCommandParser.MESSAGE_UNEXPECTED_ARGUMENT, "extra"));
+    }
+
+    @Test
+    public void parse_multipleExtraArguments_reportsAllUnexpectedArguments() {
+        assertParseFailure(parser, " --by amount extra values",
+                String.format(SortCommandParser.MESSAGE_UNEXPECTED_ARGUMENT, "extra values"));
     }
 
     @Test
