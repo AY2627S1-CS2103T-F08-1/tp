@@ -1,7 +1,6 @@
 package seedu.address.logic.parser;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
 import seedu.address.commons.util.StringUtil;
@@ -70,19 +69,11 @@ public class FollowUpCommandParser implements Parser<FollowUpCommand> {
         if (done) {
             return new FollowUpCommand(id, FollowUpCommand.Operation.DONE, Optional.empty());
         }
-        if (!dateText.matches("\\d{4}-\\d{2}-\\d{2}")) {
+        Optional<LocalDate> parsedDate = FollowUpEvent.tryParseDate(dateText);
+        if (parsedDate.isEmpty()) {
             throw new ParseException(FollowUpEvent.MESSAGE_INVALID_DATE);
         }
-        final LocalDate parsedDate;
-        try {
-            parsedDate = LocalDate.parse(dateText);
-        } catch (DateTimeParseException exception) {
-            throw new ParseException(FollowUpEvent.MESSAGE_INVALID_DATE);
-        }
-        if (parsedDate.getYear() < 1) {
-            throw new ParseException(FollowUpEvent.MESSAGE_INVALID_DATE);
-        }
-        return new FollowUpCommand(id, FollowUpCommand.Operation.SCHEDULE, Optional.of(parsedDate));
+        return new FollowUpCommand(id, FollowUpCommand.Operation.SCHEDULE, parsedDate);
     }
 
     private ParseException invalidFormat() {
