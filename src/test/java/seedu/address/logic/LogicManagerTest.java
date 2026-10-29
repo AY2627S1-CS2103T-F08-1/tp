@@ -249,6 +249,7 @@ public class LogicManagerTest {
 
         for (String command : List.of(
                 "find Amy",
+                "sort --by amount --order desc",
                 "list",
                 "show --id " + debtor.getDebtorId(),
                 "help",
