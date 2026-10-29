@@ -28,6 +28,7 @@ public final class FollowUpEvent {
     }
 
     public static final DateTimeFormatter STORAGE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    private static final DateTimeFormatter DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private final LocalDateTime timestamp;
     private final Action action;
@@ -163,13 +164,12 @@ public final class FollowUpEvent {
 
     @Override
     public String toString() {
-        DateTimeFormatter displayFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         String dates = switch (action) {
             case SCHEDULED -> newDate.map(value -> " " + value).orElse("");
             case RESCHEDULED -> previousDate.flatMap(from -> newDate.map(to -> " " + from + " -> " + to))
                     .orElse("");
             case CLEARED, COMPLETED -> previousDate.map(value -> " " + value).orElse("");
         };
-        return "[" + timestamp.format(displayFormatter) + "] " + action + dates;
+        return "[" + timestamp.format(DISPLAY_FORMATTER) + "] " + action + dates;
     }
 }

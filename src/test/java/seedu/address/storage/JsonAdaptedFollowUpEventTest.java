@@ -50,12 +50,24 @@ class JsonAdaptedFollowUpEventTest {
     }
 
     @Test
+    void toModelType_legacyDateWithOnlyPreviousDate_prefersCurrentField() throws Exception {
+        JsonAdaptedFollowUpEvent adapted = new JsonAdaptedFollowUpEvent(
+                TIMESTAMP, "CLEARED", "2099-12-31", "2026-11-03", null);
+
+        FollowUpEvent event = adapted.toModelType(Optional.empty());
+
+        assertEquals(Optional.of(LocalDate.parse("2026-11-03")), event.getPreviousDate());
+        assertEquals(Optional.empty(), event.getNewDate());
+    }
+
+    @Test
     void toModelType_missingTimestamp_throwsIllegalValueException() {
         JsonAdaptedFollowUpEvent adapted = new JsonAdaptedFollowUpEvent(
                 null, "SCHEDULED", null, null, "2026-11-03");
 
-        assertThrows(IllegalValueException.class, () -> adapted.toModelType(Optional.empty()),
-                JsonAdaptedFollowUpEvent.MESSAGE_MISSING_REQUIRED_FIELDS);
+        IllegalValueException exception = assertThrows(IllegalValueException.class, () ->
+                adapted.toModelType(Optional.empty()));
+        assertEquals(JsonAdaptedFollowUpEvent.MESSAGE_MISSING_REQUIRED_FIELDS, exception.getMessage());
     }
 
     @Test
@@ -63,7 +75,8 @@ class JsonAdaptedFollowUpEventTest {
         JsonAdaptedFollowUpEvent adapted = new JsonAdaptedFollowUpEvent(
                 TIMESTAMP, null, null, null, "2026-11-03");
 
-        assertThrows(IllegalValueException.class, () -> adapted.toModelType(Optional.empty()),
-                JsonAdaptedFollowUpEvent.MESSAGE_MISSING_REQUIRED_FIELDS);
+        IllegalValueException exception = assertThrows(IllegalValueException.class, () ->
+                adapted.toModelType(Optional.empty()));
+        assertEquals(JsonAdaptedFollowUpEvent.MESSAGE_MISSING_REQUIRED_FIELDS, exception.getMessage());
     }
 }
