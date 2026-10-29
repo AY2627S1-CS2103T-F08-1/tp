@@ -77,7 +77,7 @@ public class AddressBookParser {
         Command parse(String arguments) throws ParseException;
     }
 
-    /** Returns the command words dispatched by this parser for UI and documentation consistency checks. */
+    /** Exposes the immutable dispatch keys so cross-package UI/documentation contract tests use the real parser. */
     public static Set<String> getSupportedCommandWords() {
         return COMMAND_PARSERS.keySet();
     }

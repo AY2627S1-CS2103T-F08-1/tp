@@ -28,21 +28,25 @@ public class BrandingTest {
             Pattern.compile("(?m)^\\*\\*[^*]+\\*\\* \\| `(?<command>[a-z-]+)(?:\\s|`)");
     private static final Map<String, List<String>> RELEASED_COMMANDS = Map.ofEntries(
             Map.entry("add n/NAME p/PHONE e/EMAIL a/ADDRESS [o/AMOUNT] [t/TAG]...",
-                    List.of("add n/Alice p/91234567 e/alice@example.com a/Example Street o/10 t/client")),
+                    List.of("add n/Alice p/91234567 e/alice@example.com a/Example Street o/10 t/client",
+                            "add n/Olaf Go p/91234567 e/olaf@example.com a/Antarctica o/S$1250.00")),
             Map.entry("list", List.of("list")),
-            Map.entry("find KEYWORD [MORE_KEYWORDS]...", List.of("find Alice Bob")),
+            Map.entry("find KEYWORD [MORE_KEYWORDS]...", List.of("find Alice Bob", "find Alice 91234567")),
             Map.entry("sort --by id|name|amount [--order asc|desc]",
                     List.of("sort --by id", "sort --by name --order asc", "sort --by amount --order desc")),
-            Map.entry("show --id DEBTOR_ID", List.of("show --id 1")),
+            Map.entry("show --id DEBTOR_ID", List.of("show --id 1", "show --id 3")),
             Map.entry("note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT",
-                    List.of("note --id 1 --text Called debtor", "note --id 1 --outcome reached --text Paid")),
+                    List.of("note --id 1 --text Called debtor", "note --id 1 --outcome reached --text Paid",
+                            "note --id 3 --outcome reached --text Called debtor.")),
             Map.entry("contact --id DEBTOR_ID [--method METHOD | --clear-method] "
                     + "[--hours HH:mm-HH:mm | --clear-hours]",
                     List.of("contact --id 1 --method sms --hours 09:00-17:30",
-                            "contact --id 1 --clear-method --clear-hours")),
+                            "contact --id 1 --clear-method --clear-hours",
+                            "contact --id 3 --method sms --hours 09:00-17:30")),
             Map.entry("edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/AMOUNT] [t/TAG]...",
-                    List.of("edit 1 n/Alice p/92345678 e/new@example.com a/New Street o/20 t/priority")),
-            Map.entry("delete INDEX", List.of("delete 1")),
+                    List.of("edit 1 n/Alice p/92345678 e/new@example.com a/New Street o/20 t/priority",
+                            "edit 2 o/S$500.00")),
+            Map.entry("delete INDEX", List.of("delete 1", "delete 2")),
             Map.entry("clear", List.of("clear")),
             Map.entry("undo", List.of("undo")),
             Map.entry("redo", List.of("redo")),
@@ -109,7 +113,13 @@ public class BrandingTest {
                 .collect(Collectors.toSet());
 
         displayedExamples.forEach(example -> {
-            assertTrue(AddressBookParser.getSupportedCommandWords().contains(example.split(" ", 2)[0]));
+            String commandWord = example.split(" ", 2)[0];
+            List<String> examplesForSyntax = RELEASED_COMMANDS.entrySet().stream()
+                    .filter(entry -> entry.getKey().split(" ", 2)[0].equals(commandWord))
+                    .findFirst()
+                    .orElseThrow()
+                    .getValue();
+            assertTrue(examplesForSyntax.contains(example));
             assertDoesNotThrow(() -> parser.parseCommand(example));
         });
     }
