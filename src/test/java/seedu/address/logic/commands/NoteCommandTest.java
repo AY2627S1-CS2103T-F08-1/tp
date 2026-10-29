@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.person.ContactOutcome;
 import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Person;
 
@@ -37,7 +38,10 @@ public class NoteCommandTest {
     @Test
     public void constructor_nullArguments_throwNullPointerException() {
         assertThrows(NullPointerException.class, () -> new NoteCommand(1, null));
-        assertThrows(NullPointerException.class, () -> new NoteCommand(1, VALID_NOTE, null));
+        assertThrows(NullPointerException.class, () -> new NoteCommand(1, VALID_NOTE, (Clock) null));
+        assertThrows(NullPointerException.class, () -> new NoteCommand(1, VALID_NOTE, (ContactOutcome) null));
+        assertThrows(NullPointerException.class, () ->
+            new NoteCommand(1, VALID_NOTE, ContactOutcome.REACHED, null));
     }
 
     @Test
@@ -67,6 +71,20 @@ public class NoteCommandTest {
                 new InteractionNote(LocalDateTime.of(2026, 10, 9, 14, 30), "First note."),
                 new InteractionNote(LocalDateTime.of(2026, 10, 9, 14, 35), "Second note.")), notes);
         assertTrue(notes.get(0).getTimestamp().isBefore(notes.get(1).getTimestamp()));
+    }
+
+    @Test
+    public void execute_validOutcome_recordsOutcomeWithoutChangingOutstandingAmount() throws Exception {
+        Person debtor = model.getAddressBook().getPersonList().getFirst();
+        String originalOutstanding = debtor.getOutstandingAmount().toString();
+
+        new NoteCommand(debtor.getDebtorId(), VALID_NOTE, ContactOutcome.PAYMENT_PROMISED, EARLIER_CLOCK)
+                .execute(model);
+
+        Person updatedDebtor = model.getAddressBook().getPersonList().getFirst();
+        InteractionNote note = updatedDebtor.getInteractionNotes().getLast();
+        assertEquals(ContactOutcome.PAYMENT_PROMISED, note.getOutcome().orElseThrow());
+        assertEquals(originalOutstanding, updatedDebtor.getOutstandingAmount().toString());
     }
 
     @Test
@@ -108,7 +126,7 @@ public class NoteCommandTest {
     public void toStringMethod() {
         NoteCommand noteCommand = new NoteCommand(7, "  Called debtor.  ");
         String expected = NoteCommand.class.getCanonicalName()
-                + "{debtorId=7, noteText=Called debtor.}";
+                + "{debtorId=7, noteText=Called debtor., outcome=unspecified}";
 
         assertEquals(expected, noteCommand.toString());
     }
@@ -119,11 +137,13 @@ public class NoteCommandTest {
         NoteCommand firstCommandCopy = new NoteCommand(1, "First note.");
         NoteCommand differentIdCommand = new NoteCommand(2, "First note.");
         NoteCommand differentTextCommand = new NoteCommand(1, "Second note.");
+        NoteCommand differentOutcomeCommand = new NoteCommand(1, "First note.", ContactOutcome.REACHED);
 
         assertTrue(firstCommand.equals(firstCommand));
         assertTrue(firstCommand.equals(firstCommandCopy));
         assertFalse(firstCommand.equals(differentIdCommand));
         assertFalse(firstCommand.equals(differentTextCommand));
+        assertFalse(firstCommand.equals(differentOutcomeCommand));
         assertFalse(firstCommand.equals(1));
         assertFalse(firstCommand.equals(null));
     }

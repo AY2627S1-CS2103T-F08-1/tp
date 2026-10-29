@@ -35,13 +35,21 @@ public class HelpWindow extends UiPart<Stage> {
             find KEYWORD [MORE_KEYWORDS]...
             Example: find Alice 91234567
 
+            Sort the displayed worklist
+            sort --by id|name|amount [--order asc|desc]
+            Example: sort --by amount --order desc
+
             Show a debtor profile by persistent ID
             show --id DEBTOR_ID
             Example: show --id 3
 
             Add an interaction note by persistent ID
-            note --id DEBTOR_ID --text NOTE_TEXT
-            Example: note --id 3 --text Called debtor, promised payment on Friday.
+            note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT
+            Example: note --id 3 --outcome reached --text Called debtor.
+
+            Set contact preferences by persistent ID
+            contact --id DEBTOR_ID [--method METHOD | --clear-method] [--hours HH:mm-HH:mm | --clear-hours]
+            Example: contact --id 3 --method sms --hours 09:00-17:30
 
             Edit a debtor by displayed index
             edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/AMOUNT] [t/TAG]...
@@ -53,6 +61,10 @@ public class HelpWindow extends UiPart<Stage> {
 
             Clear all debtors
             clear
+
+            Undo or redo the most recent saved change in this session
+            undo
+            redo
 
             Open this command reference
             help
