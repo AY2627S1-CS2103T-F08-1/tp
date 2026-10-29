@@ -62,21 +62,19 @@ public class Email {
     /** Checks domain labels, allowing internal hyphen runs such as the ASCII Punycode prefix. */
     private static boolean isValidDomain(String email, int startIndex) {
         int labelStart = startIndex;
-        for (int i = startIndex; i <= email.length(); i++) {
-            if (i == email.length() || email.charAt(i) == '.') {
+        for (int i = startIndex; i < email.length(); i++) {
+            if (email.charAt(i) == '.') {
                 if (i == labelStart || !isAsciiAlphanumeric(email.charAt(labelStart))
                         || !isAsciiAlphanumeric(email.charAt(i - 1))) {
                     return false;
-                }
-                if (i == email.length()) {
-                    return i - labelStart >= 2;
                 }
                 labelStart = i + 1;
             } else if (!isAsciiAlphanumeric(email.charAt(i)) && email.charAt(i) != '-') {
                 return false;
             }
         }
-        return false;
+        return email.length() - labelStart >= 2 && isAsciiAlphanumeric(email.charAt(labelStart))
+                && isAsciiAlphanumeric(email.charAt(email.length() - 1));
     }
 
     /** Matches the ASCII letters and digits accepted by the command syntax. */

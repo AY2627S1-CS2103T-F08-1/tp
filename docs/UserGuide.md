@@ -292,8 +292,9 @@ Create `osps-data` first if it does not exist. In this example, records are save
 Launching from another folder uses a separate dataset. Advanced users may update data directly by editing that JSON file.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-If your changes make the data file invalid, OSPS starts with no debtor records at the next run. The invalid file remains
-on disk until you run a data-changing command. Back up the file before editing it.<br>
+If OSPS detects that the data file cannot be loaded, it starts with no debtor records. Some unsupported manual edits
+may prevent startup; restore a backup if this happens. When OSPS starts with no debtor records after a loading error,
+the invalid file remains on disk until you run a data-changing command. Back up the file before editing it.<br>
 Furthermore, certain edits can cause OSPS to behave unexpectedly (for example, if a value is outside the accepted
 range). Edit the data file only if you are confident that you can update it correctly.
 </div>
