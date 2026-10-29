@@ -3,6 +3,7 @@ package seedu.address.logic.parser;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_DEBTOR_ID;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NOTE_TEXT;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_OUTCOME;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
 
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.NoteCommand;
+import seedu.address.model.person.ContactOutcome;
 import seedu.address.model.person.InteractionNote;
 
 public class NoteCommandParserTest {
@@ -26,6 +28,18 @@ public class NoteCommandParserTest {
     public void parse_textWithPunctuation_returnsNoteCommand() {
         assertParseSuccess(parser, " --id 4 --text Left voicemail; callback at 5pm?",
                 new NoteCommand(4, "Left voicemail; callback at 5pm?"));
+    }
+
+    @Test
+    public void parse_validOutcome_returnsNoteCommandWithOutcome() {
+        assertParseSuccess(parser, " --id 4 --outcome reached --text Spoke to debtor.",
+                new NoteCommand(4, "Spoke to debtor.", ContactOutcome.REACHED));
+        assertParseSuccess(parser, " --outcome CALLBACK-REQUESTED --id 4 --text Call again tomorrow.",
+                new NoteCommand(4, "Call again tomorrow.", ContactOutcome.CALLBACK_REQUESTED));
+        assertParseSuccess(parser, " --id 4 --outcome Unreachable --text No answer.",
+                new NoteCommand(4, "No answer.", ContactOutcome.UNREACHABLE));
+        assertParseSuccess(parser, " --id 4 --outcome payment-promised --text Payment due Friday.",
+                new NoteCommand(4, "Payment due Friday.", ContactOutcome.PAYMENT_PROMISED));
     }
 
     @Test
@@ -91,6 +105,8 @@ public class NoteCommandParserTest {
                 new NoteCommand(2, "Called debtor. --unknown value"));
         assertParseSuccess(parser, " --text Use --identifier portal. --id 2",
                 new NoteCommand(2, "Use --identifier portal."));
+        assertParseSuccess(parser, " --id 2 --text Discussed --outcome reached with supervisor.",
+                new NoteCommand(2, "Discussed --outcome reached with supervisor."));
     }
 
     @Test
@@ -115,6 +131,18 @@ public class NoteCommandParserTest {
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_DEBTOR_ID));
         assertParseFailure(parser, " --id 1 --text Called debtor. --text Promised payment.",
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_NOTE_TEXT));
+        assertParseFailure(parser, " --id 1 --outcome reached --outcome unreachable --text Called debtor.",
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_OUTCOME));
+        assertParseFailure(parser, " --id 1 --text Called debtor. --id 2",
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_DEBTOR_ID));
+    }
+
+    @Test
+    public void parse_invalidOutcome_throwsParseException() {
+        assertParseFailure(parser, " --id 1 --outcome answered --text Called debtor.",
+                ContactOutcome.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " --id 1 --outcome --text Called debtor.",
+                ContactOutcome.MESSAGE_CONSTRAINTS);
     }
 
     @Test

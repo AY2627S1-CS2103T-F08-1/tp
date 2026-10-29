@@ -19,6 +19,7 @@ import org.junit.jupiter.api.io.TempDir;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
+import seedu.address.model.person.ContactOutcome;
 import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
@@ -74,6 +75,12 @@ public class JsonAddressBookStorageTest {
     public void readAddressBook_invalidInteractionNoteTimestamp_throwsDataLoadingException() {
         String filePath = "invalidInteractionNoteTimestampAddressBook.json";
         assertThrows(DataLoadingException.class, () -> readAddressBook(filePath));
+    }
+
+    @Test
+    public void readAddressBook_invalidInteractionNoteOutcome_throwsDataLoadingException() {
+        assertThrows(DataLoadingException.class, () ->
+                readAddressBook("invalidInteractionNoteOutcomeAddressBook.json"));
     }
 
     @Test
@@ -191,7 +198,7 @@ public class JsonAddressBookStorageTest {
     public void readAndSaveAddressBook_interactionNotes_roundTrips() throws Exception {
         Path filePath = testFolder.resolve("InteractionNotesAddressBook.json");
         InteractionNote duplicateNote = InteractionNote.fromStorage("2026-10-09T14:35:00",
-                "Sent payment reminder.");
+                "Sent payment reminder.", ContactOutcome.PAYMENT_PROMISED.toString());
         List<InteractionNote> notes = List.of(
                 InteractionNote.fromStorage("2026-10-09T14:30:00", "Called debtor, promised payment."),
                 duplicateNote, duplicateNote);

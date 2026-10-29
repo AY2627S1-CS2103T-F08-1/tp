@@ -174,12 +174,18 @@ The `Storage` component,
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 * stores each debtor's ordered interaction history through `JsonAdaptedInteractionNote`; invalid entries, including
-  JSON `null` notes, are reported as data-loading errors.
+  JSON `null` notes and unrecognised contact outcomes, are reported as data-loading errors.
 
 Interaction notes retain their insertion order in JSON, including identical text and timestamps. Profile formatting
 reverses a copy of the insertion-ordered list before applying the ordered stream's stable sort by descending
 timestamp. Stability preserves reverse insertion order for equal timestamps. Editing a debtor preserves the full
 history. `NoteHistoryWorkflowTest` verifies these behaviours together across editing, JSON reload and `show`.
+
+Each interaction note can also store a `ContactOutcome`: `reached`, `callback-requested`, `unreachable`, or
+`payment-promised`. The JSON `outcome` field is nullable so files created before this feature remain loadable; a
+missing value becomes an `unspecified` outcome when displayed. New non-null values outside the supported set fail
+loading instead of silently losing information. The note parser accepts `--outcome` only before `--text`, which keeps
+option-like words in the note body as literal text. Contact outcomes are metadata and do not alter outstanding amounts.
 
 `LogicManager` applies a valid `note` command to the in-memory model before saving. If saving fails, it reports a
 command error but does not roll back the in-memory note. A failure before writing leaves the prior file unchanged;

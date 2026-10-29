@@ -34,7 +34,8 @@ while retaining the benefits of a graphical user interface (GUI).
 
    * `add n/Olaf Go p/91234567 e/olaf.letnonego@example.com a/H4M8+3J3, Kunlun Station, Antarctica o/S$1,250.00` : Adds a debtor named `Olaf Go` to OSPS.
 
-   * `note --id 1 --text Called debtor, promised payment on Friday.` : Adds an interaction note to debtor ID 1.
+   * `note --id 1 --outcome payment-promised --text Called debtor, promised payment on Friday.` : Adds an
+     interaction note with a structured outcome to debtor ID 1.
 
    * `show --id 1` : Shows the complete profile and interaction history of debtor ID 1.
 
@@ -80,7 +81,8 @@ while retaining the benefits of a graphical user interface (GUI).
 Each debtor card shows both a displayed index and a persistent debtor ID. In a heading such as `2. [ID 7] Alex Tan`,
 `2` is the debtor's current displayed index while `7` is the debtor's persistent ID.
 
-* Use the persistent ID with `show --id DEBTOR_ID` and `note --id DEBTOR_ID --text NOTE_TEXT`.
+* Use the persistent ID with `show --id DEBTOR_ID` and
+  `note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT`.
 * Use the displayed index with `delete INDEX` and `edit INDEX ...`.
 * A persistent ID stays with the same debtor until that debtor is deleted. A displayed index can change after a `find`,
   `list`, `add`, `edit`, or `delete` command.
@@ -148,16 +150,21 @@ Examples of result messages:
 
 Adds a timestamped interaction note to the debtor identified by debtor ID.
 
-Format: `note --id DEBTOR_ID --text NOTE_TEXT`
+Format: `note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT`
 
 * `DEBTOR_ID` must be a positive integer shown as the debtor's ID in the debtor list.
+* `OUTCOME` is optional and is case-insensitive. It must be one of `reached`, `callback-requested`, `unreachable`, or
+  `payment-promised`. If omitted, the note is displayed with the outcome `unspecified`.
 * `NOTE_TEXT` must not be blank. Ordinary punctuation is allowed, and there is no arbitrary note-length limit.
-* The `--id` and `--text` parameters can be provided in either order.
+* `--outcome`, when used, must appear before `--text`. The `--id` and `--text` parameters can be provided in either
+  order. Text after `--text`, including `--outcome`, is treated as note text unless it is a reserved `--id` or
+  `--text` parameter.
 * The tokens `--id` and `--text` are reserved for command parameters and cannot appear inside `NOTE_TEXT`.
   Other words beginning with `--`, such as `--identifier`, are kept as part of the note text after `--text`.
   Unknown options before `--text` or in the `--id` value are rejected.
 * The note is saved with the debtor and is preserved after restarting the application.
 * Repeating the same note records a separate interaction each time. Editing the debtor preserves all existing notes.
+* Recording an outcome does not change the debtor's outstanding amount or any other debtor field.
 * If saving fails, OSPS reports an error, but the note remains in memory during the current session. It is not
   guaranteed to be on disk or to survive a restart. Resolve the save problem and verify the data after saving
   successfully. Check the profile before entering the note again to avoid adding a duplicate.
@@ -166,13 +173,16 @@ Format: `note --id DEBTOR_ID --text NOTE_TEXT`
   Read-only commands such as `show` and `list` do not retry a failed save.
 
 Example:
-* `note --id 1 --text Called debtor, promised payment on Friday.`
+* `note --id 1 --outcome reached --text Confirmed the debtor's identity.`
+* `note --outcome callback-requested --id 1 --text Debtor requested a call tomorrow morning.`
+* `note --id 1 --text Sent a written reminder.` records a note with an `unspecified` outcome.
 
 ### Viewing a debtor profile: `show`
 
 Shows the complete profile of the active debtor identified by persistent debtor ID. The profile includes the
 debtor's name, phone number, email address, address, outstanding amount, tags, and interaction history. Interaction
-notes are shown newest first. If the debtor has no notes, the profile states that no interaction notes are recorded.
+notes are shown newest first. Each note shows its timestamp, outcome, and text. If the debtor has no notes, the profile
+states that no interaction notes are recorded.
 If two notes have exactly the same timestamp, the later-added note is shown first; neither note is removed.
 Displayed times have minute precision, so two notes showing the same time may have different stored timestamps.
 
@@ -329,7 +339,7 @@ Action | Format, Examples
 **Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [o/OUTSTANDING_AMOUNT] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find Alice 98765432`
 **List** | `list`
-**Note** | `note --id DEBTOR_ID --text NOTE_TEXT`<br> e.g., `note --id 1 --text Called debtor, promised payment on Friday.`
+**Note** | `note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT`<br> e.g., `note --id 1 --outcome reached --text Called debtor.`
 **Show** | `show --id DEBTOR_ID`<br> e.g., `show --id 3`
 **Help** | `help`
 **Exit** | `exit`
