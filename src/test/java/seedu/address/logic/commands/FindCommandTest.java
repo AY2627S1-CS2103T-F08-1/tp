@@ -21,6 +21,9 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.PersonSort;
+import seedu.address.model.person.PersonSort.Direction;
+import seedu.address.model.person.PersonSort.Field;
 import seedu.address.testutil.AddressBookBuilder;
 import seedu.address.testutil.PersonBuilder;
 
@@ -105,6 +108,16 @@ public class FindCommandTest {
                 FindCommand.getMessageForMatchCount(2), expectedOutOfOrderModel);
         assertEquals(List.of(2, 9), outOfOrderModel.getFilteredPersonList().stream()
                 .map(Person::getDebtorId).toList());
+    }
+
+    @Test
+    public void execute_afterDescendingSort_resetsMatchingResultsToAscendingIdOrder() {
+        NameContainsKeywordsPredicate predicate = new NameContainsKeywordsPredicate(List.of("Meier"));
+        model.updateSortedPersonList(PersonSort.createComparator(Field.ID, Direction.DESCENDING));
+
+        new FindCommand(predicate).execute(model);
+
+        assertEquals(List.of(2, 4), model.getFilteredPersonList().stream().map(Person::getDebtorId).toList());
     }
 
     @Test

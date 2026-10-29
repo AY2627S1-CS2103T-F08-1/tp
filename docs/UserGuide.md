@@ -144,6 +144,33 @@ Examples of result messages:
 * `1 active debtor listed.`
 * `5 active debtors listed.`
 
+### Sorting the displayed debtor worklist: `sort`
+
+Sorts the debtors currently shown in the list. It does not add, remove, or modify debtor records, and it does not
+change which debtors an active `find` filter includes.
+
+Format: `sort --by id|name|amount [--order asc|desc]`
+
+* `--by` is required. Choose `id`, `name`, or `amount`.
+* `--order` is optional and defaults to `asc`. Choose `asc` or `desc`.
+* Field and order values are case-insensitive. Options may be written in either order, but each option may appear
+  only once. Unknown options and extra values are rejected without changing the displayed list.
+* Names are compared case-insensitively. Outstanding amounts are compared by their numeric value, not their
+  formatted text.
+* When two debtors have the same name or amount, the lower persistent debtor ID is shown first. This ID tie-breaker
+  remains ascending even when the chosen field is descending.
+* Sorting changes displayed indexes. A following `edit INDEX` or `delete INDEX` acts on the debtor shown at that
+  index after sorting. Check the visible ID before running an index-based command.
+* `sort` preserves the current filtered set. Running `find` starts a new filtered view in ascending ID order.
+  Running `list` restores all active debtors in ascending ID order. A successful `add` also restores that normal
+  list. Edit and delete keep the active filter and sort, and the list refreshes if a changed field affects its order.
+* Sort settings last only for the current session and are not written to the data file.
+
+Examples:
+* `sort --by amount --order desc` shows the largest outstanding amount first.
+* `find Alice` followed by `sort --by name` sorts only the matching debtors by name.
+* `sort --order DESC --by ID` shows the highest persistent debtor ID first.
+
 ### Adding an interaction note: `note`
 
 Adds a timestamped interaction note to the debtor identified by debtor ID.
@@ -331,5 +358,6 @@ Action | Format, Examples
 **List** | `list`
 **Note** | `note --id DEBTOR_ID --text NOTE_TEXT`<br> e.g., `note --id 1 --text Called debtor, promised payment on Friday.`
 **Show** | `show --id DEBTOR_ID`<br> e.g., `show --id 3`
+**Sort** | `sort --by id\|name\|amount [--order asc\|desc]`<br> e.g., `sort --by amount --order desc`
 **Help** | `help`
 **Exit** | `exit`

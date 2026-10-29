@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.Model;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
+import seedu.address.model.person.PersonSort;
 
 /**
  * Finds and lists all persons whose name contains a keyword or whose phone number exactly matches a keyword.
@@ -37,7 +38,7 @@ public class FindCommand extends Command {
     @Override
     public CommandResult execute(Model model) {
         requireNonNull(model);
-        model.updateFilteredPersonList(predicate);
+        model.updatePersonView(predicate, PersonSort.DEFAULT_COMPARATOR);
         return new CommandResult(getMessageForMatchCount(model.getFilteredPersonList().size()));
     }
 
