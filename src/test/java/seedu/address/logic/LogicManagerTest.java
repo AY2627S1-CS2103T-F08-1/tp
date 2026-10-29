@@ -110,6 +110,49 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_longEmailAddAndEdit_savedRecordsReload() throws Exception {
+        String addedEmail = "a.".repeat(5000) + "a@example.com";
+        logic.execute("add n/Long Email Tester p/96661111 e/" + addedEmail + " a/Test Street o/10");
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        Model reloadedModel = new ModelManager(storage.readAddressBook().orElseThrow(), new UserPrefs());
+        assertEquals(addedEmail, reloadedModel.getAddressBook().getPersonList().getFirst().getEmail().value);
+
+        Logic reloadedLogic = new LogicManager(reloadedModel, new StorageManager(storage,
+                new JsonUserPrefsStorage(temporaryFolder.resolve("userPrefs.json"))));
+        String editedEmail = "person@" + "a".repeat(10000) + ".com";
+        reloadedLogic.execute("edit 1 e/" + editedEmail);
+        Person restored = storage.readAddressBook().orElseThrow().getPersonList().getFirst();
+        assertEquals(editedEmail, restored.getEmail().value);
+        assertEquals(reloadedModel.getAddressBook().getPersonList().getFirst(), restored);
+    }
+
+    @Test
+    public void execute_punycodeEmailAddAndEdit_savedRecordsReload() throws Exception {
+        logic.execute("add n/International Tester p/96663332 e/person@xn--bcher-kva.de a/Test Street o/50");
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        assertEquals("person@xn--bcher-kva.de", storage.readAddressBook().orElseThrow()
+                .getPersonList().getFirst().getEmail().value);
+        logic.execute("edit 1 e/updated@example.xn--p1ai");
+        assertEquals("updated@example.xn--p1ai", storage.readAddressBook().orElseThrow()
+                .getPersonList().getFirst().getEmail().value);
+    }
+
+    @Test
+    public void execute_unicodeBlankAddressAddAndEdit_rejectedWithoutMutation() throws Exception {
+        logic.execute("add n/Address Tester p/96662222 e/address@example.com a/Test Street o/10");
+        Path filePath = temporaryFolder.resolve("addressBook.json");
+        String originalSavedData = Files.readString(filePath);
+        List<Person> originalPersons = List.copyOf(model.getAddressBook().getPersonList());
+        for (String blank : List.of("\u2003", "\u00a0", "\u202f", "\u3000")) {
+            assertThrows(ParseException.class, () -> logic.execute(
+                    "add n/Blank Tester p/96662223 e/blank@example.com a/" + blank + " o/10"));
+            assertThrows(ParseException.class, () -> logic.execute("edit 1 a/" + blank));
+            assertEquals(originalPersons, model.getAddressBook().getPersonList());
+            assertEquals(originalSavedData, Files.readString(filePath));
+        }
+    }
+
+    @Test
     public void execute_invalidNoteCommands_doNotChangeModelOrSavedData() throws Exception {
         Person debtor = model.addPerson(new PersonBuilder().withName("Alice Tan").build());
         logic.execute("note --id " + debtor.getDebtorId() + " --text Existing note.");

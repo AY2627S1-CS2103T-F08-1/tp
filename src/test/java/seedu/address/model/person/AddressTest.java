@@ -35,6 +35,16 @@ public class AddressTest {
     }
 
     @Test
+    public void isValidAddress_unicodeWhitespace_rejectsBlankAddresses() {
+        for (String blank : new String[] {"\u2003", "\u00a0", "\u202f", "\u3000", " \t\u2003\u00a0"}) {
+            assertFalse(Address.isValidAddress(blank));
+            assertThrows(IllegalArgumentException.class, () -> new Address(blank));
+        }
+        assertTrue(Address.isValidAddress("Block\u2003123"));
+        assertTrue(Address.isValidAddress("裕廊西大街 123"));
+    }
+
+    @Test
     public void equals() {
         Address address = new Address("Valid Address");
 

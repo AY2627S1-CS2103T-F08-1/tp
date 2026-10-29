@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static seedu.address.testutil.Assert.assertThrows;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -14,6 +15,8 @@ import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.exceptions.DataLoadingException;
+import seedu.address.model.AddressBook;
+import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 
 public class JsonUserPrefsStorageTest {
@@ -60,6 +63,20 @@ public class JsonUserPrefsStorageTest {
     public void readUserPrefs_valuesMissingFromFile_defaultValuesUsed() throws DataLoadingException {
         UserPrefs actual = readUserPrefs("EmptyUserPrefs.json").get();
         assertEquals(new UserPrefs(), actual);
+    }
+
+    @Test
+    public void readUserPrefs_nullGuiSettings_usesDefaultsAndCanBeCopied() throws Exception {
+        Path prefsFile = testFolder.resolve("nullGuiSettings.json");
+        Files.writeString(prefsFile, "{\"guiSettings\":null}");
+        JsonUserPrefsStorage storage = new JsonUserPrefsStorage(prefsFile);
+        UserPrefs loaded = storage.readUserPrefs().orElseThrow();
+        assertEquals(new UserPrefs(), loaded);
+        assertEquals(new UserPrefs(), new UserPrefs(loaded));
+        ModelManager model = new ModelManager(new AddressBook(), loaded);
+        assertEquals(new GuiSettings(), model.getGuiSettings());
+        storage.saveUserPrefs(loaded);
+        assertEquals(loaded, storage.readUserPrefs().orElseThrow());
     }
 
     @Test

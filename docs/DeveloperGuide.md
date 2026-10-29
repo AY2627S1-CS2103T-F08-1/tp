@@ -188,6 +188,18 @@ Pending changes are retried by the next successful data-changing command or the 
 is restored. Read-only commands do not retry the write. The workflow tests simulate both an I/O failure and denied
 access before writing, then check that an exit retry saves the existing note exactly once.
 
+### Contact validation and preference recovery
+
+`Email.isValidEmail` scans the local part and domain labels iteratively. Validation uses linear time and constant
+auxiliary space, avoiding recursive regex matching during both commands and `JsonAdaptedPerson` reloads.
+The existing local-part character rules remain; domain labels allow consecutive internal hyphens, including ASCII
+Punycode prefixes. This is OSPS syntax validation, not a check that a mailbox or domain exists. No new length limit
+is imposed, so previously accepted long records can still reload.
+
+`Address` uses Unicode whitespace matching when rejecting an initial space, including EM SPACE and non-breaking
+spaces. `JsonUserPrefsStorage` replaces an explicitly null `guiSettings` field with default settings before returning
+preferences, preserving the non-null invariant required by `UserPrefs` and `ModelManager`.
+
 ### Common classes
 
 Classes used by multiple components are in the `seedu.address.commons` package.
