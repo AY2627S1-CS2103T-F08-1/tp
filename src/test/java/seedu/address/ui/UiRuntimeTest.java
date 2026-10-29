@@ -20,6 +20,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -102,6 +103,23 @@ public class UiRuntimeTest {
             listView.resize(300.0, 600.0);
             assertEquals(280.0, card.getPrefWidth());
             assertEquals(250.0, address.getMaxWidth());
+        });
+    }
+
+    @Test
+    public void helpWindow_commandReferenceIsScrollableAndUsable() throws InterruptedException {
+        runOnJavaFxThread(() -> {
+            HelpWindow helpWindow = new HelpWindow();
+            ScrollPane reference = (ScrollPane) helpWindow.getRoot().getScene().lookup(".scroll-pane");
+
+            assertNotNull(reference);
+            assertTrue(reference.isFitToWidth());
+            assertTrue(reference.isFocusTraversable());
+            assertTrue(helpWindow.getRoot().isResizable());
+            helpWindow.show();
+            assertTrue(helpWindow.isShowing());
+            helpWindow.focus();
+            helpWindow.hide();
         });
     }
 
