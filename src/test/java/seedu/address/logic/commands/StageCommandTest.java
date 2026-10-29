@@ -1,6 +1,8 @@
 package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +34,20 @@ class StageCommandTest {
         CommandResult result = command.execute(model);
 
         assertEquals("Recovery stage for debtor ID 1 is already new.", result.getFeedbackToUser());
-        assertEquals(false, command.shouldSaveAddressBook());
+        assertFalse(command.shouldSaveAddressBook());
+    }
+
+    @Test
+    void execute_reusedCommandResetsSaveDecisionForNoOp() throws Exception {
+        ModelManager model = new ModelManager();
+        Person debtor = model.addPerson(new PersonBuilder().build());
+        StageCommand command = new StageCommand(debtor.getDebtorId(), RecoveryStage.CONTACTED);
+
+        command.execute(model);
+        assertTrue(command.shouldSaveAddressBook());
+        command.execute(model);
+
+        assertFalse(command.shouldSaveAddressBook());
     }
 
     @Test

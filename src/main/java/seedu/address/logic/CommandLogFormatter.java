@@ -46,9 +46,9 @@ public final class CommandLogFormatter {
             NoteCommand.COMMAND_WORD,
             RedoCommand.COMMAND_WORD,
             ShowCommand.COMMAND_WORD,
+            SortCommand.COMMAND_WORD,
             StageCommand.COMMAND_WORD,
             SummaryCommand.COMMAND_WORD,
-            SortCommand.COMMAND_WORD,
             UndoCommand.COMMAND_WORD);
 
     private CommandLogFormatter() {

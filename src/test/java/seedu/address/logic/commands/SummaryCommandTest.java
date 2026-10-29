@@ -37,4 +37,24 @@ class SummaryCommandTest {
         assertTrue(summary.contains("contacted: 1"));
         assertTrue(summary.contains("settled: 1"));
     }
+
+    @Test
+    void execute_displayedWorkloadUsesOnlyFilteredDebtors() {
+        ModelManager model = new ModelManager();
+        Person first = model.addPerson(new PersonBuilder().withOutstandingAmount("1,250.50").build());
+        Person second = model.addPerson(new PersonBuilder().withName("Bob").withPhone("91234567")
+                .withEmail("bob@example.com").withOutstandingAmount("800.00").build());
+        Person contacted = first.withRecoveryStage(RecoveryStage.CONTACTED);
+        model.setPerson(first, contacted);
+        model.setPerson(second, second.withRecoveryStage(RecoveryStage.SETTLED));
+        model.updateFilteredPersonList(person -> person.equals(contacted));
+
+        String summary = new SummaryCommand(false).execute(model).getFeedbackToUser();
+
+        assertTrue(summary.contains("Case workload summary (displayed debtors)"));
+        assertTrue(summary.contains("Debtors: 1"));
+        assertTrue(summary.contains("Outstanding total: S$1,250.50"));
+        assertTrue(summary.contains("contacted: 1"));
+        assertTrue(summary.contains("settled: 0"));
+    }
 }

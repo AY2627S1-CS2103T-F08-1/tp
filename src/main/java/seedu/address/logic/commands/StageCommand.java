@@ -28,6 +28,7 @@ public class StageCommand extends Command {
 
     @Override
     public CommandResult execute(Model model) throws CommandException {
+        changed = false;
         Person target = model.getAddressBook().getPersonList().stream()
                 .filter(person -> person.getDebtorId() == debtorId)
                 .findFirst()
