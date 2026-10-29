@@ -103,6 +103,8 @@ public class UiRuntimeTest {
             Region root = card.getRoot();
             FlowPane tags = (FlowPane) root.lookup("#tags");
             Label tag = (Label) tags.getChildren().getFirst();
+            // The app-owned wrapping contract is the label flag plus the viewport width binding.
+            // Running a native CSS/layout pulse here made headless Linux CI deadlock in JavaFX itself.
             assertEquals(longTag, tag.getText());
             assertTrue(tag.isWrapText());
             assertEquals(0.0, tag.getMinWidth());
@@ -146,14 +148,21 @@ public class UiRuntimeTest {
             assertNotNull(reference);
             assertTrue(reference.isFitToWidth());
             assertTrue(reference.isFocusTraversable());
+            helpWindow.show();
+            assertTrue(helpWindow.isShowing());
+            reference.setVvalue(reference.getVmin());
+            reference.setVvalue(reference.getVmax());
+            assertEquals(reference.getVmax(), reference.getVvalue());
             KeyEvent enter = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER,
                     false, false, false, false);
             helpWindow.handleKeyPress(enter);
             assertFalse(enter.isConsumed());
+            assertTrue(helpWindow.isShowing());
             KeyEvent pageDown = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.PAGE_DOWN,
                     false, false, false, false);
             helpWindow.handleKeyPress(pageDown);
             assertFalse(pageDown.isConsumed());
+            assertTrue(helpWindow.isShowing());
             KeyEvent escape = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ESCAPE,
                     false, false, false, false);
             helpWindow.handleKeyPress(escape);
