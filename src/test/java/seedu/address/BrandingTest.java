@@ -13,8 +13,8 @@ public class BrandingTest {
     @Test
     public void releaseIdentity_matchesV14Branding() {
         assertEquals("OSPS", MainApp.APP_NAME);
-        assertEquals("v1.4", MainApp.VERSION);
-        assertEquals("OSPS v1.4", MainWindow.APP_TITLE);
+        assertEquals("v1.5", MainApp.VERSION);
+        assertEquals("OSPS v1.5", MainWindow.APP_TITLE);
         assertEquals("Exiting OSPS as requested ...", ExitCommand.MESSAGE_EXIT_ACKNOWLEDGEMENT);
     }
 

@@ -209,7 +209,10 @@ public class ModelManager implements Model {
         if (!(candidate instanceof ModelManager candidateManager)) {
             throw new IllegalArgumentException("Transaction candidate must be a ModelManager.");
         }
-        addressBook.resetData(candidateManager.addressBook);
+        if (!addressBook.equals(candidateManager.addressBook)
+                || addressBook.getNextDebtorId() != candidateManager.addressBook.getNextDebtorId()) {
+            addressBook.resetData(candidateManager.addressBook);
+        }
         addressBookHistory.clear();
         addressBookHistory.addAll(candidateManager.addressBookHistory);
         historyPointer = candidateManager.historyPointer;
