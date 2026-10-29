@@ -19,6 +19,7 @@ public class StageCommand extends Command {
     private final int debtorId;
     private final RecoveryStage stage;
 
+    /** Creates a command to set the stage of the debtor identified by {@code debtorId}. */
     public StageCommand(int debtorId, RecoveryStage stage) {
         this.debtorId = debtorId;
         this.stage = requireNonNull(stage);
@@ -28,7 +29,8 @@ public class StageCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         Person target = model.getAddressBook().getPersonList().stream()
                 .filter(person -> person.getDebtorId() == debtorId)
-                .findFirst().orElseThrow(() -> new CommandException(String.format(MESSAGE_DEBTOR_NOT_FOUND, debtorId)));
+                .findFirst()
+                .orElseThrow(() -> new CommandException(String.format(MESSAGE_DEBTOR_NOT_FOUND, debtorId)));
         if (target.getRecoveryStage() == stage) {
             return new CommandResult(String.format(MESSAGE_UNCHANGED, debtorId, stage));
         }

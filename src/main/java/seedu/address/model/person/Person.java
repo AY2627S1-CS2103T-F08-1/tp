@@ -111,7 +111,8 @@ public class Person {
      * Returns a copy of this person with the supplied persistent debtor ID.
      */
     public Person withDebtorId(int newDebtorId) {
-        return new Person(name, phone, email, address, newDebtorId, outstandingAmount, interactionNotes, recoveryStage, tags);
+        return new Person(name, phone, email, address, newDebtorId, outstandingAmount,
+                interactionNotes, recoveryStage, tags);
     }
 
     public OutstandingAmount getOutstandingAmount() {
@@ -133,7 +134,8 @@ public class Person {
     /** Returns a copy with the given recovery stage. */
     public Person withRecoveryStage(RecoveryStage updatedStage) {
         requireNonNull(updatedStage);
-        return new Person(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, updatedStage, tags);
+        return new Person(name, phone, email, address, debtorId, outstandingAmount,
+                interactionNotes, updatedStage, tags);
     }
 
     /**

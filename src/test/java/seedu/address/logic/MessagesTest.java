@@ -34,6 +34,7 @@ public class MessagesTest {
                 Address: 1 Example Road, #02-03
                 Outstanding: S$1,250.50
                 Tags: [alpha], [zeta]
+                Recovery stage: new
                 Interaction history (newest first):
                 - [2026-10-10 09:15] Sent follow-up email.
                 - [2026-10-09 14:30] Called debtor, promised payment.""";
