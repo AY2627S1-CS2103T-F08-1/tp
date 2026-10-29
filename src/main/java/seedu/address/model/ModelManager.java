@@ -148,7 +148,10 @@ public class ModelManager implements Model {
         if (!(candidate instanceof ModelManager candidateManager)) {
             throw new IllegalArgumentException("Transaction candidate must be a ModelManager.");
         }
-        addressBook.resetData(candidateManager.addressBook);
+        if (!addressBook.equals(candidateManager.addressBook)
+                || addressBook.getNextDebtorId() != candidateManager.addressBook.getNextDebtorId()) {
+            addressBook.resetData(candidateManager.addressBook);
+        }
         updatePersonView(candidateManager.personListPredicate, candidateManager.personListComparator);
     }
 

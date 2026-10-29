@@ -46,13 +46,13 @@ public class LogicManager implements Logic {
         logger.info("----------------[USER COMMAND][" + CommandLogFormatter.getCommandWord(commandText) + "]");
 
         Command command = addressBookParser.parseCommand(commandText);
-        if (!command.shouldSaveAddressBook()) {
-            return command.execute(model);
-        }
-
+        // Every command runs on a copy. Some commands only know whether they changed data after they execute,
+        // so whether to save is decided after execution.
         Model candidate = model.createTransactionCopy();
         CommandResult commandResult = command.execute(candidate);
-        if (!hasAddressBookChanges(model.getAddressBook(), candidate.getAddressBook())) {
+        if (!command.shouldSaveAddressBook()
+                || !hasAddressBookChanges(model.getAddressBook(), candidate.getAddressBook())) {
+            model.publishTransaction(candidate);
             return commandResult;
         }
         try {
