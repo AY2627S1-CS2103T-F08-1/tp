@@ -117,7 +117,7 @@ How the `Logic` component works:
 
 `DeleteCommandParser` accepts a positive decimal integer and strips leading zeroes. Empty input, non-digits, zero, and negative values produce an invalid-command-format error with the command usage. The parser keeps the normalized index as decimal text, so very large inputs do not overflow an integer during parsing. `DeleteCommand` checks it against the current displayed-list size using decimal length and lexical comparison before converting an in-range value to an integer. An index outside the list produces an actionable range error; when the list is empty, the error suggests running `list` or adjusting the `find` query. For an index longer than 100 digits, feedback shows its first 20 digits and total digit count. These parse and range failures do not change the model or trigger a save.
 
-For an in-range index, `DeleteCommand` removes the selected `Person` through `Model#deletePerson`. The model removes that person from the address book, which updates the observable displayed list. The success message includes the deleted debtor's ID, name, phone, email, address, outstanding amount, and tags. `LogicManager` then saves the updated address book; a storage failure is reported as a command error, but the in-memory removal is not rolled back.
+For an in-range index, `DeleteCommand` removes the selected `Person` through `Model#deletePerson`. For persistence-bound commands, `LogicManager` executes against an isolated copy of the model that retains the active filter, saves the candidate, and only then publishes it to the live observable model. The success message includes the deleted debtor's ID, name, phone, email, address, outstanding amount, and tags. A storage failure leaves the live model and displayed list unchanged.
 
 Interaction notes are part of the `Person` record. Deleting a debtor therefore removes the profile and its complete interaction history from the active address book and, after a successful save, from the persisted data. `show --id ID` can display profiles only for active debtors, so it reports that the debtor may have been deleted after removal. The current model does not maintain undo/redo history for deletion; the next debtor ID is not reused.
 
@@ -174,19 +174,31 @@ The `Storage` component,
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 * stores each debtor's ordered interaction history through `JsonAdaptedInteractionNote`; invalid entries, including
-  JSON `null` notes, are reported as data-loading errors.
+  JSON `null` notes and unrecognised contact outcomes, are reported as data-loading errors.
 
 Interaction notes retain their insertion order in JSON, including identical text and timestamps. Profile formatting
 reverses a copy of the insertion-ordered list before applying the ordered stream's stable sort by descending
 timestamp. Stability preserves reverse insertion order for equal timestamps. Editing a debtor preserves the full
 history. `NoteHistoryWorkflowTest` verifies these behaviours together across editing, JSON reload and `show`.
 
-`LogicManager` applies a valid `note` command to the in-memory model before saving. If saving fails, it reports a
-command error but does not roll back the in-memory note. A failure before writing leaves the prior file unchanged;
-the file-writing path is not atomic, so a failure during writing does not guarantee an intact prior file.
-Pending changes are retried by the next successful data-changing command or the `exit` command, after storage access
-is restored. Read-only commands do not retry the write. The workflow tests simulate both an I/O failure and denied
-access before writing, then check that an exit retry saves the existing note exactly once.
+Each interaction note can also store a `ContactOutcome`: `reached`, `callback-requested`, `unreachable`, or
+`payment-promised`. The JSON `outcome` field is nullable so files created before this feature remain loadable; a
+missing value becomes an `unspecified` outcome when displayed. New non-null values outside the supported set fail
+loading instead of silently losing information. The note parser accepts `--outcome` only before `--text`, which keeps
+option-like words in the note body as literal text. Contact outcomes are metadata and do not alter outstanding amounts.
+
+`LogicManager` runs each persistence-bound command against a candidate model that copies the current filter. It saves
+the candidate before publishing its records and view to the live model. If saving fails, the live records, next-ID
+state, and displayed view are unchanged; the user must re-enter the command after resolving the problem. `exit` does
+not retry a failed command.
+
+`JsonAddressBookStorage` serializes the complete JSON before writing, writes it to a temporary sibling file, forces
+the file channel, then replaces the destination with `ATOMIC_MOVE` and `REPLACE_EXISTING`. If the file system does
+not support an atomic move, saving fails closed and the temporary file is removed best-effort. No non-atomic
+overwrite fallback is attempted. This protects the previous file from ordinary write and replacement failures; it
+does not promise crash durability or recovery from power loss. The storage test injects unsupported atomic move, and
+logic tests inject save exceptions to check that memory, the active filtered view, next-ID state, and existing disk
+bytes remain unchanged.
 
 ### Contact validation and preference recovery
 
@@ -410,7 +422,7 @@ The following activity diagram summarizes what happens when a user executes a ne
 
 ### Deferred data archiving
 
-Data archiving is not implemented in v1.4. Deleting a debtor currently removes that debtor and their interaction
+Data archiving is not implemented in v1.5. Deleting a debtor currently removes that debtor and their interaction
 history from the active address book, while the monotonically increasing debtor-ID counter prevents a deleted ID from
 being reused.
 
@@ -768,3 +780,7 @@ For the detailed release-JAR deletion matrix and evidence format, see the
    Expected: OSPS starts with no debtor records and logs a data-loading warning. The corrupted file remains untouched
    until a successful data-changing command writes a valid replacement.
 1. Restore the backup after completing the test.
+
+### Contact preferences
+
+The `contact` command selects a debtor by persistent ID and replaces only the requested preference fields. `ContactPreferences` validates a canonical method and a strict same-day window. The immutable value is carried through person copies, edits and notes, and stored with the debtor in JSON. Older records without the object load with both fields unset; malformed present values follow the normal data-loading error path.

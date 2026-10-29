@@ -5,9 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.model.person.ContactOutcome;
 import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
@@ -19,7 +21,7 @@ public class MessagesTest {
         InteractionNote olderNote = new InteractionNote(LocalDateTime.of(2026, 10, 9, 14, 30),
                 "Called debtor, promised payment.");
         InteractionNote newerNote = new InteractionNote(LocalDateTime.of(2026, 10, 10, 9, 15),
-                "Sent follow-up email.");
+                "Sent follow-up email.", Optional.of(ContactOutcome.REACHED));
         Person debtor = new PersonBuilder().withDebtorId(17).withName("Alice Tan")
                 .withPhone("91234567").withEmail("alice@example.com")
                 .withAddress("1 Example Road, #02-03").withOutstandingAmount("1,250.50")
@@ -34,9 +36,11 @@ public class MessagesTest {
                 Address: 1 Example Road, #02-03
                 Outstanding: S$1,250.50
                 Tags: [alpha], [zeta]
+                Preferred contact method: Not set
+                Contact hours: Not set
                 Interaction history (newest first):
-                - [2026-10-10 09:15] Sent follow-up email.
-                - [2026-10-09 14:30] Called debtor, promised payment.""";
+                - [2026-10-10 09:15] [reached] Sent follow-up email.
+                - [2026-10-09 14:30] [unspecified] Called debtor, promised payment.""";
 
         assertEquals(expected, Messages.formatProfile(debtor));
     }

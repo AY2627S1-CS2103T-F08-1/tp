@@ -2,6 +2,7 @@ package seedu.address.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.HOON;
@@ -9,6 +10,8 @@ import static seedu.address.testutil.TypicalPersons.IDA;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
 import java.io.IOException;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -19,6 +22,7 @@ import org.junit.jupiter.api.io.TempDir;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
+import seedu.address.model.person.ContactOutcome;
 import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
@@ -74,6 +78,12 @@ public class JsonAddressBookStorageTest {
     public void readAddressBook_invalidInteractionNoteTimestamp_throwsDataLoadingException() {
         String filePath = "invalidInteractionNoteTimestampAddressBook.json";
         assertThrows(DataLoadingException.class, () -> readAddressBook(filePath));
+    }
+
+    @Test
+    public void readAddressBook_invalidInteractionNoteOutcome_throwsDataLoadingException() {
+        assertThrows(DataLoadingException.class, () ->
+                readAddressBook("invalidInteractionNoteOutcomeAddressBook.json"));
     }
 
     @Test
@@ -155,6 +165,53 @@ public class JsonAddressBookStorageTest {
     }
 
     @Test
+    public void saveAddressBook_atomicMoveUnsupported_keepsPreviousBytesAndDoesNotCreateTarget() throws Exception {
+        Path filePath = testFolder.resolve("atomicAddressBook.json");
+        JsonAddressBookStorage regularStorage = new JsonAddressBookStorage(filePath);
+        regularStorage.saveAddressBook(getTypicalAddressBook());
+        byte[] originalBytes = Files.readAllBytes(filePath);
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(filePath) {
+            @Override
+            void moveAtomically(Path source, Path target) throws IOException {
+                throw new AtomicMoveNotSupportedException(source.toString(), target.toString(), "test seam");
+            }
+        };
+
+        AddressBook replacement = new AddressBook();
+        assertThrows(AtomicMoveNotSupportedException.class, () -> storage.saveAddressBook(replacement));
+        org.junit.jupiter.api.Assertions.assertArrayEquals(originalBytes, Files.readAllBytes(filePath));
+        try (var files = Files.list(testFolder)) {
+            assertEquals(List.of(filePath), files.toList());
+        }
+
+        Path absentPath = testFolder.resolve("absent.json");
+        JsonAddressBookStorage absentStorage = new JsonAddressBookStorage(absentPath) {
+            @Override
+            void moveAtomically(Path source, Path target) throws IOException {
+                throw new AtomicMoveNotSupportedException(source.toString(), target.toString(), "test seam");
+            }
+        };
+        assertThrows(AtomicMoveNotSupportedException.class, () ->
+                absentStorage.saveAddressBook(getTypicalAddressBook()));
+        assertFalse(Files.exists(absentPath));
+    }
+
+    @Test
+    public void saveAddressBook_temporaryFileCleanupFails_stillReplacesDataFile() throws Exception {
+        Path filePath = testFolder.resolve("cleanupFailureAddressBook.json");
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(filePath) {
+            @Override
+            void deleteTemporaryFile(Path temporaryFile) throws IOException {
+                throw new IOException("test seam");
+            }
+        };
+
+        storage.saveAddressBook(getTypicalAddressBook());
+
+        assertEquals(getTypicalAddressBook(), new JsonAddressBookStorage(filePath).readAddressBook().orElseThrow());
+    }
+
+    @Test
     public void readAndSaveAddressBook_nextDebtorIdIsNotReused_success() throws Exception {
         Path filePath = testFolder.resolve("DebtorIdsAddressBook.json");
         AddressBook original = new AddressBook();
@@ -191,7 +248,7 @@ public class JsonAddressBookStorageTest {
     public void readAndSaveAddressBook_interactionNotes_roundTrips() throws Exception {
         Path filePath = testFolder.resolve("InteractionNotesAddressBook.json");
         InteractionNote duplicateNote = InteractionNote.fromStorage("2026-10-09T14:35:00",
-                "Sent payment reminder.");
+                "Sent payment reminder.", ContactOutcome.PAYMENT_PROMISED.toString());
         List<InteractionNote> notes = List.of(
                 InteractionNote.fromStorage("2026-10-09T14:30:00", "Called debtor, promised payment."),
                 duplicateNote, duplicateNote);
