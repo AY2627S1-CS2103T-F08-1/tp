@@ -2,7 +2,6 @@ package seedu.address.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.CountDownLatch;
@@ -144,6 +143,8 @@ public class UiRuntimeTest {
         });
 
         assertTrue(latch.await(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS));
-        assertNull(failure.get());
+        if (failure.get() != null) {
+            throw new AssertionError("JavaFX action failed", failure.get());
+        }
     }
 }
