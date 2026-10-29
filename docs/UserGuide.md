@@ -77,7 +77,7 @@ while retaining the benefits of a graphical user interface (GUI).
   mistakes are not silently ignored.
 
 * `undo` and `redo` also reject extra parameters. Their history lasts only until the app closes. A new saved change
-  after `undo` clears the redo history. Failed saves do not enter history until a later save succeeds.
+  after `undo` clears the redo history. A change that fails to save is not applied and does not enter history.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </div>
@@ -165,12 +165,8 @@ Format: `note --id DEBTOR_ID --text NOTE_TEXT`
   Unknown options before `--text` or in the `--id` value are rejected.
 * The note is saved with the debtor and is preserved after restarting the application.
 * Repeating the same note records a separate interaction each time. Editing the debtor preserves all existing notes.
-* If saving fails, OSPS reports an error, but the note remains in memory during the current session. It is not
-  guaranteed to be on disk or to survive a restart. Resolve the save problem and verify the data after saving
-  successfully. Check the profile before entering the note again to avoid adding a duplicate.
-  Once the save problem is resolved, the next successful data-changing command or the `exit` command retries saving.
-  If the `exit` retry fails, OSPS reports an error and does not complete the exit.
-  Read-only commands such as `show` and `list` do not retry a failed save.
+* If saving fails, OSPS reports an error and does not add the note to the in-memory record or replace the saved file.
+  Resolve the save problem, then run the note command again. The `exit` command does not retry a failed command.
 
 Example:
 * `note --id 1 --text Called debtor, promised payment on Friday.`
@@ -280,14 +276,12 @@ Format: `clear`
 ### Undoing and redoing changes: `undo`, `redo`
 
 `undo` restores the previous successfully saved debtor data. `redo` reapplies an undone change. These commands cover
-adds, edits, notes, deletes, and clears. The history is session-only and keeps at most 100 states. Undoing or redoing
-does not rewind the next debtor ID, so IDs are never reused. A `find` filter remains active while data is restored.
-After undo, a new saved change discards redo history. If saving fails, the in-memory change remains; it enters history
-only after a later save succeeds. Exit retries pending saves. A successful retry may record multiple in-memory
-mutations as one saved state. Undo and redo are blocked while a failed save is pending, so they cannot discard that
-in-memory mutation before it is retried. If saving an undo or redo fails, the history move remains in memory and another
-undo or redo is allowed; the next save-triggering command or exit retries the restored data. A damaged or partial file is
-possible if the process fails during a write.
+adds, edits, notes, deletes, and clears. The history is session-only and keeps at most 100 states, so you can undo up to 99 changes. Undoing or redoing
+does not rewind the next debtor ID, so IDs are never reused. After every successful `undo` or `redo`, OSPS clears any
+`find` filter and lists all debtors in ID order, so displayed indices refer to the full list.
+After undo, a new saved change discards redo history. If a change, `undo` or `redo` cannot be saved, OSPS reports an
+error and leaves your records, the undo and redo history, and the saved file exactly as they were. Resolve the problem
+and run the command again. `exit` does not retry a failed command.
 
 Format: `undo` or `redo`
 
@@ -300,6 +294,10 @@ Format: `exit`
 ### Saving the data
 
 OSPS automatically saves data after every successful data-changing command. You do not need to save manually.
+
+If a data-changing command cannot be saved, OSPS reports an error and leaves the in-memory records and existing data
+file unchanged. Resolve the problem and re-enter that command. OSPS replaces the data file only when the file system
+supports an atomic replacement; otherwise the save fails without overwriting the existing file.
 
 ### Editing the data file
 

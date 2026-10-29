@@ -15,11 +15,6 @@ public class UndoCommand extends Command {
     }
 
     @Override
-    public boolean isHistoryNavigation() {
-        return true;
-    }
-
-    @Override
     public CommandResult execute(Model model) throws CommandException {
         if (!model.canUndoAddressBook()) {
             throw new CommandException(MESSAGE_FAILURE);

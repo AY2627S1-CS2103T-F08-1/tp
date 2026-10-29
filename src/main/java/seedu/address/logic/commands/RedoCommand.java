@@ -15,11 +15,6 @@ public class RedoCommand extends Command {
     }
 
     @Override
-    public boolean isHistoryNavigation() {
-        return true;
-    }
-
-    @Override
     public CommandResult execute(Model model) throws CommandException {
         if (!model.canRedoAddressBook()) {
             throw new CommandException(MESSAGE_FAILURE);

@@ -74,16 +74,12 @@ public interface Model {
     default void commitAddressBook() {
     }
 
-    /** Records a previously captured address-book state after it becomes durable. */
-    default void commitAddressBook(ReadOnlyAddressBook state) {
-    }
-
     /** Returns whether an earlier address-book state can be restored. */
     default boolean canUndoAddressBook() {
         return false;
     }
 
-    /** Restores the preceding address-book state. */
+    /** Restores the preceding address-book state and shows all debtors in persistent-ID order. */
     default void undoAddressBook() {
         throw new IllegalStateException("Undo is not supported.");
     }
@@ -93,8 +89,18 @@ public interface Model {
         return false;
     }
 
-    /** Restores the next address-book state. */
+    /** Restores the next address-book state and shows all debtors in persistent-ID order. */
     default void redoAddressBook() {
         throw new IllegalStateException("Redo is not supported.");
+    }
+
+    /** Returns an isolated model with the same address-book data, history and active view for a save transaction. */
+    default Model createTransactionCopy() {
+        throw new UnsupportedOperationException("This model does not support save transactions.");
+    }
+
+    /** Publishes data, history and view state from a successfully persisted transaction candidate. */
+    default void publishTransaction(Model candidate) {
+        throw new UnsupportedOperationException("This model does not support save transactions.");
     }
 }

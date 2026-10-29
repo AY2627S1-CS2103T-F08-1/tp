@@ -103,7 +103,7 @@ public class ModelManagerTest {
     }
 
     @Test
-    public void undoRedo_restoresDataButNeverReusesIdsAndKeepsFilter() {
+    public void undoRedo_restoresDataNeverReusesIdsAndResetsView() {
         modelManager.addPerson(ALICE);
         modelManager.commitAddressBook();
         int firstId = modelManager.getAddressBook().getPersonList().get(0).getDebtorId();
@@ -114,8 +114,9 @@ public class ModelManagerTest {
         assertTrue(modelManager.canUndoAddressBook());
         modelManager.undoAddressBook();
         assertEquals(1, modelManager.getAddressBook().getPersonList().size());
-        assertEquals(0, modelManager.getFilteredPersonList().size());
+        assertEquals(1, modelManager.getFilteredPersonList().size());
         assertTrue(modelManager.canRedoAddressBook());
+        modelManager.updateFilteredPersonList(person -> false);
         modelManager.redoAddressBook();
         assertEquals(0, modelManager.getAddressBook().getPersonList().size());
         modelManager.undoAddressBook();

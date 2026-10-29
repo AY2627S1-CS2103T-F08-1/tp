@@ -17,12 +17,14 @@ import java.math.BigInteger;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import javafx.collections.transformation.SortedList;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.DeleteCommand;
@@ -183,7 +185,7 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_noteStorageThrowsIoException_keepsNoteInMemoryButNotOnDisk() throws Exception {
+    public void execute_noteStorageThrowsIoException_keepsModelAndDiskUnchanged() throws Exception {
         Person debtor = model.addPerson(new PersonBuilder().withName("Alice Tan").build());
         Path savedAddressBookPath = temporaryFolder.resolve("addressBook.json");
         new JsonAddressBookStorage(savedAddressBookPath).saveAddressBook(model.getAddressBook());
@@ -203,9 +205,10 @@ public class LogicManagerTest {
                 String.format(LogicManager.FILE_OPS_ERROR_FORMAT, DUMMY_IO_EXCEPTION.getMessage()), () ->
                         logic.execute(noteCommand));
 
-        Person updatedDebtor = model.getAddressBook().getPersonList().getFirst();
-        assertEquals(1, updatedDebtor.getInteractionNotes().size());
-        assertEquals(noteText, updatedDebtor.getInteractionNotes().getFirst().getText());
+        Person unchangedDebtor = model.getAddressBook().getPersonList().getFirst();
+        assertTrue(unchangedDebtor.getInteractionNotes().isEmpty());
+        assertEquals(2, model.getAddressBook().getNextDebtorId());
+        assertEquals(List.of(unchangedDebtor), model.getFilteredPersonList());
         assertEquals(originalSavedData, Files.readString(savedAddressBookPath));
         JsonAddressBookStorage savedStorage = new JsonAddressBookStorage(savedAddressBookPath);
         Person reloadedDebtor = savedStorage.readAddressBook().get().getPersonList().getFirst();
@@ -284,22 +287,28 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_saveFailsThenStorageRecovers_exitRetriesPendingChanges() throws Exception {
+    public void execute_saveFailsThenStorageRecovers_reissueRetriesCommand() throws Exception {
         Path addressBookPath = temporaryFolder.resolve("recoveringAddressBook.json");
         FailsOnceAddressBookStorage addressBookStorage = new FailsOnceAddressBookStorage(addressBookPath);
-        Model retryModel = new ModelManager();
+        ModelManager retryModel = new ModelManager();
         Logic retryingLogic = createLogic(retryModel, addressBookStorage);
         String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
                 + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
 
         assertThrows(CommandException.class, () -> retryingLogic.execute(addCommand));
         assertEquals(1, addressBookStorage.getSaveAttemptCount());
+        assertTrue(retryModel.getAddressBook().getPersonList().isEmpty());
+        assertEquals(1, retryModel.getAddressBook().getNextDebtorId());
+        assertFalse(Files.exists(addressBookPath));
 
         retryingLogic.execute("list");
         assertEquals(1, addressBookStorage.getSaveAttemptCount());
 
         CommandResult exitResult = retryingLogic.execute("exit");
         assertTrue(exitResult.isExit());
+        assertEquals(1, addressBookStorage.getSaveAttemptCount());
+
+        retryingLogic.execute(addCommand);
         assertEquals(2, addressBookStorage.getSaveAttemptCount());
         assertEquals(List.of(new PersonBuilder(AMY).withTags().build()),
                 addressBookStorage.readAddressBook().orElseThrow().getPersonList());
@@ -361,7 +370,7 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_findDeleteUsesDisplayedIndexAndUndoRedoKeepsFilter() throws Exception {
+    public void execute_findDeleteUsesDisplayedIndexAndUndoRedoShowAllInIdOrder() throws Exception {
         logic.execute("add n/Amy Smith p/90111111 e/amy@example.com a/1 Main Street");
         logic.execute("add n/Bob Jones p/90222222 e/bob@example.com a/2 Main Street");
         int bobId = model.getAddressBook().getPersonList().stream()
@@ -374,9 +383,61 @@ public class LogicManagerTest {
         assertEquals(1, model.getAddressBook().getPersonList().size());
         assertEquals(0, model.getFilteredPersonList().size());
         logic.execute("undo");
-        assertEquals(List.of(bobId), model.getFilteredPersonList().stream().map(Person::getDebtorId).toList());
+        assertEquals(2, model.getFilteredPersonList().size());
+        assertTrue(model.getFilteredPersonList().stream().anyMatch(person -> person.getDebtorId() == bobId));
+        assertDisplayedInIdOrder();
+        logic.execute("find Bob");
         logic.execute("redo");
-        assertEquals(0, model.getFilteredPersonList().size());
+        assertEquals(1, model.getFilteredPersonList().size());
+        assertEquals("Amy Smith", model.getFilteredPersonList().get(0).getName().fullName);
+    }
+
+    @Test
+    public void execute_undoRedoAfterFindShowsAllDebtorsAndDisplayedIndicesFollowIdOrder() throws Exception {
+        logic.execute("add n/Amy Smith p/90111111 e/amy@example.com a/1 Main Street");
+        logic.execute("add n/Bob Jones p/90222222 e/bob@example.com a/2 Main Street");
+        logic.execute("add n/Carol Lee p/90333333 e/carol@example.com a/3 Main Street");
+
+        logic.execute("find Carol");
+        assertEquals(1, model.getFilteredPersonList().size());
+        logic.execute("undo");
+        assertEquals(List.of("Amy Smith", "Bob Jones"), displayedNames());
+        assertDisplayedInIdOrder();
+
+        logic.execute("find Amy");
+        logic.execute("redo");
+        assertEquals(List.of("Amy Smith", "Bob Jones", "Carol Lee"), displayedNames());
+        assertDisplayedInIdOrder();
+
+        // The displayed index after undo/redo addresses the full list, not the earlier search result.
+        logic.execute("delete 2");
+        assertEquals(List.of("Amy Smith", "Carol Lee"),
+                model.getAddressBook().getPersonList().stream().map(p -> p.getName().fullName).toList());
+    }
+
+    @Test
+    public void execute_undoRedoAfterNonDefaultSortRestoresIdOrder() throws Exception {
+        logic.execute("add n/Zed Tan p/90111111 e/zed@example.com a/1 Main Street");
+        logic.execute("add n/Amy Smith p/90222222 e/amy@example.com a/2 Main Street");
+        // The displayed list is a SortedList; no command changes its order yet, so sort it directly.
+        SortedList<Person> displayedList = (SortedList<Person>) model.getFilteredPersonList();
+        displayedList.setComparator(Comparator.comparing(person -> person.getName().fullName));
+        assertEquals(List.of("Amy Smith", "Zed Tan"), displayedNames());
+
+        logic.execute("undo");
+        assertEquals(List.of("Zed Tan"), displayedNames());
+        logic.execute("redo");
+        assertEquals(List.of("Zed Tan", "Amy Smith"), displayedNames());
+        assertDisplayedInIdOrder();
+    }
+
+    private List<String> displayedNames() {
+        return model.getFilteredPersonList().stream().map(person -> person.getName().fullName).toList();
+    }
+
+    private void assertDisplayedInIdOrder() {
+        List<Integer> ids = model.getFilteredPersonList().stream().map(Person::getDebtorId).toList();
+        assertEquals(ids.stream().sorted().toList(), ids);
     }
 
     @Test
@@ -417,7 +478,7 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_failedMutationIsNotHistoryUntilRetryPersistsIt() throws Exception {
+    public void execute_failedMutationIsNotHistoryAndReissueIs() throws Exception {
         FailsOnceAddressBookStorage addressBookStorage = new FailsOnceAddressBookStorage(
                 temporaryFolder.resolve("failedThenSaved.json"));
         Logic retryingLogic = createLogic(model, addressBookStorage);
@@ -425,15 +486,19 @@ public class LogicManagerTest {
                 + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
         assertThrows(CommandException.class, () -> retryingLogic.execute(addAmy));
         assertFalse(model.canUndoAddressBook());
+        assertFalse(model.canRedoAddressBook());
 
         retryingLogic.execute("exit");
+        assertFalse(model.canUndoAddressBook());
+
+        retryingLogic.execute(addAmy);
         assertTrue(model.canUndoAddressBook());
         retryingLogic.execute("undo");
         assertEquals(0, model.getAddressBook().getPersonList().size());
     }
 
     @Test
-    public void execute_failedMutationThenSuccessfulMutation_persistsOneUndoableState() throws Exception {
+    public void execute_failedMutationThenSuccessfulMutation_addsOnlyTheSuccessfulState() throws Exception {
         FailsOnceAddressBookStorage addressBookStorage = new FailsOnceAddressBookStorage(
                 temporaryFolder.resolve("failedThenMutated.json"));
         Logic retryingLogic = createLogic(model, addressBookStorage);
@@ -443,68 +508,122 @@ public class LogicManagerTest {
         assertFalse(model.canUndoAddressBook());
 
         retryingLogic.execute("add n/Bob Smith p/88888888 e/bobsmith@example.com a/123 Main Street");
-        assertEquals(2, addressBookStorage.readAddressBook().orElseThrow().getPersonList().size());
+        assertEquals(1, addressBookStorage.readAddressBook().orElseThrow().getPersonList().size());
         assertTrue(model.canUndoAddressBook());
         retryingLogic.execute("undo");
         assertEquals(0, model.getAddressBook().getPersonList().size());
+        assertFalse(model.canUndoAddressBook());
         retryingLogic.execute("redo");
-        assertEquals(2, model.getAddressBook().getPersonList().size());
+        assertEquals(1, model.getAddressBook().getPersonList().size());
     }
 
     @Test
-    public void execute_pendingFailedMutation_blocksUndoUntilSaveRetry() throws Exception {
-        Model pendingModel = new ModelManager();
-        FailsOnAttemptAddressBookStorage storage = new FailsOnAttemptAddressBookStorage(
-                temporaryFolder.resolve("pendingUndo.json"), 2);
-        Logic pendingLogic = createLogic(pendingModel, storage);
+    public void execute_failedMutationAfterSuccess_leavesHistoryMemoryAndDiskUnchanged() throws Exception {
+        Model failingModel = new ModelManager();
+        Path path = temporaryFolder.resolve("failedSecondMutation.json");
+        FailsOnAttemptAddressBookStorage storage = new FailsOnAttemptAddressBookStorage(path, 2);
+        Logic failingLogic = createLogic(failingModel, storage);
         String addAmy = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
                 + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
-        pendingLogic.execute(addAmy);
-        assertThrows(CommandException.class, () -> pendingLogic.execute(
-                "add n/Bob Smith p/88888888 e/bobsmith@example.com a/123 Main Street"));
-        assertEquals(2, pendingModel.getAddressBook().getPersonList().size());
+        failingLogic.execute(addAmy);
+        String savedBytes = Files.readString(path);
 
-        assertThrows(CommandException.class, () -> pendingLogic.execute("undo"));
-        assertEquals(2, pendingModel.getAddressBook().getPersonList().size());
-        pendingLogic.execute("exit");
-        pendingLogic.execute("undo");
-        assertEquals(1, pendingModel.getAddressBook().getPersonList().size());
+        assertThrows(CommandException.class, () -> failingLogic.execute(
+                "add n/Bob Smith p/88888888 e/bobsmith@example.com a/123 Main Street"));
+        assertEquals(1, failingModel.getAddressBook().getPersonList().size());
+        assertEquals(savedBytes, Files.readString(path));
+        assertTrue(failingModel.canUndoAddressBook());
+        assertFalse(failingModel.canRedoAddressBook());
+
+        failingLogic.execute("undo");
+        assertEquals(0, failingModel.getAddressBook().getPersonList().size());
+        assertFalse(failingModel.canUndoAddressBook());
     }
 
     @Test
-    public void execute_undoSaveFails_memoryMoveRemainsAndRedoIsAllowed() throws Exception {
+    public void execute_branchAfterUndoDropsRedo() throws Exception {
+        logic.execute("add n/Amy Smith p/90111111 e/amy@example.com a/1 Main Street");
+        logic.execute("undo");
+        assertTrue(model.canRedoAddressBook());
+        logic.execute("add n/Bob Jones p/90222222 e/bob@example.com a/2 Main Street");
+        assertFalse(model.canRedoAddressBook());
+        assertThrows(CommandException.class, () -> logic.execute("redo"));
+    }
+
+    @Test
+    public void execute_readOnlyAndFailedCommandsAddNoHistory() throws Exception {
+        logic.execute("add n/Amy Smith p/90111111 e/amy@example.com a/1 Main Street");
+        logic.execute("undo");
+        logic.execute("redo");
+        for (String readOnly : List.of("list", "find Amy", "help")) {
+            logic.execute(readOnly);
+        }
+        assertThrows(CommandException.class, () -> logic.execute("delete 99"));
+        assertThrows(ParseException.class, () -> logic.execute("edit"));
+        assertFalse(model.canRedoAddressBook());
+        logic.execute("undo");
+        assertFalse(model.canUndoAddressBook());
+    }
+
+    @Test
+    public void execute_historyIsBounded() throws Exception {
+        for (int i = 0; i < 105; i++) {
+            String name = "Person " + (char) ('a' + i / 26) + (char) ('a' + i % 26);
+            logic.execute("add n/" + name + " p/9" + String.format("%07d", i)
+                    + " e/p" + i + "@example.com a/" + i + " Main Street");
+        }
+        int undoCount = 0;
+        while (model.canUndoAddressBook()) {
+            logic.execute("undo");
+            undoCount++;
+        }
+        // 100 retained states, including the initial one, allow 99 undo steps.
+        assertEquals(99, undoCount);
+    }
+
+    @Test
+    public void execute_undoSaveFails_leavesMemoryHistoryAndDiskUnchanged() throws Exception {
         Model undoModel = new ModelManager();
-        FailsOnAttemptAddressBookStorage storage = new FailsOnAttemptAddressBookStorage(
-                temporaryFolder.resolve("undoRetry.json"), 2);
+        Path path = temporaryFolder.resolve("undoRetry.json");
+        FailsOnAttemptAddressBookStorage storage = new FailsOnAttemptAddressBookStorage(path, 2);
         Logic undoLogic = createLogic(undoModel, storage);
         String addAmy = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
                 + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
         undoLogic.execute(addAmy);
+        String savedBytes = Files.readString(path);
 
         assertThrows(CommandException.class, () -> undoLogic.execute("undo"));
-        assertEquals(0, undoModel.getAddressBook().getPersonList().size());
-        assertTrue(undoModel.canRedoAddressBook());
-        undoLogic.execute("redo");
         assertEquals(1, undoModel.getAddressBook().getPersonList().size());
-        assertEquals(1, storage.readAddressBook().orElseThrow().getPersonList().size());
+        assertTrue(undoModel.canUndoAddressBook());
+        assertFalse(undoModel.canRedoAddressBook());
+        assertEquals(savedBytes, Files.readString(path));
+
+        undoLogic.execute("undo");
+        assertEquals(0, undoModel.getAddressBook().getPersonList().size());
+        assertEquals(0, storage.readAddressBook().orElseThrow().getPersonList().size());
     }
 
     @Test
-    public void execute_redoSaveFails_memoryMoveRemainsAndUndoIsAllowed() throws Exception {
+    public void execute_redoSaveFails_leavesMemoryHistoryAndDiskUnchanged() throws Exception {
         Model redoModel = new ModelManager();
-        FailsOnAttemptAddressBookStorage storage = new FailsOnAttemptAddressBookStorage(
-                temporaryFolder.resolve("redoRetry.json"), 3);
+        Path path = temporaryFolder.resolve("redoRetry.json");
+        FailsOnAttemptAddressBookStorage storage = new FailsOnAttemptAddressBookStorage(path, 3);
         Logic redoLogic = createLogic(redoModel, storage);
         String addAmy = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
                 + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
         redoLogic.execute(addAmy);
         redoLogic.execute("undo");
+        String savedBytes = Files.readString(path);
 
         assertThrows(CommandException.class, () -> redoLogic.execute("redo"));
-        assertEquals(1, redoModel.getAddressBook().getPersonList().size());
-        redoLogic.execute("undo");
         assertEquals(0, redoModel.getAddressBook().getPersonList().size());
-        assertEquals(0, storage.readAddressBook().orElseThrow().getPersonList().size());
+        assertTrue(redoModel.canRedoAddressBook());
+        assertFalse(redoModel.canUndoAddressBook());
+        assertEquals(savedBytes, Files.readString(path));
+
+        redoLogic.execute("redo");
+        assertEquals(1, redoModel.getAddressBook().getPersonList().size());
+        assertEquals(1, storage.readAddressBook().orElseThrow().getPersonList().size());
     }
 
     @Test
@@ -521,7 +640,7 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_deleteStorageThrowsIoException_reportsFailureWithoutRollback() {
+    public void execute_deleteStorageThrowsIoException_leavesModelAndViewUnchanged() {
         model.addPerson(AMY);
         Path failingAddressBookPath = temporaryFolder.resolve("failingAddressBook.json");
         JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(failingAddressBookPath) {
@@ -534,9 +653,36 @@ public class LogicManagerTest {
                 new JsonUserPrefsStorage(temporaryFolder.resolve("failingUserPrefs.json"));
         logic = new LogicManager(model, new StorageManager(addressBookStorage, userPrefsStorage));
 
-        ModelManager expectedModel = new ModelManager();
+        ModelManager expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
         assertCommandFailure("delete 1", CommandException.class,
                 String.format(LogicManager.FILE_OPS_ERROR_FORMAT, DUMMY_IO_EXCEPTION.getMessage()), expectedModel);
+        assertEquals(List.of(AMY), model.getFilteredPersonList());
+        assertEquals(2, model.getAddressBook().getNextDebtorId());
+        assertFalse(Files.exists(failingAddressBookPath));
+    }
+
+    @Test
+    public void execute_failedDelete_keepsActiveFilteredView() throws Exception {
+        model.addPerson(AMY);
+        model.addPerson(BOB);
+        logic.execute("find Amy");
+        List<Person> originalView = List.copyOf(model.getFilteredPersonList());
+        int originalNextId = model.getAddressBook().getNextDebtorId();
+        Path path = temporaryFolder.resolve("filteredFailure.json");
+        JsonAddressBookStorage failingStorage = new JsonAddressBookStorage(path) {
+            @Override
+            public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+                throw DUMMY_IO_EXCEPTION;
+            }
+        };
+        logic = createLogic(model, failingStorage);
+
+        assertThrows(CommandException.class, () -> logic.execute("delete 1"));
+
+        assertEquals(List.of(AMY, BOB), model.getAddressBook().getPersonList());
+        assertEquals(originalView, model.getFilteredPersonList());
+        assertEquals(originalNextId, model.getAddressBook().getNextDebtorId());
+        assertFalse(Files.exists(path));
     }
 
     @Test
@@ -638,10 +784,9 @@ public class LogicManagerTest {
         // Triggers the saveAddressBook method by executing an add command
         String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
                 + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
-        Person expectedPerson = new PersonBuilder(AMY).withTags().build();
-        ModelManager expectedModel = new ModelManager();
-        expectedModel.addPerson(expectedPerson);
+        ModelManager expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
+        assertEquals(model.getAddressBook().getNextDebtorId(), expectedModel.getAddressBook().getNextDebtorId());
     }
 
     private void assertMutatingCommandAttemptsSave(String commandText, Model testModel) {

@@ -117,7 +117,7 @@ How the `Logic` component works:
 
 `DeleteCommandParser` accepts a positive decimal integer and strips leading zeroes. Empty input, non-digits, zero, and negative values produce an invalid-command-format error with the command usage. The parser keeps the normalized index as decimal text, so very large inputs do not overflow an integer during parsing. `DeleteCommand` checks it against the current displayed-list size using decimal length and lexical comparison before converting an in-range value to an integer. An index outside the list produces an actionable range error; when the list is empty, the error suggests running `list` or adjusting the `find` query. For an index longer than 100 digits, feedback shows its first 20 digits and total digit count. These parse and range failures do not change the model or trigger a save.
 
-For an in-range index, `DeleteCommand` removes the selected `Person` through `Model#deletePerson`. The model removes that person from the address book, which updates the observable displayed list. The success message includes the deleted debtor's ID, name, phone, email, address, outstanding amount, and tags. `LogicManager` then saves the updated address book; a storage failure is reported as a command error, but the in-memory removal is not rolled back.
+For an in-range index, `DeleteCommand` removes the selected `Person` through `Model#deletePerson`. For persistence-bound commands, `LogicManager` executes against an isolated copy of the model that retains the active filter, saves the candidate, and only then publishes it to the live observable model. The success message includes the deleted debtor's ID, name, phone, email, address, outstanding amount, and tags. A storage failure leaves the live model and displayed list unchanged.
 
 Interaction notes are part of the `Person` record. Deleting a debtor therefore removes the profile and its complete interaction history from the active address book and, after a successful save, from the persisted data. `show --id ID` can display profiles only for active debtors, so it reports that the debtor may have been deleted after removal. The model keeps up to 100 in-session address-book snapshots for undo/redo; snapshots include `nextDebtorId`, while restore preserves the allocator's high-water mark so IDs are never reused.
 
@@ -181,12 +181,18 @@ reverses a copy of the insertion-ordered list before applying the ordered stream
 timestamp. Stability preserves reverse insertion order for equal timestamps. Editing a debtor preserves the full
 history. `NoteHistoryWorkflowTest` verifies these behaviours together across editing, JSON reload and `show`.
 
-`LogicManager` applies a valid `note` command to the in-memory model before saving. If saving fails, it reports a
-command error but does not roll back the in-memory note. A failure before writing leaves the prior file unchanged;
-the file-writing path is not atomic, so a failure during writing does not guarantee an intact prior file.
-Pending changes are retried by the next successful data-changing command or the `exit` command, after storage access
-is restored. Read-only commands do not retry the write. The workflow tests simulate both an I/O failure and denied
-access before writing, then check that an exit retry saves the existing note exactly once.
+`LogicManager` runs each persistence-bound command against a candidate model that copies the current filter. It saves
+the candidate before publishing its records and view to the live model. If saving fails, the live records, next-ID
+state, and displayed view are unchanged; the user must re-enter the command after resolving the problem. `exit` does
+not retry a failed command.
+
+`JsonAddressBookStorage` serializes the complete JSON before writing, writes it to a temporary sibling file, forces
+the file channel, then replaces the destination with `ATOMIC_MOVE` and `REPLACE_EXISTING`. If the file system does
+not support an atomic move, saving fails closed and the temporary file is removed best-effort. No non-atomic
+overwrite fallback is attempted. This protects the previous file from ordinary write and replacement failures; it
+does not promise crash durability or recovery from power loss. The storage test injects unsupported atomic move, and
+logic tests inject save exceptions to check that memory, the active filtered view, next-ID state, and existing disk
+bytes remain unchanged.
 
 ### Contact validation and preference recovery
 
@@ -285,20 +291,23 @@ the search predicate with `Model#PREDICATE_SHOW_ALL_PERSONS`.
 ### Undo/redo feature
 
 `ModelManager` keeps a bounded list of up to 100 `AddressBook` snapshots and a pointer to the current snapshot. It starts
-with the loaded address book, including `nextDebtorId`. `LogicManager` commits a new snapshot only after the corresponding
-storage save succeeds. A new snapshot discards any redo branch; repeated identical states are ignored. `undo` and `redo`
-move the pointer, restore address-book data, and save the restored state. The filtered-list predicate remains in place.
+with the loaded address book, including `nextDebtorId`. A snapshot is a copy of the whole `AddressBook`, so any field
+`Person` gains is captured without changes to the history code. A new snapshot discards any redo branch; repeated
+identical states are ignored. `undo` and `redo` move the pointer, restore address-book data, and save the restored state.
+After either one, `ModelManager` resets the filtered-list predicate and the sorted-list comparator, so every debtor is
+shown in persistent-ID order.
 
 The allocator is monotonic across restores: `AddressBook.resetData` preserves the greater of its previous high-water mark,
 the restored state's next ID, and the restored records' IDs. Undoing an add removes the debtor without making its ID
 available again. History is held only in memory and starts fresh from persisted data when the application restarts.
 
-If saving a data mutation fails, the mutation remains in memory and is not immediately added to history. A later successful
-save or exit retry records the then-current state. Undo and redo are blocked while such a mutation is pending, so they
-cannot silently discard it. A successful retry can group multiple pending mutations into one history state. If saving
-fails after undo or redo, its pointer movement remains in memory and further history navigation is allowed; the data is
-retried on the next save-triggering command or exit. The storage writer is not atomic, so a process failure during a
-write can leave a partial file.
+History takes part in the save transaction described under persistence. `LogicManager` runs a persistence-bound command,
+including `undo` and `redo`, on a candidate model created by `Model#createTransactionCopy`. The copy carries the data,
+the history list and pointer, the filter and the comparator. A new snapshot is committed on the candidate before the
+save. The candidate replaces the live model, history included, only after `JsonAddressBookStorage` has replaced the file.
+If saving fails, the live data, history pointer, view and previous file bytes are all unchanged. Snapshots are never
+mutated after they are recorded, so the live model and candidate can share them. The save is atomic against ordinary write
+failures but is not a promise of crash durability.
 
 `find` and `list` do not add history states. Add, edit, delete, note, and clear changes are undoable after they save
 successfully.

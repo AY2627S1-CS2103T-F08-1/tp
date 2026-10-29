@@ -23,11 +23,6 @@ public abstract class Command {
         return shouldSaveAddressBook();
     }
 
-    /** Returns whether the command navigates existing undo history. */
-    public boolean isHistoryNavigation() {
-        return false;
-    }
-
     /**
      * Executes the command and returns the result message.
      *

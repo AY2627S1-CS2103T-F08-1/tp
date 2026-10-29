@@ -21,6 +21,7 @@ import seedu.address.model.person.Person;
  */
 public class ModelManager implements Model {
     private static final int MAX_HISTORY_SIZE = 100;
+    private static final Comparator<Person> DEFAULT_ORDER = Comparator.comparingInt(Person::getDebtorId);
     private static final Logger logger = LogsCenter.getLogger(ModelManager.class);
 
     private final AddressBook addressBook;
@@ -29,6 +30,7 @@ public class ModelManager implements Model {
     private final SortedList<Person> sortedPersons;
     private final List<AddressBook> addressBookHistory = new ArrayList<>();
     private int historyPointer;
+    private Predicate<Person> personListPredicate = PREDICATE_SHOW_ALL_PERSONS;
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -41,7 +43,7 @@ public class ModelManager implements Model {
         this.addressBook = new AddressBook(addressBook);
         this.userPrefs = new UserPrefs(userPrefs);
         filteredPersons = new FilteredList<>(this.addressBook.getPersonList());
-        sortedPersons = new SortedList<>(filteredPersons, Comparator.comparingInt(Person::getDebtorId));
+        sortedPersons = new SortedList<>(filteredPersons, DEFAULT_ORDER);
         addressBookHistory.add(new AddressBook(this.addressBook));
     }
 
@@ -118,17 +120,13 @@ public class ModelManager implements Model {
     @Override
     public void updateFilteredPersonList(Predicate<Person> predicate) {
         requireNonNull(predicate);
+        personListPredicate = predicate;
         filteredPersons.setPredicate(predicate);
     }
 
     @Override
     public void commitAddressBook() {
-        commitAddressBook(addressBook);
-    }
-
-    @Override
-    public void commitAddressBook(ReadOnlyAddressBook state) {
-        AddressBook current = new AddressBook(state);
+        AddressBook current = new AddressBook(addressBook);
         AddressBook latest = addressBookHistory.get(historyPointer);
         if (latest.equals(current) && latest.getNextDebtorId() == current.getNextDebtorId()) {
             return;
@@ -155,6 +153,7 @@ public class ModelManager implements Model {
             throw new IllegalStateException("No address-book state to undo.");
         }
         addressBook.resetData(addressBookHistory.get(--historyPointer));
+        resetView();
     }
 
     @Override
@@ -168,6 +167,39 @@ public class ModelManager implements Model {
             throw new IllegalStateException("No address-book state to redo.");
         }
         addressBook.resetData(addressBookHistory.get(++historyPointer));
+        resetView();
+    }
+
+    /** Shows every debtor in persistent-ID order, discarding any active filter. */
+    private void resetView() {
+        updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
+        sortedPersons.setComparator(DEFAULT_ORDER);
+    }
+
+    @Override
+    public Model createTransactionCopy() {
+        ModelManager candidate = new ModelManager(addressBook, userPrefs);
+        // Snapshots are never mutated after they are recorded, so the candidate can share them.
+        candidate.addressBookHistory.clear();
+        candidate.addressBookHistory.addAll(addressBookHistory);
+        candidate.historyPointer = historyPointer;
+        candidate.updateFilteredPersonList(personListPredicate);
+        candidate.sortedPersons.setComparator(sortedPersons.getComparator());
+        return candidate;
+    }
+
+    @Override
+    public void publishTransaction(Model candidate) {
+        requireNonNull(candidate);
+        if (!(candidate instanceof ModelManager candidateManager)) {
+            throw new IllegalArgumentException("Transaction candidate must be a ModelManager.");
+        }
+        addressBook.resetData(candidateManager.addressBook);
+        addressBookHistory.clear();
+        addressBookHistory.addAll(candidateManager.addressBookHistory);
+        historyPointer = candidateManager.historyPointer;
+        updateFilteredPersonList(candidateManager.personListPredicate);
+        sortedPersons.setComparator(candidateManager.sortedPersons.getComparator());
     }
 
     @Override

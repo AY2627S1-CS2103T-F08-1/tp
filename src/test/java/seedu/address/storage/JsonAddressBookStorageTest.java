@@ -2,6 +2,7 @@ package seedu.address.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.HOON;
@@ -9,6 +10,8 @@ import static seedu.address.testutil.TypicalPersons.IDA;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
 import java.io.IOException;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -152,6 +155,38 @@ public class JsonAddressBookStorageTest {
         readBack = jsonAddressBookStorage.readAddressBook().get(); // file path not specified
         assertEquals(original, new AddressBook(readBack));
 
+    }
+
+    @Test
+    public void saveAddressBook_atomicMoveUnsupported_keepsPreviousBytesAndDoesNotCreateTarget() throws Exception {
+        Path filePath = testFolder.resolve("atomicAddressBook.json");
+        JsonAddressBookStorage regularStorage = new JsonAddressBookStorage(filePath);
+        regularStorage.saveAddressBook(getTypicalAddressBook());
+        byte[] originalBytes = Files.readAllBytes(filePath);
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(filePath) {
+            @Override
+            void moveAtomically(Path source, Path target) throws IOException {
+                throw new AtomicMoveNotSupportedException(source.toString(), target.toString(), "test seam");
+            }
+        };
+
+        AddressBook replacement = new AddressBook();
+        assertThrows(AtomicMoveNotSupportedException.class, () -> storage.saveAddressBook(replacement));
+        org.junit.jupiter.api.Assertions.assertArrayEquals(originalBytes, Files.readAllBytes(filePath));
+        try (var files = Files.list(testFolder)) {
+            assertEquals(List.of(filePath), files.toList());
+        }
+
+        Path absentPath = testFolder.resolve("absent.json");
+        JsonAddressBookStorage absentStorage = new JsonAddressBookStorage(absentPath) {
+            @Override
+            void moveAtomically(Path source, Path target) throws IOException {
+                throw new AtomicMoveNotSupportedException(source.toString(), target.toString(), "test seam");
+            }
+        };
+        assertThrows(AtomicMoveNotSupportedException.class, () ->
+                absentStorage.saveAddressBook(getTypicalAddressBook()));
+        assertFalse(Files.exists(absentPath));
     }
 
     @Test
