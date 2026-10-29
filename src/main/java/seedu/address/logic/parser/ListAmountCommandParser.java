@@ -45,6 +45,9 @@ public final class ListAmountCommandParser implements Parser<ListAmountCommand> 
         if (rawValue.isEmpty()) {
             return Optional.empty();
         }
+        if (rawValue.get().chars().anyMatch(Character::isWhitespace)) {
+            throw new ParseException(ListAmountCommand.MESSAGE_UNEXPECTED_ARGUMENTS);
+        }
         return Optional.of(ParserUtil.parseOutstandingAmount(rawValue.get()));
     }
 }

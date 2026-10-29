@@ -63,6 +63,22 @@ public class ListAmountCommandParserTest {
                 String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListAmountCommand.MESSAGE_USAGE));
     }
 
+    @Test
+    public void parse_trailingArgumentAfterMinimum_failure() {
+        assertParseFailure(parser, " min/1 unexpected",
+                ListAmountCommand.MESSAGE_UNEXPECTED_ARGUMENTS);
+        assertParseFailure(parser, " min/1 unknown/value",
+                ListAmountCommand.MESSAGE_UNEXPECTED_ARGUMENTS);
+    }
+
+    @Test
+    public void parse_trailingArgumentAfterMaximum_failure() {
+        assertParseFailure(parser, " max/500 unexpected",
+                ListAmountCommand.MESSAGE_UNEXPECTED_ARGUMENTS);
+        assertParseFailure(parser, " min/1 max/500 unknown/value",
+                ListAmountCommand.MESSAGE_UNEXPECTED_ARGUMENTS);
+    }
+
     private ListAmountCommand command(String minimum, String maximum) {
         Optional<OutstandingAmount> minimumAmount = minimum == null
                 ? Optional.empty() : Optional.of(new OutstandingAmount(minimum));

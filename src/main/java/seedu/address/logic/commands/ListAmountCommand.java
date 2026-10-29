@@ -23,6 +23,8 @@ public final class ListAmountCommand extends Command {
             "1 debtor has an outstanding amount %s.";
     public static final String MESSAGE_MULTIPLE_MATCHES =
             "%d debtors have outstanding amounts %s.";
+    public static final String MESSAGE_UNEXPECTED_ARGUMENTS =
+            "Unexpected argument(s). Use only min/AMOUNT and max/AMOUNT.";
 
     private final OutstandingAmountInRangePredicate predicate;
 
