@@ -103,16 +103,17 @@ public final class FollowUpEvent {
     }
 
     private static LocalDateTime parseTimestamp(String timestamp) {
+        final LocalDateTime parsed;
         try {
-            LocalDateTime parsed = LocalDateTime.parse(timestamp, STORAGE_FORMATTER);
-            if (parsed.getYear() < 1 || parsed.getYear() > 9999) {
-                throw new DateTimeParseException("Year is outside 0001–9999", timestamp, 0);
-            }
-            return parsed;
-        } catch (DateTimeParseException | NullPointerException exception) {
+            parsed = LocalDateTime.parse(timestamp, STORAGE_FORMATTER);
+        } catch (DateTimeParseException exception) {
             throw new IllegalArgumentException("Follow-up event contains an invalid timestamp, action or date.",
                     exception);
         }
+        if (parsed.getYear() < 1 || parsed.getYear() > 9999) {
+            throw new IllegalArgumentException("Follow-up event contains an invalid timestamp, action or date.");
+        }
+        return parsed;
     }
 
     private static Action parseAction(String action) {
@@ -125,19 +126,20 @@ public final class FollowUpEvent {
     }
 
     private static LocalDate parseDate(String date) {
+        if (!date.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            throw new IllegalArgumentException("Follow-up event contains an invalid timestamp, action or date.");
+        }
+        final LocalDate parsed;
         try {
-            if (!date.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                throw new DateTimeParseException("Not a four-digit ISO date", date, 0);
-            }
-            LocalDate parsed = LocalDate.parse(date);
-            if (parsed.getYear() < 1) {
-                throw new DateTimeParseException("Year is outside 0001–9999", date, 0);
-            }
-            return parsed;
-        } catch (DateTimeParseException | NullPointerException exception) {
+            parsed = LocalDate.parse(date);
+        } catch (DateTimeParseException exception) {
             throw new IllegalArgumentException("Follow-up event contains an invalid timestamp, action or date.",
                     exception);
         }
+        if (parsed.getYear() < 1) {
+            throw new IllegalArgumentException("Follow-up event contains an invalid timestamp, action or date.");
+        }
+        return parsed;
     }
 
     @Override

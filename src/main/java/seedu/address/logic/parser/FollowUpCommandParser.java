@@ -73,15 +73,16 @@ public class FollowUpCommandParser implements Parser<FollowUpCommand> {
         if (!dateText.matches("\\d{4}-\\d{2}-\\d{2}")) {
             throw new ParseException(FollowUpEvent.MESSAGE_INVALID_DATE);
         }
+        final LocalDate parsedDate;
         try {
-            LocalDate parsedDate = LocalDate.parse(dateText);
-            if (parsedDate.getYear() < 1) {
-                throw new ParseException(FollowUpEvent.MESSAGE_INVALID_DATE);
-            }
-            return new FollowUpCommand(id, FollowUpCommand.Operation.SCHEDULE, Optional.of(parsedDate));
+            parsedDate = LocalDate.parse(dateText);
         } catch (DateTimeParseException exception) {
             throw new ParseException(FollowUpEvent.MESSAGE_INVALID_DATE);
         }
+        if (parsedDate.getYear() < 1) {
+            throw new ParseException(FollowUpEvent.MESSAGE_INVALID_DATE);
+        }
+        return new FollowUpCommand(id, FollowUpCommand.Operation.SCHEDULE, Optional.of(parsedDate));
     }
 
     private ParseException invalidFormat() {
