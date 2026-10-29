@@ -3,6 +3,7 @@ package seedu.address;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -16,7 +17,21 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.logic.commands.AddCommand;
+import seedu.address.logic.commands.ClearCommand;
+import seedu.address.logic.commands.Command;
+import seedu.address.logic.commands.ContactCommand;
+import seedu.address.logic.commands.DeleteCommand;
+import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.ExitCommand;
+import seedu.address.logic.commands.FindCommand;
+import seedu.address.logic.commands.HelpCommand;
+import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.NoteCommand;
+import seedu.address.logic.commands.RedoCommand;
+import seedu.address.logic.commands.ShowCommand;
+import seedu.address.logic.commands.SortCommand;
+import seedu.address.logic.commands.UndoCommand;
 import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.ui.HelpWindow;
 import seedu.address.ui.MainWindow;
@@ -52,6 +67,21 @@ public class BrandingTest {
             Map.entry("redo", List.of("redo")),
             Map.entry("help", List.of("help")),
             Map.entry("exit", List.of("exit")));
+    private static final Map<String, Class<? extends Command>> COMMAND_TYPES = Map.ofEntries(
+            Map.entry("add", AddCommand.class),
+            Map.entry("clear", ClearCommand.class),
+            Map.entry("contact", ContactCommand.class),
+            Map.entry("delete", DeleteCommand.class),
+            Map.entry("edit", EditCommand.class),
+            Map.entry("exit", ExitCommand.class),
+            Map.entry("find", FindCommand.class),
+            Map.entry("help", HelpCommand.class),
+            Map.entry("list", ListCommand.class),
+            Map.entry("note", NoteCommand.class),
+            Map.entry("redo", RedoCommand.class),
+            Map.entry("show", ShowCommand.class),
+            Map.entry("sort", SortCommand.class),
+            Map.entry("undo", UndoCommand.class));
 
     @Test
     public void releaseIdentity_matchesV14Branding() {
@@ -73,7 +103,7 @@ public class BrandingTest {
         Set<String> referenceSyntaxLines = HelpWindow.COMMAND_REFERENCE.lines()
                 .map(String::trim)
                 .filter(line -> !line.isEmpty())
-                .filter(line -> parserCommandWords.contains(line.split(" ", 2)[0]))
+                .filter(line -> Character.isLowerCase(line.charAt(0)))
                 .collect(Collectors.toSet());
         Set<String> referenceCommandWords = referenceSyntaxLines.stream()
                 .map(syntax -> syntax.split(" ", 2)[0])
@@ -102,8 +132,10 @@ public class BrandingTest {
                     .collect(Collectors.toSet());
             assertTrue(exercisedOptions.containsAll(documentedOptions));
             validExamples.forEach(validExample -> {
-                assertEquals(syntax.split(" ", 2)[0], validExample.split(" ", 2)[0]);
-                assertDoesNotThrow(() -> parser.parseCommand(validExample));
+                String commandWord = syntax.split(" ", 2)[0];
+                assertEquals(commandWord, validExample.split(" ", 2)[0]);
+                Command parsed = assertDoesNotThrow(() -> parser.parseCommand(validExample));
+                assertInstanceOf(COMMAND_TYPES.get(commandWord), parsed);
             });
         });
         Set<String> displayedExamples = HelpWindow.COMMAND_REFERENCE.lines()
@@ -120,7 +152,8 @@ public class BrandingTest {
                     .orElseThrow()
                     .getValue();
             assertTrue(examplesForSyntax.contains(example));
-            assertDoesNotThrow(() -> parser.parseCommand(example));
+            Command parsed = assertDoesNotThrow(() -> parser.parseCommand(example));
+            assertInstanceOf(COMMAND_TYPES.get(commandWord), parsed);
         });
     }
 }

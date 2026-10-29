@@ -77,7 +77,7 @@ public class AddressBookParser {
         Command parse(String arguments) throws ParseException;
     }
 
-    /** Exposes the immutable dispatch keys so cross-package UI/documentation contract tests use the real parser. */
+    /** Exposes the immutable dispatch keys to the cross-package {@code BrandingTest}. */
     public static Set<String> getSupportedCommandWords() {
         return COMMAND_PARSERS.keySet();
     }
