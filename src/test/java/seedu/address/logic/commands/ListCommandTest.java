@@ -18,6 +18,9 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.PersonSort;
+import seedu.address.model.person.PersonSort.Direction;
+import seedu.address.model.person.PersonSort.Field;
 import seedu.address.testutil.AddressBookBuilder;
 import seedu.address.testutil.PersonBuilder;
 
@@ -89,6 +92,18 @@ public class ListCommandTest {
                 new NameContainsKeywordsPredicate(List.of(ALICE.getPhone().value));
         new FindCommand(phonePredicate).execute(model);
         assertEquals(1, model.getFilteredPersonList().size());
+
+        assertCommandSuccess(new ListCommand(), model,
+                ListCommand.getMessageForDebtorCount(getTypicalPersons().size()), expectedModel);
+        assertEquals(List.of(1, 2, 3, 4, 5, 6, 7), model.getFilteredPersonList().stream()
+                .map(Person::getDebtorId).toList());
+    }
+
+    @Test
+    public void execute_afterDescendingSort_restoresAscendingIdOrder() {
+        model.updateSortedPersonList(PersonSort.createComparator(Field.ID, Direction.DESCENDING));
+        assertEquals(List.of(7, 6, 5, 4, 3, 2, 1), model.getFilteredPersonList().stream()
+                .map(Person::getDebtorId).toList());
 
         assertCommandSuccess(new ListCommand(), model,
                 ListCommand.getMessageForDebtorCount(getTypicalPersons().size()), expectedModel);
