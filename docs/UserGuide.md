@@ -240,6 +240,27 @@ Examples:
 * `find alex david` returns `Alex Yeoh`, `David Li`<br>
   ![result for 'find alex david'](images/findAlexDavidResult.png)
 
+### Filtering debtors by outstanding amount: `list-amount`
+
+Displays debtors whose outstanding amounts fall within an inclusive range. This is useful for focusing on high-value
+accounts or a particular collection band without changing any debtor record.
+
+Format: `list-amount [min/AMOUNT] [max/AMOUNT]`
+
+* Provide at least one of `min/` and `max/`.
+* Amounts use the same non-negative currency format as `add` and `edit`, including values such as `0`, `S$500.00`,
+  and `2,000.00`.
+* Bounds are inclusive: a balance equal to `min/` or `max/` is included.
+* When both bounds are present, the minimum cannot exceed the maximum.
+* Results replace an existing `find` or amount filter and appear in ascending persistent debtor-ID order.
+* The displayed index refers to the filtered list. For example, `delete 1` acts on the first debtor currently shown.
+* `list-amount` is read-only and does not change or save debtor data. Run `list` to restore every active debtor.
+
+Examples:
+* `list-amount min/1000` displays debtors owing at least `S$1,000.00`.
+* `list-amount max/S$500.00` displays debtors owing at most `S$500.00`, including zero balances.
+* `list-amount min/250 max/2,000.00` displays balances from `S$250.00` to `S$2,000.00`, inclusive.
+
 ### Deleting a debtor: `delete`
 
 Deletes the specified debtor from OSPS.
@@ -328,6 +349,7 @@ Action | Format, Examples
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [o/OUTSTANDING_AMOUNT] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find Alice 98765432`
+**Filter by amount** | `list-amount [min/AMOUNT] [max/AMOUNT]`<br> e.g., `list-amount min/500 max/2,000`
 **List** | `list`
 **Note** | `note --id DEBTOR_ID --text NOTE_TEXT`<br> e.g., `note --id 1 --text Called debtor, promised payment on Friday.`
 **Show** | `show --id DEBTOR_ID`<br> e.g., `show --id 3`

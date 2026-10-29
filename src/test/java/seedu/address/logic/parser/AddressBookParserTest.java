@@ -20,11 +20,14 @@ import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
 import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
+import seedu.address.logic.commands.ListAmountCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.NoteCommand;
 import seedu.address.logic.commands.ShowCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
+import seedu.address.model.person.OutstandingAmount;
+import seedu.address.model.person.OutstandingAmountRange;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.EditPersonDescriptorBuilder;
 import seedu.address.testutil.PersonBuilder;
@@ -99,6 +102,16 @@ public class AddressBookParserTest {
         assertThrows(ParseException.class,
                 String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListCommand.MESSAGE_USAGE), ()
                     -> parser.parseCommand(ListCommand.COMMAND_WORD + " 3"));
+    }
+
+    @Test
+    public void parseCommand_listAmount() throws Exception {
+        ListAmountCommand command = (ListAmountCommand) parser.parseCommand(
+                ListAmountCommand.COMMAND_WORD + " min/100 max/500");
+        OutstandingAmountRange expectedRange = new OutstandingAmountRange(
+                java.util.Optional.of(new OutstandingAmount("100")),
+                java.util.Optional.of(new OutstandingAmount("500")));
+        assertEquals(new ListAmountCommand(expectedRange), command);
     }
 
     @Test

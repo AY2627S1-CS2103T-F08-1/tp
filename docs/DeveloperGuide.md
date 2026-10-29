@@ -282,6 +282,28 @@ the search predicate with `Model#PREDICATE_SHOW_ALL_PERSONS`.
   financial information when the window is narrow or a value is long. The persistent ID is kept at its preferred
   width so that wrapping the adjacent name does not obscure which debtor the card represents.
 
+### Filtering by outstanding amount
+
+`list-amount` is a read-only view command. `ListAmountCommandParser` tokenizes the optional `min/` and `max/` bounds,
+reuses `ParserUtil#parseOutstandingAmount`, rejects duplicate or missing bounds, and constructs an
+`OutstandingAmountRange`. The range owns the invariant that at least one bound exists and that the minimum does not
+exceed the maximum. It compares the underlying `BigDecimal` values, avoiding rounding and string-comparison errors.
+
+`ListAmountCommand` wraps the range in an `OutstandingAmountInRangePredicate` and supplies it to the same
+`ModelManager#updateFilteredPersonList` path used by `find`. Consequently, the existing observable `FilteredList` and
+ID-ordered `SortedList` update the cards without reordering persistent data. A later `list` command restores the
+show-all predicate. Because the command overrides `shouldSaveAddressBook` with `false`, changing the view does not
+write JSON or retry a previously failed write.
+
+#### Design considerations
+
+* **Inclusive instead of exclusive bounds:** Collection bands normally include the exact threshold stated by a user.
+  Inclusive comparison also makes a single-value range such as `min/500 max/500` useful and unsurprising.
+* **Reuse the amount value object instead of parsing raw decimals in the command:** This keeps accepted currency syntax
+  consistent with `add` and `edit`, prevents negative amounts, and centralises precision validation.
+* **Keep filtering session-only instead of persisting it:** The command represents a temporary work view rather than
+  debtor data. Restarts and `list` therefore return to the complete ID-ordered list.
+
 ### \[Proposed\] Undo/redo feature
 
 #### Proposed Implementation
@@ -641,6 +663,20 @@ regression checks, but they do not replace exploratory testing on each supported
    Expected: The complete active-debtor list is restored.
 1. Run `list extra` and then `find` with no keyword.<br>
    Expected: Each command is rejected and the displayed data remains unchanged.
+
+### Filtering by outstanding amount
+
+1. Add three debtors with outstanding amounts `o/0`, `o/500`, and `o/1000`, then run `list` and note their IDs.<br>
+   Expected: All three debtors are displayed in ascending persistent-ID order.
+1. Run `list-amount min/500 max/1000`.<br>
+   Expected: The `S$500.00` and `S$1,000.00` debtors are displayed; both boundaries are included.
+1. Run `list-amount max/500`, then use `edit 1` on the first displayed debtor with a harmless name change.<br>
+   Expected: The edited debtor is the first visible result, not the first debtor hidden outside the filter.
+1. Run `list`.<br>
+   Expected: The complete active-debtor list is restored in persistent-ID order.
+1. Run `list-amount`, `list-amount min/501 max/500`, `list-amount min/-1`, and
+   `list-amount min/1 min/2`.<br>
+   Expected: Each command gives a precise error and leaves both the records and current view unchanged.
 
 ### Showing profiles and recording interaction history
 
