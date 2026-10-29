@@ -878,6 +878,42 @@ For the detailed release-JAR deletion matrix and evidence format, see the
    until a successful data-changing command writes a valid replacement.
 1. Restore the backup after completing the test.
 
+### Follow-ups, recovery stages and the workload summary
+
+Use sample data in a fresh folder. In the steps below, `ID` is a persistent debtor ID shown in the list.
+
+1. Run `followup --id ID --date 2026-11-03`, then `show --id ID`.<br>
+   Expected: The profile shows the pending follow-up date `2026-11-03` and a `SCHEDULED` history event.
+1. Run `followup --id ID --done`, then `followup --id ID --done` again.<br>
+   Expected: The first command clears the pending date and records it in history. The second is rejected with
+   `No pending follow-up exists for debtor ID ID.`
+1. Run `followup --id ID --date 2026-02-30`.<br>
+   Expected: The command is rejected because the date is not a real calendar date, and the debtor is unchanged.
+1. Run `stage --id ID --value contacted`, then `stage --id ID --value contacted` again.<br>
+   Expected: The first command reports the stage was set. The second reports it is already `contacted`.
+1. Run `stage --id ID --value unknown`.<br>
+   Expected: The command is rejected and lists the accepted stages.
+1. Run `find` with a keyword that matches one debtor, then `summary`, then `summary --all`.<br>
+   Expected: `summary` counts only the displayed debtor. `summary --all` counts every active debtor. Neither command
+   changes the displayed list.
+
+### Undo, redo, clear, help and exit
+
+1. Run `list`, note the persistent ID of the debtor at displayed index 1, then run `delete 1` and `undo`.<br>
+   Expected: `Undid the most recent change.` The debtor is back with the same persistent ID.
+1. Run `redo`.<br>
+   Expected: `Redid the most recently undone change.` The debtor is deleted again.
+1. Relaunch with fresh sample data and run `undo`, then `redo`.<br>
+   Expected: They report `There is no change to undo.` and `There is no change to redo.` and change nothing.
+1. Run `clear now`.<br>
+   Expected: The command is rejected because extra arguments are not allowed, and no debtor is removed.
+1. Run `clear`, then `undo`.<br>
+   Expected: `clear` removes every debtor. `undo` restores them all.
+1. Run `help`, scroll the window with the keyboard, then close it.<br>
+   Expected: The command reference lists every released command and closes without affecting the main window.
+1. Run `exit`, then launch the JAR again.<br>
+   Expected: OSPS closes all windows. After relaunch the data from before `exit` is present.
+
 ### Contact preferences
 
 The `contact` command selects a debtor by persistent ID and replaces only the requested preference fields. `ContactPreferences` validates a canonical method and a strict same-day window. The immutable value is carried through person copies, edits and notes, and stored with the debtor in JSON. Older records without the object load with both fields unset; malformed present values follow the normal data-loading error path.
