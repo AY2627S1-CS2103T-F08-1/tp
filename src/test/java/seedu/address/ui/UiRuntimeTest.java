@@ -18,9 +18,11 @@ import org.junit.jupiter.api.condition.OS;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import seedu.address.model.person.Person;
@@ -75,6 +77,28 @@ public class UiRuntimeTest {
             assertEquals(363.0, address.getMaxWidth());
             listWidth.set(300.0);
             assertEquals(250.0, address.getMaxWidth());
+        });
+    }
+
+    @Test
+    public void personCard_longTagWrapsWithinViewport() throws InterruptedException {
+        runOnJavaFxThread(() -> {
+            String longTag = "A".repeat(120);
+            Person person = new PersonBuilder().withTags(longTag).build();
+            PersonCard card = new PersonCard(person, 1);
+            card.bindContentWidth(new SimpleDoubleProperty(413));
+            Region root = card.getRoot();
+            StackPane container = new StackPane(root);
+            new Scene(container, 393, 600);
+            container.applyCss();
+            container.resize(393, 600);
+            container.layout();
+            FlowPane tags = (FlowPane) root.lookup("#tags");
+            Label tag = (Label) tags.getChildren().getFirst();
+            assertEquals(longTag, tag.getText());
+            assertTrue(tag.isWrapText());
+            assertTrue(tag.getWidth() <= 363);
+            assertTrue(tag.getHeight() > tag.getFont().getSize() * 2);
         });
     }
 
