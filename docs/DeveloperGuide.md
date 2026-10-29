@@ -140,7 +140,10 @@ interaction notes. The following diagram shows the stored debtor data:
 does not cause ID reuse after restart. `clear` deliberately resets allocation. Missing IDs in legacy records
 are allocated on load.
 
-`EditCommand` creates a replacement immutable `Person`, preserving its ID, outstanding amount and notes.
+`EditCommand` creates a replacement immutable `Person`, preserving its ID, outstanding amount, notes and recovery
+stage. A recovery stage is one of `new`, `contacted`, `negotiating`, `disputed`, `broken-promise`, or `settled`.
+`stage --id ID --value STAGE` selects a debtor by persistent ID, so it still targets the correct debtor while the list
+is filtered. Old JSON omits the optional stage and loads as `new`.
 Duplicate checks compare exact phone/email values against all other active debtors, including filtered-out
 records. Email matching is currently case-sensitive; phone country codes are not normalised.
 

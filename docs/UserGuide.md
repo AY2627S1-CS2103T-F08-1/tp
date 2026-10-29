@@ -348,5 +348,7 @@ Action | Format, Examples
 **List** | `list`
 **Note** | `note --id DEBTOR_ID --text NOTE_TEXT`<br> e.g., `note --id 1 --text Called debtor, promised payment on Friday.`
 **Show** | `show --id DEBTOR_ID`<br> e.g., `show --id 3`
+**Stage** | `stage --id DEBTOR_ID --value STAGE`<br> e.g., `stage --id 3 --value contacted`
+**Summary** | `summary` or `summary --all`
 **Help** | `help`
 **Exit** | `exit`
