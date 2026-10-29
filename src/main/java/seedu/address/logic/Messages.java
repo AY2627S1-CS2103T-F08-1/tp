@@ -109,6 +109,12 @@ public class Messages {
                 .append("Address: ").append(person.getAddress()).append('\n')
                 .append("Outstanding: S$").append(person.getOutstandingAmount()).append('\n')
                 .append("Tags: ").append(formattedTags).append('\n')
+                .append("Preferred contact method: ")
+                .append(person.getContactPreferences().getMethod() == null
+                        ? "Not set" : person.getContactPreferences().getMethod()).append('\n')
+                .append("Contact hours: ")
+                .append(person.getContactPreferences().getHours() == null
+                        ? "Not set" : person.getContactPreferences().getHours()).append('\n')
                 .append("Interaction history (newest first):");
 
         if (person.getInteractionNotes().isEmpty()) {
