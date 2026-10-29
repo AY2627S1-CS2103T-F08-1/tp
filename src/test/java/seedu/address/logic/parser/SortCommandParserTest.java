@@ -49,7 +49,7 @@ public class SortCommandParserTest {
 
     @Test
     public void parse_whitespaceAroundOptions_returnsExpectedCommand() {
-        assertParseSuccess(parser, "  --by\tamount \r\n --order\tdesc  ",
+        assertParseSuccess(parser, "\t--by\tamount\r\n\t--order\tdesc  ",
                 new SortCommand(Field.AMOUNT, Direction.DESCENDING));
     }
 

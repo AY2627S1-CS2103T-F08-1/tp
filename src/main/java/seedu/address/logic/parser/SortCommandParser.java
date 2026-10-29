@@ -23,7 +23,8 @@ public class SortCommandParser implements Parser<SortCommand> {
 
     @Override
     public SortCommand parse(String args) throws ParseException {
-        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(args, PREFIX_SORT_BY, PREFIX_SORT_ORDER);
+        String normalizedArgs = normalizeOptionWhitespace(args);
+        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(normalizedArgs, PREFIX_SORT_BY, PREFIX_SORT_ORDER);
         rejectUnknownOptions(argMultimap);
 
         if (!argMultimap.getPreamble().isEmpty() || argMultimap.getValue(PREFIX_SORT_BY).isEmpty()) {
@@ -35,6 +36,14 @@ public class SortCommandParser implements Parser<SortCommand> {
                 .orElseThrow(() -> new ParseException(MESSAGE_INVALID_FIELD));
         Direction direction = parseDirection(argMultimap);
         return new SortCommand(field, direction);
+    }
+
+    private String normalizeOptionWhitespace(String args) {
+        String trimmedArgs = args.strip();
+        if (trimmedArgs.isEmpty()) {
+            return "";
+        }
+        return " " + trimmedArgs.replaceAll("\\s+", " ");
     }
 
     private Direction parseDirection(ArgumentMultimap argMultimap) throws ParseException {
