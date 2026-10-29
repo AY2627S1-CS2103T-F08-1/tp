@@ -21,6 +21,7 @@ import seedu.address.model.person.Name;
 import seedu.address.model.person.OutstandingAmount;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.model.person.RecoveryStage;
 import seedu.address.testutil.PersonBuilder;
 
 public class JsonAdaptedPersonTest {
@@ -74,6 +75,31 @@ public class JsonAdaptedPersonTest {
         Person debtor = new PersonBuilder(BENSON).withInteractionNotes(List.of(note)).build();
 
         assertEquals(debtor, new JsonAdaptedPerson(debtor).toModelType());
+    }
+
+    @Test
+    public void toModelType_nonDefaultRecoveryStageRoundTrip_returnsPerson() throws Exception {
+        Person debtor = new Person(BENSON.getName(), BENSON.getPhone(), BENSON.getEmail(), BENSON.getAddress(),
+                BENSON.getDebtorId(), BENSON.getOutstandingAmount(), BENSON.getInteractionNotes(),
+                RecoveryStage.CONTACTED, BENSON.getTags());
+
+        assertEquals(debtor, new JsonAdaptedPerson(debtor).toModelType());
+    }
+
+    @Test
+    public void toModelType_missingOrNullRecoveryStage_defaultsToNew() throws Exception {
+        JsonAdaptedPerson missingStage = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                null, VALID_OUTSTANDING_AMOUNT, List.of(), null, VALID_TAGS);
+
+        assertEquals(RecoveryStage.NEW, missingStage.toModelType().getRecoveryStage());
+    }
+
+    @Test
+    public void toModelType_invalidRecoveryStage_throwsIllegalValueException() {
+        JsonAdaptedPerson invalidStage = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                null, VALID_OUTSTANDING_AMOUNT, List.of(), "unknown", VALID_TAGS);
+
+        assertThrows(IllegalValueException.class, RecoveryStage.MESSAGE_CONSTRAINTS, invalidStage::toModelType);
     }
 
     @Test
