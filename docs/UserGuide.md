@@ -385,3 +385,7 @@ Examples:
 * `contact --id 3 --clear-hours`
 
 Unchanged fields retain their previous values. Use `show --id 3` to see the preferences.
+
+### Exporting a debtor profile: `export`
+
+Use `export --id ID` to write the profile and interaction history as UTF-8 text to `exports/debtor-ID.txt` relative to the application working directory. An existing export is never overwritten; move or rename it before exporting the same ID again. The file contains sensitive debtor information, so share and store it carefully.

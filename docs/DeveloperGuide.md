@@ -748,3 +748,7 @@ For the detailed release-JAR deletion matrix and evidence format, see the
 ### Contact preferences
 
 The `contact` command selects a debtor by persistent ID and replaces only the requested preference fields. `ContactPreferences` validates a canonical method and a strict same-day window. The immutable value is carried through person copies, edits and notes, and stored with the debtor in JSON. Older records without the object load with both fields unset; malformed present values follow the normal data-loading error path.
+
+### Profile export
+
+`export --id ID` finds the debtor by persistent ID and writes the profile to a new UTF-8 file in the working-directory `exports` folder. Create-only file access prevents overwriting an existing record. The command does not modify or save the address book.
