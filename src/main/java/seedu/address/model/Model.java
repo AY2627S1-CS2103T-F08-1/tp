@@ -84,7 +84,9 @@ public interface Model {
     }
 
     /** Restores the preceding address-book state. */
-    default void undoAddressBook() { throw new IllegalStateException("Undo is not supported."); }
+    default void undoAddressBook() {
+        throw new IllegalStateException("Undo is not supported.");
+    }
 
     /** Returns whether a later address-book state can be restored. */
     default boolean canRedoAddressBook() {
@@ -92,5 +94,7 @@ public interface Model {
     }
 
     /** Restores the next address-book state. */
-    default void redoAddressBook() { throw new IllegalStateException("Redo is not supported."); }
+    default void redoAddressBook() {
+        throw new IllegalStateException("Redo is not supported.");
+    }
 }
