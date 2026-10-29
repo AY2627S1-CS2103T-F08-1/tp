@@ -19,7 +19,7 @@
 }
 
 #commandReference {
-    -fx-font-family: "Consolas";
+    -fx-font-family: "Consolas", "DejaVu Sans Mono", monospace;
     -fx-font-size: 12px;
 }
 

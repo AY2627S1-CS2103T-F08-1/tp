@@ -16,6 +16,26 @@ import seedu.address.ui.MainWindow;
 
 public class BrandingTest {
 
+    private static final Map<String, String> RELEASED_COMMANDS = Map.ofEntries(
+            Map.entry("add n/NAME p/PHONE e/EMAIL a/ADDRESS [o/AMOUNT] [t/TAG]...",
+                    "add n/Alice p/91234567 e/alice@example.com a/Example Street"),
+            Map.entry("list", "list"),
+            Map.entry("find KEYWORD [MORE_KEYWORDS]...", "find Alice"),
+            Map.entry("sort --by id|name|amount [--order asc|desc]", "sort --by id --order asc"),
+            Map.entry("show --id DEBTOR_ID", "show --id 1"),
+            Map.entry("note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT",
+                    "note --id 1 --text Called debtor"),
+            Map.entry("contact --id DEBTOR_ID [--method METHOD | --clear-method] "
+                    + "[--hours HH:mm-HH:mm | --clear-hours]", "contact --id 1 --method sms"),
+            Map.entry("edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/AMOUNT] [t/TAG]...",
+                    "edit 1 n/Alice"),
+            Map.entry("delete INDEX", "delete 1"),
+            Map.entry("clear", "clear"),
+            Map.entry("undo", "undo"),
+            Map.entry("redo", "redo"),
+            Map.entry("help", "help"),
+            Map.entry("exit", "exit"));
+
     @Test
     public void releaseIdentity_matchesV14Branding() {
         assertEquals("OSPS", MainApp.APP_NAME);
@@ -33,52 +53,15 @@ public class BrandingTest {
     @Test
     public void commandReference_listsEveryReleasedCommand() {
         Set<String> referenceLines = Set.copyOf(HelpWindow.COMMAND_REFERENCE.lines().toList());
-        Set<String> releasedSyntax = Set.of(
-                "add n/NAME p/PHONE e/EMAIL a/ADDRESS [o/AMOUNT] [t/TAG]...",
-                "list",
-                "find KEYWORD [MORE_KEYWORDS]...",
-                "sort --by id|name|amount [--order asc|desc]",
-                "show --id DEBTOR_ID",
-                "note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT",
-                "contact --id DEBTOR_ID [--method METHOD | --clear-method] [--hours HH:mm-HH:mm | --clear-hours]",
-                "edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/AMOUNT] [t/TAG]...",
-                "delete INDEX",
-                "clear",
-                "undo",
-                "redo",
-                "help",
-                "exit");
-
-        assertTrue(referenceLines.containsAll(releasedSyntax));
+        assertTrue(referenceLines.containsAll(RELEASED_COMMANDS.keySet()));
     }
 
     @Test
     public void commandReference_everyListedCommandIsAcceptedByParser() {
         AddressBookParser parser = new AddressBookParser();
-        Map<String, String> validExamples = Map.ofEntries(
-                Map.entry("add", "add n/Alice p/91234567 e/alice@example.com a/Example Street"),
-                Map.entry("list", "list"),
-                Map.entry("find", "find Alice"),
-                Map.entry("sort", "sort --by id --order asc"),
-                Map.entry("show", "show --id 1"),
-                Map.entry("note", "note --id 1 --text Called debtor"),
-                Map.entry("contact", "contact --id 1 --method sms"),
-                Map.entry("edit", "edit 1 n/Alice"),
-                Map.entry("delete", "delete 1"),
-                Map.entry("clear", "clear"),
-                Map.entry("undo", "undo"),
-                Map.entry("redo", "redo"),
-                Map.entry("help", "help"),
-                Map.entry("exit", "exit"));
-
-        Set<String> syntaxCommandWords = HelpWindow.COMMAND_REFERENCE.lines()
-                .map(String::trim)
-                .filter(line -> validExamples.keySet().stream()
-                        .anyMatch(commandWord -> line.equals(commandWord) || line.startsWith(commandWord + " ")))
-                .map(line -> line.split(" ", 2)[0])
-                .collect(java.util.stream.Collectors.toSet());
-
-        assertEquals(validExamples.keySet(), syntaxCommandWords);
-        validExamples.values().forEach(example -> assertDoesNotThrow(() -> parser.parseCommand(example)));
+        RELEASED_COMMANDS.forEach((syntax, validExample) -> {
+            assertEquals(syntax.split(" ", 2)[0], validExample.split(" ", 2)[0]);
+            assertDoesNotThrow(() -> parser.parseCommand(validExample));
+        });
     }
 }
