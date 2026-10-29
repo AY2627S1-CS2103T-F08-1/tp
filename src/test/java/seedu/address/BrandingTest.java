@@ -65,8 +65,13 @@ public class BrandingTest {
 
     @Test
     public void commandReferenceAndUserGuide_matchParserDispatchTable() throws IOException {
-        Set<String> referenceLines = Set.copyOf(HelpWindow.COMMAND_REFERENCE.lines().toList());
-        Set<String> referenceCommandWords = RELEASED_COMMANDS.keySet().stream()
+        Set<String> parserCommandWords = AddressBookParser.getSupportedCommandWords();
+        Set<String> referenceSyntaxLines = HelpWindow.COMMAND_REFERENCE.lines()
+                .map(String::trim)
+                .filter(line -> !line.isEmpty())
+                .filter(line -> parserCommandWords.contains(line.split(" ", 2)[0]))
+                .collect(Collectors.toSet());
+        Set<String> referenceCommandWords = referenceSyntaxLines.stream()
                 .map(syntax -> syntax.split(" ", 2)[0])
                 .collect(Collectors.toSet());
         String userGuide = Files.readString(Path.of("docs", "UserGuide.md"));
@@ -74,9 +79,9 @@ public class BrandingTest {
                 .map(match -> match.group("command"))
                 .collect(Collectors.toSet());
 
-        assertEquals(AddressBookParser.getSupportedCommandWords(), referenceCommandWords);
-        assertEquals(AddressBookParser.getSupportedCommandWords(), userGuideCommandWords);
-        assertTrue(referenceLines.containsAll(RELEASED_COMMANDS.keySet()));
+        assertEquals(parserCommandWords, referenceCommandWords);
+        assertEquals(parserCommandWords, userGuideCommandWords);
+        assertEquals(RELEASED_COMMANDS.keySet(), referenceSyntaxLines);
     }
 
     @Test
@@ -96,6 +101,16 @@ public class BrandingTest {
                 assertEquals(syntax.split(" ", 2)[0], validExample.split(" ", 2)[0]);
                 assertDoesNotThrow(() -> parser.parseCommand(validExample));
             });
+        });
+        Set<String> displayedExamples = HelpWindow.COMMAND_REFERENCE.lines()
+                .map(String::trim)
+                .filter(line -> line.startsWith("Example: "))
+                .map(line -> line.substring("Example: ".length()))
+                .collect(Collectors.toSet());
+
+        displayedExamples.forEach(example -> {
+            assertTrue(AddressBookParser.getSupportedCommandWords().contains(example.split(" ", 2)[0]));
+            assertDoesNotThrow(() -> parser.parseCommand(example));
         });
     }
 }

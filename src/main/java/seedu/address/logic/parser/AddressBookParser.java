@@ -71,12 +71,13 @@ public class AddressBookParser {
                 return new UndoCommand();
             }));
 
+    /** Parses one command's argument text into an executable command. */
     @FunctionalInterface
     private interface CommandParser {
         Command parse(String arguments) throws ParseException;
     }
 
-    /** Returns the command words dispatched by this parser. */
+    /** Returns the command words dispatched by this parser for UI and documentation consistency checks. */
     public static Set<String> getSupportedCommandWords() {
         return COMMAND_PARSERS.keySet();
     }
