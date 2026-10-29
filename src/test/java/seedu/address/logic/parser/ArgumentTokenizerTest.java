@@ -100,6 +100,10 @@ public class ArgumentTokenizerTest {
         // other Unicode spaces are ordinary text, not separators
         argMultimap = ArgumentTokenizer.tokenize("n/Alice p/123", pSlash);
         assertFalse(argMultimap.getValue(pSlash).isPresent());
+
+        // a carriage return is a separator
+        argMultimap = ArgumentTokenizer.tokenize("x\rp/100", pSlash);
+        assertArgumentPresent(argMultimap, pSlash, "100");
     }
 
     @Test
