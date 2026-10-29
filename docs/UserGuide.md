@@ -3,7 +3,7 @@ layout: page
 title: User Guide
 ---
 
-Orchestration and Scheduling of Payment Scheme (OSPS) v1.4 is a **desktop application for debt recovery agents**.
+Orchestration and Scheduling of Payment Scheme (OSPS) v1.5 is a **desktop application for debt recovery agents**.
 It manages debtor contact details, outstanding balances, and interaction histories through keyboard-driven commands
 while retaining the benefits of a graphical user interface (GUI).
 
@@ -34,7 +34,8 @@ while retaining the benefits of a graphical user interface (GUI).
 
    * `add n/Olaf Go p/91234567 e/olaf.letnonego@example.com a/H4M8+3J3, Kunlun Station, Antarctica o/S$1,250.00` : Adds a debtor named `Olaf Go` to OSPS.
 
-   * `note --id 1 --text Called debtor, promised payment on Friday.` : Adds an interaction note to debtor ID 1.
+   * `note --id 1 --outcome payment-promised --text Called debtor, promised payment on Friday.` : Adds an
+     interaction note with a structured outcome to debtor ID 1.
 
    * `show --id 1` : Shows the complete profile and interaction history of debtor ID 1.
 
@@ -80,7 +81,8 @@ while retaining the benefits of a graphical user interface (GUI).
 Each debtor card shows both a displayed index and a persistent debtor ID. In a heading such as `2. [ID 7] Alex Tan`,
 `2` is the debtor's current displayed index while `7` is the debtor's persistent ID.
 
-* Use the persistent ID with `show --id DEBTOR_ID` and `note --id DEBTOR_ID --text NOTE_TEXT`.
+* Use the persistent ID with `show --id DEBTOR_ID` and
+  `note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT`.
 * Use the displayed index with `delete INDEX` and `edit INDEX ...`.
 * A persistent ID stays with the same debtor until that debtor is deleted. A displayed index can change after a `find`,
   `list`, `add`, `edit`, or `delete` command.
@@ -144,35 +146,66 @@ Examples of result messages:
 * `1 active debtor listed.`
 * `5 active debtors listed.`
 
+### Sorting the displayed debtor worklist: `sort`
+
+Sorts the debtors currently shown in the list. It does not add, remove, or modify debtor records, and it does not
+change which debtors an active `find` filter includes.
+
+Format: `sort --by id|name|amount [--order asc|desc]`
+
+* `--by` is required. Choose `id`, `name`, or `amount`.
+* `--order` is optional and defaults to `asc`. Choose `asc` or `desc`.
+* Field and order values are case-insensitive. Options may be written in either order, but each option may appear
+  only once. Unknown options and extra values are rejected without changing the displayed list.
+* Names are compared case-insensitively. Outstanding amounts are compared by their numeric value, not their
+  formatted text.
+* When two debtors have the same name or amount, the lower persistent debtor ID is shown first. This ID tie-breaker
+  remains ascending even when the chosen field is descending.
+* Sorting changes displayed indexes. A following `edit INDEX` or `delete INDEX` acts on the debtor shown at that
+  index after sorting. Check the visible ID before running an index-based command.
+* `sort` preserves the current filtered set. Running `find` starts a new filtered view in ascending ID order.
+  Running `list` restores all active debtors in ascending ID order. A successful `add` also restores that normal
+  list. Edit and delete keep the active filter and sort, and the list refreshes if a changed field affects its order.
+* Sort settings last only for the current session and are not written to the data file.
+
+Examples:
+* `sort --by amount --order desc` shows the largest outstanding amount first.
+* `find Alice` followed by `sort --by name` sorts only the matching debtors by name.
+* `sort --order DESC --by ID` shows the highest persistent debtor ID first.
+
 ### Adding an interaction note: `note`
 
 Adds a timestamped interaction note to the debtor identified by debtor ID.
 
-Format: `note --id DEBTOR_ID --text NOTE_TEXT`
+Format: `note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT`
 
 * `DEBTOR_ID` must be a positive integer shown as the debtor's ID in the debtor list.
+* `OUTCOME` is optional and is case-insensitive. It must be one of `reached`, `callback-requested`, `unreachable`, or
+  `payment-promised`. If omitted, the note is displayed with the outcome `unspecified`.
 * `NOTE_TEXT` must not be blank. Ordinary punctuation is allowed, and there is no arbitrary note-length limit.
-* The `--id` and `--text` parameters can be provided in either order.
+* `--outcome`, when used, must appear before `--text`. The `--id` and `--text` parameters can be provided in either
+  order. Text after `--text`, including `--outcome`, is treated as note text unless it is a reserved `--id` or
+  `--text` parameter.
 * The tokens `--id` and `--text` are reserved for command parameters and cannot appear inside `NOTE_TEXT`.
   Other words beginning with `--`, such as `--identifier`, are kept as part of the note text after `--text`.
   Unknown options before `--text` or in the `--id` value are rejected.
 * The note is saved with the debtor and is preserved after restarting the application.
 * Repeating the same note records a separate interaction each time. Editing the debtor preserves all existing notes.
-* If saving fails, OSPS reports an error, but the note remains in memory during the current session. It is not
-  guaranteed to be on disk or to survive a restart. Resolve the save problem and verify the data after saving
-  successfully. Check the profile before entering the note again to avoid adding a duplicate.
-  Once the save problem is resolved, the next successful data-changing command or the `exit` command retries saving.
-  If the `exit` retry fails, OSPS reports an error and does not complete the exit.
-  Read-only commands such as `show` and `list` do not retry a failed save.
+* Recording an outcome does not change the debtor's outstanding amount or any other debtor field.
+* If saving fails, OSPS reports an error and does not add the note to the in-memory record or replace the saved file.
+  Resolve the save problem, then run the note command again. The `exit` command does not retry a failed command.
 
 Example:
-* `note --id 1 --text Called debtor, promised payment on Friday.`
+* `note --id 1 --outcome reached --text Confirmed the debtor's identity.`
+* `note --outcome callback-requested --id 1 --text Debtor requested a call tomorrow morning.`
+* `note --id 1 --text Sent a written reminder.` records a note with an `unspecified` outcome.
 
 ### Viewing a debtor profile: `show`
 
 Shows the complete profile of the active debtor identified by persistent debtor ID. The profile includes the
 debtor's name, phone number, email address, address, outstanding amount, tags, and interaction history. Interaction
-notes are shown newest first. If the debtor has no notes, the profile states that no interaction notes are recorded.
+notes are shown newest first. Each note shows its timestamp, outcome, and text. If the debtor has no notes, the profile
+states that no interaction notes are recorded.
 If two notes have exactly the same timestamp, the later-added note is shown first; neither note is removed.
 Displayed times have minute precision, so two notes showing the same time may have different stored timestamps.
 
@@ -221,12 +254,13 @@ Format: `find KEYWORD [MORE_KEYWORDS]`
 
 * The search is case-insensitive; for example, `hans` matches `Hans`.
 * Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
-* Name searches match only full words; for example, `Han` does not match `Hans`.
+* Name searches use literal substrings; for example, `Han` matches `Hans` and `lex` matches `Alex Yeoh`.
+  Punctuation and symbols are matched as ordinary text rather than as regular expressions.
 * A phone search must provide the complete phone number. For example, `91234567` matches that exact phone number,
   but `9123` does not match a phone number such as `91234567`. As every keyword also searches names, `9123` can
-  still match a debtor whose name contains the complete word `9123`.
+  still match a debtor whose name contains the literal substring `9123`.
 * Debtors matching at least one name or phone keyword are returned (an `OR` search). For example,
-  `Alice 98765432` returns debtors whose names contain `Alice` as a full word as well as the debtor whose phone is
+  `Alice 98765432` returns debtors whose names contain `Alice` as a substring as well as the debtor whose phone is
   exactly `98765432`.
 * Leading, trailing, and repeated whitespace is ignored. A blank search is rejected.
 * Results are displayed in ascending persistent debtor ID order. If nothing matches, OSPS reports that no debtors
@@ -234,7 +268,8 @@ Format: `find KEYWORD [MORE_KEYWORDS]`
 * Run `list` to clear the search filter and restore every active debtor.
 
 Examples:
-* `find John` returns `john` and `John Doe`
+* `find Joh` returns `john` and `John Doe`.
+* `find lex` returns names such as `Alex Yeoh` and `Alexandra Tan`.
 * `find 91234567` returns the debtor whose phone number is exactly `91234567`.
 * `find Alice 98765432` returns matches from either the name or phone search term.
 * `find alex david` returns `Alex Yeoh`, `David Li`<br>
@@ -279,6 +314,10 @@ Format: `exit`
 ### Saving the data
 
 OSPS automatically saves data after every successful data-changing command. You do not need to save manually.
+
+If a data-changing command cannot be saved, OSPS reports an error and leaves the in-memory records and existing data
+file unchanged. Resolve the problem and re-enter that command. OSPS replaces the data file only when the file system
+supports an atomic replacement; otherwise the save fails without overwriting the existing file.
 
 ### Editing the data file
 
@@ -329,8 +368,9 @@ Action | Format, Examples
 **Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [o/OUTSTANDING_AMOUNT] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find Alice 98765432`
 **List** | `list`
-**Note** | `note --id DEBTOR_ID --text NOTE_TEXT`<br> e.g., `note --id 1 --text Called debtor, promised payment on Friday.`
+**Note** | `note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT`<br> e.g., `note --id 1 --outcome reached --text Called debtor.`
 **Show** | `show --id DEBTOR_ID`<br> e.g., `show --id 3`
+**Sort** | `sort --by id\|name\|amount [--order asc\|desc]`<br> e.g., `sort --by amount --order desc`
 **Help** | `help`
 **Exit** | `exit`
 

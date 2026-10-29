@@ -1,6 +1,7 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.commands.CommandTestUtil.ADDRESS_DESC_AMY;
@@ -182,7 +183,7 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_noteStorageThrowsIoException_keepsNoteInMemoryButNotOnDisk() throws Exception {
+    public void execute_noteStorageThrowsIoException_keepsModelAndDiskUnchanged() throws Exception {
         Person debtor = model.addPerson(new PersonBuilder().withName("Alice Tan").build());
         Path savedAddressBookPath = temporaryFolder.resolve("addressBook.json");
         new JsonAddressBookStorage(savedAddressBookPath).saveAddressBook(model.getAddressBook());
@@ -202,9 +203,10 @@ public class LogicManagerTest {
                 String.format(LogicManager.FILE_OPS_ERROR_FORMAT, DUMMY_IO_EXCEPTION.getMessage()), () ->
                         logic.execute(noteCommand));
 
-        Person updatedDebtor = model.getAddressBook().getPersonList().getFirst();
-        assertEquals(1, updatedDebtor.getInteractionNotes().size());
-        assertEquals(noteText, updatedDebtor.getInteractionNotes().getFirst().getText());
+        Person unchangedDebtor = model.getAddressBook().getPersonList().getFirst();
+        assertTrue(unchangedDebtor.getInteractionNotes().isEmpty());
+        assertEquals(2, model.getAddressBook().getNextDebtorId());
+        assertEquals(List.of(unchangedDebtor), model.getFilteredPersonList());
         assertEquals(originalSavedData, Files.readString(savedAddressBookPath));
         JsonAddressBookStorage savedStorage = new JsonAddressBookStorage(savedAddressBookPath);
         Person reloadedDebtor = savedStorage.readAddressBook().get().getPersonList().getFirst();
@@ -249,6 +251,7 @@ public class LogicManagerTest {
 
         for (String command : List.of(
                 "find Amy",
+                "sort --by amount --order desc",
                 "list",
                 "show --id " + debtor.getDebtorId(),
                 "help",
@@ -283,24 +286,61 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_saveFailsThenStorageRecovers_exitRetriesPendingChanges() throws Exception {
+    public void execute_saveFailsThenStorageRecovers_reissueRetriesCommand() throws Exception {
         Path addressBookPath = temporaryFolder.resolve("recoveringAddressBook.json");
         FailsOnceAddressBookStorage addressBookStorage = new FailsOnceAddressBookStorage(addressBookPath);
-        Logic retryingLogic = createLogic(new ModelManager(), addressBookStorage);
+        ModelManager retryModel = new ModelManager();
+        Logic retryingLogic = createLogic(retryModel, addressBookStorage);
         String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
                 + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
 
         assertThrows(CommandException.class, () -> retryingLogic.execute(addCommand));
         assertEquals(1, addressBookStorage.getSaveAttemptCount());
+        assertTrue(retryModel.getAddressBook().getPersonList().isEmpty());
+        assertEquals(1, retryModel.getAddressBook().getNextDebtorId());
+        assertFalse(Files.exists(addressBookPath));
 
         retryingLogic.execute("list");
         assertEquals(1, addressBookStorage.getSaveAttemptCount());
 
         CommandResult exitResult = retryingLogic.execute("exit");
         assertTrue(exitResult.isExit());
+        assertEquals(1, addressBookStorage.getSaveAttemptCount());
+
+        retryingLogic.execute(addCommand);
         assertEquals(2, addressBookStorage.getSaveAttemptCount());
         assertEquals(List.of(new PersonBuilder(AMY).withTags().build()),
                 addressBookStorage.readAddressBook().orElseThrow().getPersonList());
+    }
+
+    @Test
+    public void execute_savingCommandWithNoChange_doesNotSave() throws Exception {
+        SaveTrackingAddressBookStorage addressBookStorage = new SaveTrackingAddressBookStorage(
+                temporaryFolder.resolve("noChangeAddressBook.json"));
+        Logic noChangeLogic = createLogic(new ModelManager(), addressBookStorage);
+
+        noChangeLogic.execute("clear");
+
+        assertEquals(0, addressBookStorage.getSaveAttemptCount());
+    }
+
+    @Test
+    public void execute_onlyNextDebtorIdChanges_attemptsSave() {
+        ModelManager idOnlyModel = new ModelManager() {
+            @Override
+            public Model createTransactionCopy() {
+                Model candidate = super.createTransactionCopy();
+                candidate.deletePerson(candidate.addPerson(AMY));
+                return candidate;
+            }
+        };
+        SaveTrackingAddressBookStorage addressBookStorage = new SaveTrackingAddressBookStorage(
+                temporaryFolder.resolve("idOnlyAddressBook.json"));
+        Logic idOnlyLogic = createLogic(idOnlyModel, addressBookStorage);
+
+        assertThrows(CommandException.class, () -> idOnlyLogic.execute("clear"));
+
+        assertEquals(1, addressBookStorage.getSaveAttemptCount());
     }
 
     @Test
@@ -317,7 +357,7 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_deleteStorageThrowsIoException_reportsFailureWithoutRollback() {
+    public void execute_deleteStorageThrowsIoException_leavesModelAndViewUnchanged() {
         model.addPerson(AMY);
         Path failingAddressBookPath = temporaryFolder.resolve("failingAddressBook.json");
         JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(failingAddressBookPath) {
@@ -330,9 +370,36 @@ public class LogicManagerTest {
                 new JsonUserPrefsStorage(temporaryFolder.resolve("failingUserPrefs.json"));
         logic = new LogicManager(model, new StorageManager(addressBookStorage, userPrefsStorage));
 
-        ModelManager expectedModel = new ModelManager();
+        ModelManager expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
         assertCommandFailure("delete 1", CommandException.class,
                 String.format(LogicManager.FILE_OPS_ERROR_FORMAT, DUMMY_IO_EXCEPTION.getMessage()), expectedModel);
+        assertEquals(List.of(AMY), model.getFilteredPersonList());
+        assertEquals(2, model.getAddressBook().getNextDebtorId());
+        assertFalse(Files.exists(failingAddressBookPath));
+    }
+
+    @Test
+    public void execute_failedDelete_keepsActiveFilteredView() throws Exception {
+        model.addPerson(AMY);
+        model.addPerson(BOB);
+        logic.execute("find Amy");
+        List<Person> originalView = List.copyOf(model.getFilteredPersonList());
+        int originalNextId = model.getAddressBook().getNextDebtorId();
+        Path path = temporaryFolder.resolve("filteredFailure.json");
+        JsonAddressBookStorage failingStorage = new JsonAddressBookStorage(path) {
+            @Override
+            public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+                throw DUMMY_IO_EXCEPTION;
+            }
+        };
+        logic = createLogic(model, failingStorage);
+
+        assertThrows(CommandException.class, () -> logic.execute("delete 1"));
+
+        assertEquals(List.of(AMY, BOB), model.getAddressBook().getPersonList());
+        assertEquals(originalView, model.getFilteredPersonList());
+        assertEquals(originalNextId, model.getAddressBook().getNextDebtorId());
+        assertFalse(Files.exists(path));
     }
 
     @Test
@@ -434,10 +501,9 @@ public class LogicManagerTest {
         // Triggers the saveAddressBook method by executing an add command
         String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
                 + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
-        Person expectedPerson = new PersonBuilder(AMY).withTags().build();
-        ModelManager expectedModel = new ModelManager();
-        expectedModel.addPerson(expectedPerson);
+        ModelManager expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
+        assertEquals(model.getAddressBook().getNextDebtorId(), expectedModel.getAddressBook().getNextDebtorId());
     }
 
     private void assertMutatingCommandAttemptsSave(String commandText, Model testModel) {

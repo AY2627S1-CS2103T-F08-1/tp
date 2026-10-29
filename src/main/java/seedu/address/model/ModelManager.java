@@ -13,6 +13,7 @@ import javafx.collections.transformation.SortedList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.PersonSort;
 
 /**
  * Represents the in-memory model of the address book data.
@@ -24,6 +25,8 @@ public class ModelManager implements Model {
     private final UserPrefs userPrefs;
     private final FilteredList<Person> filteredPersons;
     private final SortedList<Person> sortedPersons;
+    private Predicate<Person> personListPredicate = PREDICATE_SHOW_ALL_PERSONS;
+    private Comparator<Person> personListComparator = PersonSort.DEFAULT_COMPARATOR;
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -36,7 +39,7 @@ public class ModelManager implements Model {
         this.addressBook = new AddressBook(addressBook);
         this.userPrefs = new UserPrefs(userPrefs);
         filteredPersons = new FilteredList<>(this.addressBook.getPersonList());
-        sortedPersons = new SortedList<>(filteredPersons, Comparator.comparingInt(Person::getDebtorId));
+        sortedPersons = new SortedList<>(filteredPersons, PersonSort.DEFAULT_COMPARATOR);
     }
 
     public ModelManager() {
@@ -87,7 +90,7 @@ public class ModelManager implements Model {
     @Override
     public Person addPerson(Person person) {
         Person addedPerson = addressBook.addPerson(person);
-        updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
+        updatePersonView(PREDICATE_SHOW_ALL_PERSONS, PersonSort.DEFAULT_COMPARATOR);
         return addedPerson;
     }
 
@@ -112,7 +115,44 @@ public class ModelManager implements Model {
     @Override
     public void updateFilteredPersonList(Predicate<Person> predicate) {
         requireNonNull(predicate);
+        personListPredicate = predicate;
         filteredPersons.setPredicate(predicate);
+    }
+
+    @Override
+    public void updateSortedPersonList(Comparator<Person> comparator) {
+        requireNonNull(comparator);
+        personListComparator = comparator;
+        sortedPersons.setComparator(comparator);
+    }
+
+    @Override
+    public void updatePersonView(Predicate<Person> predicate, Comparator<Person> comparator) {
+        requireAllNonNull(predicate, comparator);
+        personListPredicate = predicate;
+        personListComparator = comparator;
+        filteredPersons.setPredicate(predicate);
+        sortedPersons.setComparator(comparator);
+    }
+
+    @Override
+    public Model createTransactionCopy() {
+        ModelManager candidate = new ModelManager(addressBook, userPrefs);
+        candidate.updatePersonView(personListPredicate, personListComparator);
+        return candidate;
+    }
+
+    @Override
+    public void publishTransaction(Model candidate) {
+        requireNonNull(candidate);
+        if (!(candidate instanceof ModelManager candidateManager)) {
+            throw new IllegalArgumentException("Transaction candidate must be a ModelManager.");
+        }
+        if (!addressBook.equals(candidateManager.addressBook)
+                || addressBook.getNextDebtorId() != candidateManager.addressBook.getNextDebtorId()) {
+            addressBook.resetData(candidateManager.addressBook);
+        }
+        updatePersonView(candidateManager.personListPredicate, candidateManager.personListComparator);
     }
 
     @Override

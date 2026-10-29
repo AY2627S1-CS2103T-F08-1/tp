@@ -5,9 +5,12 @@ import static seedu.address.storage.JsonAdaptedInteractionNote.MISSING_TEXT_MESS
 import static seedu.address.storage.JsonAdaptedInteractionNote.MISSING_TIMESTAMP_MESSAGE;
 import static seedu.address.testutil.Assert.assertThrows;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.exceptions.IllegalValueException;
+import seedu.address.model.person.ContactOutcome;
 import seedu.address.model.person.InteractionNote;
 
 public class JsonAdaptedInteractionNoteTest {
@@ -19,6 +22,17 @@ public class JsonAdaptedInteractionNoteTest {
         InteractionNote modelNote = note.toModelType();
 
         assertEquals("Called debtor.", modelNote.getText());
+        assertEquals(Optional.empty(), modelNote.getOutcome());
+    }
+
+    @Test
+    public void toModelType_validOutcome_returnsInteractionNoteWithOutcome() throws Exception {
+        JsonAdaptedInteractionNote note = new JsonAdaptedInteractionNote("2026-10-09T14:30:00",
+                "Called debtor.", "reached");
+
+        InteractionNote modelNote = note.toModelType();
+
+        assertEquals(Optional.of(ContactOutcome.REACHED), modelNote.getOutcome());
     }
 
     @Test
@@ -47,5 +61,13 @@ public class JsonAdaptedInteractionNoteTest {
         JsonAdaptedInteractionNote note = new JsonAdaptedInteractionNote("2026-10-09T14:30:00", "   ");
 
         assertThrows(IllegalValueException.class, note::toModelType);
+    }
+
+    @Test
+    public void toModelType_invalidOutcome_throwsIllegalValueException() {
+        JsonAdaptedInteractionNote note = new JsonAdaptedInteractionNote("2026-10-09T14:30:00",
+                "Called debtor.", "answered");
+
+        assertThrows(IllegalValueException.class, ContactOutcome.MESSAGE_CONSTRAINTS, note::toModelType);
     }
 }

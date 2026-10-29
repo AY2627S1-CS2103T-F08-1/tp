@@ -70,7 +70,7 @@ public class ContactWorkflowTest {
     }
 
     @Test
-    public void contact_noOpAfterFailedSave_doesNotRetryPendingWrite() throws Exception {
+    public void contact_noOpAfterFailedSave_leavesNoPendingWriteToRetry() throws Exception {
         Model model = new ModelManager();
         Person debtor = model.addPerson(new PersonBuilder().build());
         CountingStorage storage = new CountingStorage(directory.resolve("book.json"));
@@ -87,7 +87,7 @@ public class ContactWorkflowTest {
         assertEquals(1, storage.saves);
         assertTrue(Files.notExists(directory.resolve("book.json")));
         logic.execute("exit");
-        assertEquals(2, storage.saves);
+        assertEquals(1, storage.saves);
     }
 
     private static class CountingStorage extends JsonAddressBookStorage {

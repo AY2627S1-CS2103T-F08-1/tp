@@ -117,7 +117,7 @@ How the `Logic` component works:
 
 `DeleteCommandParser` accepts a positive decimal integer and strips leading zeroes. Empty input, non-digits, zero, and negative values produce an invalid-command-format error with the command usage. The parser keeps the normalized index as decimal text, so very large inputs do not overflow an integer during parsing. `DeleteCommand` checks it against the current displayed-list size using decimal length and lexical comparison before converting an in-range value to an integer. An index outside the list produces an actionable range error; when the list is empty, the error suggests running `list` or adjusting the `find` query. For an index longer than 100 digits, feedback shows its first 20 digits and total digit count. These parse and range failures do not change the model or trigger a save.
 
-For an in-range index, `DeleteCommand` removes the selected `Person` through `Model#deletePerson`. The model removes that person from the address book, which updates the observable displayed list. The success message includes the deleted debtor's ID, name, phone, email, address, outstanding amount, and tags. `LogicManager` then saves the updated address book; a storage failure is reported as a command error, but the in-memory removal is not rolled back.
+For an in-range index, `DeleteCommand` removes the selected `Person` through `Model#deletePerson`. For persistence-bound commands, `LogicManager` executes against an isolated copy of the model that retains the active filter, saves the candidate, and only then publishes it to the live observable model. The success message includes the deleted debtor's ID, name, phone, email, address, outstanding amount, and tags. A storage failure leaves the live model and displayed list unchanged.
 
 Interaction notes are part of the `Person` record. Deleting a debtor therefore removes the profile and its complete interaction history from the active address book and, after a successful save, from the persisted data. `show --id ID` can display profiles only for active debtors, so it reports that the debtor may have been deleted after removal. The current model does not maintain undo/redo history for deletion; the next debtor ID is not reused.
 
@@ -174,19 +174,31 @@ The `Storage` component,
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 * stores each debtor's ordered interaction history through `JsonAdaptedInteractionNote`; invalid entries, including
-  JSON `null` notes, are reported as data-loading errors.
+  JSON `null` notes and unrecognised contact outcomes, are reported as data-loading errors.
 
 Interaction notes retain their insertion order in JSON, including identical text and timestamps. Profile formatting
 reverses a copy of the insertion-ordered list before applying the ordered stream's stable sort by descending
 timestamp. Stability preserves reverse insertion order for equal timestamps. Editing a debtor preserves the full
 history. `NoteHistoryWorkflowTest` verifies these behaviours together across editing, JSON reload and `show`.
 
-`LogicManager` applies a valid `note` command to the in-memory model before saving. If saving fails, it reports a
-command error but does not roll back the in-memory note. A failure before writing leaves the prior file unchanged;
-the file-writing path is not atomic, so a failure during writing does not guarantee an intact prior file.
-Pending changes are retried by the next successful data-changing command or the `exit` command, after storage access
-is restored. Read-only commands do not retry the write. The workflow tests simulate both an I/O failure and denied
-access before writing, then check that an exit retry saves the existing note exactly once.
+Each interaction note can also store a `ContactOutcome`: `reached`, `callback-requested`, `unreachable`, or
+`payment-promised`. The JSON `outcome` field is nullable so files created before this feature remain loadable; a
+missing value becomes an `unspecified` outcome when displayed. New non-null values outside the supported set fail
+loading instead of silently losing information. The note parser accepts `--outcome` only before `--text`, which keeps
+option-like words in the note body as literal text. Contact outcomes are metadata and do not alter outstanding amounts.
+
+`LogicManager` runs each persistence-bound command against a candidate model that copies the current filter. It saves
+the candidate before publishing its records and view to the live model. If saving fails, the live records, next-ID
+state, and displayed view are unchanged; the user must re-enter the command after resolving the problem. `exit` does
+not retry a failed command.
+
+`JsonAddressBookStorage` serializes the complete JSON before writing, writes it to a temporary sibling file, forces
+the file channel, then replaces the destination with `ATOMIC_MOVE` and `REPLACE_EXISTING`. If the file system does
+not support an atomic move, saving fails closed and the temporary file is removed best-effort. No non-atomic
+overwrite fallback is attempted. This protects the previous file from ordinary write and replacement failures; it
+does not promise crash durability or recovery from power loss. The storage test injects unsupported atomic move, and
+logic tests inject save exceptions to check that memory, the active filtered view, next-ID state, and existing disk
+bytes remain unchanged.
 
 ### Contact validation and preference recovery
 
@@ -254,29 +266,50 @@ parser, or model log records.
 ### Finding and listing debtors
 
 The `find` command filters the active debtors using one or more search keywords. Each keyword matches either a
-case-insensitive whole word in the debtor's name or the debtor's complete phone number. Matching uses `OR` semantics,
+case-insensitive literal substring in the debtor's name or the debtor's complete phone number. Matching uses `OR`
+semantics,
 so a debtor is included when any keyword matches either field.
 
 ![Interactions for `find` followed by `list`](images/FindListSequenceDiagram.png)
 
 `FindCommandParser` normalises surrounding and repeated whitespace before constructing a
-`NameContainsKeywordsPredicate`. When `FindCommand` executes, it passes that predicate to
-`ModelManager#updateFilteredPersonList`. The JavaFX `FilteredList` applies the predicate to the active debtors, while
-the existing `SortedList` returned by `ModelManager#getFilteredPersonList` keeps the displayed matches in ascending
+`NameContainsKeywordsPredicate`. When `FindCommand` executes, it passes that predicate and the default ID comparator
+to `ModelManager#updatePersonView`. The JavaFX `FilteredList` applies the predicate to the active debtors, while the
+existing `SortedList` returned by `ModelManager#getFilteredPersonList` keeps the displayed matches in ascending
 persistent debtor ID order. The second half of the diagram shows how `list` restores all active debtors by replacing
-the search predicate with `Model#PREDICATE_SHOW_ALL_PERSONS`.
+the search predicate with `Model#PREDICATE_SHOW_ALL_PERSONS` and restoring the same default comparator.
+
+The `sort` command changes only the comparator of that `SortedList`, so the current `FilteredList` predicate and the
+backing `AddressBook` remain unchanged. `SortCommandParser` requires one `--by` option (`id`, `name`, or `amount`) and
+accepts an optional `--order` option (`asc` or `desc`). It rejects duplicate or unknown options and extra values before
+executing the command. The parser converts case-insensitive tokens to `PersonSort.Field` and `PersonSort.Direction`;
+the command asks `PersonSort` for the corresponding comparator and passes it to
+`ModelManager#updateSortedPersonList`.
+
+`PersonSort` compares names with `Locale.ROOT` case normalisation and outstanding amounts using their stored
+`BigDecimal` values. Name and amount comparators append persistent ID ascending as a deterministic final tie-breaker.
+Only the primary comparator is reversed for descending sorts, so equal names or amounts still appear by ascending ID.
+An ID sort applies the requested direction directly. The observable `SortedList` re-evaluates its order when a
+displayed person is edited, added, or deleted; index-based commands therefore operate on exactly the order visible in
+the UI. `find`, `list`, and a successful `add` deliberately restore the default ID-ascending view, while edit/delete
+preserve the current predicate and comparator.
 
 #### Design considerations
 
-* **Exact phone matching instead of substring matching:** Names use case-insensitive whole-word matching because users
-  commonly remember one part of a name. Phone numbers use exact matching because a partial number can match several
+* **Exact phone matching instead of substring matching:** Names use case-insensitive literal-substring matching because
+  users commonly remember only one part of a name. The query is not interpreted as a regular expression, so punctuation
+  in a real name is safe and predictable. Phone numbers use exact matching because a partial number can match several
   debtors and make the result ambiguous. Phone values are already validated and stored as digit-only strings, so no
   additional punctuation or whitespace normalisation is needed at search time. This keeps phone searches predictable:
   the user must enter the complete stored number.
 * **One model-level `SortedList` instead of sorting inside each command:** `ModelManager` wraps its `FilteredList` in a
-  single `SortedList` ordered by persistent debtor ID. Both `find` and `list`, as well as any UI observer of
-  `getFilteredPersonList`, therefore see the same order without duplicating sorting logic. The list stays ordered when
-  the predicate or backing data changes, rather than only when a particular command happens to run.
+  single `SortedList`. `find`, `list`, `sort`, and every UI observer of `getFilteredPersonList` therefore share the
+  same order without copying or mutating persistent records. The list stays ordered when the predicate or backing data
+  changes, rather than only when a particular command happens to run.
+* **Deterministic tie-breaking instead of relying on insertion order:** Equal normalized names or numeric amounts are
+  ordered by persistent ID ascending. This makes displayed indexes reproducible after edits and restarts. Reversing
+  only the selected primary comparator avoids the surprising result where two equal amounts swap relative order when
+  the user changes from ascending to descending.
 * **Wrapping card content instead of truncating it:** Debtor-card labels for names, contact details, addresses, and
   outstanding amounts allow text wrapping, while tags are placed in a `FlowPane`. This preserves identifying and
   financial information when the window is narrow or a value is long. The persistent ID is kept at its preferred
@@ -367,7 +400,7 @@ The following activity diagram summarizes what happens when a user executes a ne
 
 ### Deferred data archiving
 
-Data archiving is not implemented in v1.4. Deleting a debtor currently removes that debtor and their interaction
+Data archiving is not implemented in v1.5. Deleting a debtor currently removes that debtor and their interaction
 history from the active address book, while the monotonically increasing debtor-ID counter prevents a deleted ID from
 being reused.
 
@@ -632,7 +665,9 @@ regression checks, but they do not replace exploratory testing on each supported
 1. With the sample data loaded, run `find alex DAVID`.<br>
    Expected: Only `Alex Yeoh` and `David Li` are shown, in ascending persistent-ID order.
 1. Run `find Ale`.<br>
-   Expected: No debtor is shown because name keywords must match complete words.
+   Expected: `Alex Yeoh` is shown because name keywords can match a literal substring.
+1. Run `find lex`.<br>
+   Expected: Names containing `lex` at any position are shown, regardless of letter case.
 1. Run `find 87438807`.<br>
    Expected: Only the debtor with that complete phone number is shown.
 1. Run `find 8743`.<br>
@@ -641,6 +676,21 @@ regression checks, but they do not replace exploratory testing on each supported
    Expected: The complete active-debtor list is restored.
 1. Run `list extra` and then `find` with no keyword.<br>
    Expected: Each command is rejected and the displayed data remains unchanged.
+1. Run `find alex DAVID`, followed by `sort --by name --order desc`.<br>
+   Expected: The same two matching debtors remain visible and are ordered by name descending. No data file is written.
+1. Run `list`, then `sort --by amount --order desc`.<br>
+   Expected: Every active debtor is shown from largest to smallest numeric outstanding amount. Equal amounts are
+   ordered by persistent debtor ID ascending.
+1. Record the first visible debtor ID, run `delete 1`, and inspect the success message.<br>
+   Expected: The recorded visible debtor is deleted, and the remaining debtors retain the amount-descending order.
+1. Run `sort --by name`, edit the first debtor's name so it sorts last, and inspect the list.<br>
+   Expected: The same persistent debtor ID moves to its new position; no other record changes.
+1. Run `sort --by phone`, `sort --by amount --order ascending`, and
+   `sort --by amount --order desc --order asc`.<br>
+   Expected: Each command is rejected with a specific field, order, or duplicate-option error, and the current view and
+   stored data remain unchanged.
+1. Run `list` after any valid sort.<br>
+   Expected: Every active debtor is restored in ascending persistent-ID order.
 
 ### Showing profiles and recording interaction history
 

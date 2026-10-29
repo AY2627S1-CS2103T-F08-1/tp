@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Represents a timestamped note about an interaction with a debtor.
@@ -18,28 +19,48 @@ public final class InteractionNote {
 
     private final LocalDateTime timestamp;
     private final String text;
+    private final Optional<ContactOutcome> outcome;
 
     /**
      * Creates an interaction note with the supplied timestamp and text.
      */
     public InteractionNote(LocalDateTime timestamp, String text) {
+        this(timestamp, text, Optional.empty());
+    }
+
+    /**
+     * Creates an interaction note with optional structured outcome metadata.
+     */
+    public InteractionNote(LocalDateTime timestamp, String text, Optional<ContactOutcome> outcome) {
         requireNonNull(timestamp);
         requireNonNull(text);
+        requireNonNull(outcome);
         String trimmedText = text.trim();
         if (!isValidText(trimmedText)) {
             throw new IllegalArgumentException(MESSAGE_CONSTRAINTS);
         }
         this.timestamp = timestamp;
         this.text = trimmedText;
+        this.outcome = outcome;
     }
 
     /**
      * Creates an interaction note from a timestamp stored in ISO local date-time format.
      */
     public static InteractionNote fromStorage(String timestamp, String text) {
+        return fromStorage(timestamp, text, null);
+    }
+
+    /**
+     * Creates an interaction note from stored values. A missing outcome represents a legacy unspecified outcome.
+     */
+    public static InteractionNote fromStorage(String timestamp, String text, String outcome) {
         requireNonNull(timestamp);
         try {
-            return new InteractionNote(LocalDateTime.parse(timestamp, STORAGE_FORMATTER), text);
+            Optional<ContactOutcome> parsedOutcome = Optional.ofNullable(outcome)
+                    .map(value -> ContactOutcome.fromToken(value)
+                            .orElseThrow(() -> new IllegalArgumentException(ContactOutcome.MESSAGE_CONSTRAINTS)));
+            return new InteractionNote(LocalDateTime.parse(timestamp, STORAGE_FORMATTER), text, parsedOutcome);
         } catch (DateTimeParseException exception) {
             throw new IllegalArgumentException("Interaction note timestamp must be a valid ISO local date-time.",
                     exception);
@@ -58,13 +79,21 @@ public final class InteractionNote {
         return text;
     }
 
+    /**
+     * Returns the structured contact outcome, or an empty value for a legacy or unspecified note.
+     */
+    public Optional<ContactOutcome> getOutcome() {
+        return outcome;
+    }
+
     public String getStorageTimestamp() {
         return timestamp.format(STORAGE_FORMATTER);
     }
 
     @Override
     public String toString() {
-        return "[" + timestamp.format(DISPLAY_FORMATTER) + "] " + text;
+        String formattedOutcome = outcome.map(ContactOutcome::toString).orElse("unspecified");
+        return "[" + timestamp.format(DISPLAY_FORMATTER) + "] [" + formattedOutcome + "] " + text;
     }
 
     @Override
@@ -75,11 +104,12 @@ public final class InteractionNote {
         if (!(other instanceof InteractionNote otherNote)) {
             return false;
         }
-        return timestamp.equals(otherNote.timestamp) && text.equals(otherNote.text);
+        return timestamp.equals(otherNote.timestamp) && text.equals(otherNote.text)
+                && outcome.equals(otherNote.outcome);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(timestamp, text);
+        return Objects.hash(timestamp, text, outcome);
     }
 }

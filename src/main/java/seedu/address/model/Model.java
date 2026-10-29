@@ -1,5 +1,6 @@
 package seedu.address.model;
 
+import java.util.Comparator;
 import java.util.function.Predicate;
 
 import javafx.collections.ObservableList;
@@ -69,4 +70,26 @@ public interface Model {
      * @throws NullPointerException if {@code predicate} is null.
      */
     void updateFilteredPersonList(Predicate<Person> predicate);
+
+    /**
+     * Updates the comparator of the displayed person list without changing its active filter.
+     * @throws NullPointerException if {@code comparator} is null.
+     */
+    void updateSortedPersonList(Comparator<Person> comparator);
+
+    /**
+     * Replaces both the predicate and comparator of the displayed person list.
+     * @throws NullPointerException if {@code predicate} or {@code comparator} is null.
+     */
+    void updatePersonView(Predicate<Person> predicate, Comparator<Person> comparator);
+
+    /** Returns an isolated model with the same address-book data and active view for a save transaction. */
+    default Model createTransactionCopy() {
+        throw new UnsupportedOperationException("This model does not support save transactions.");
+    }
+
+    /** Publishes data and view state from a successfully persisted transaction candidate. */
+    default void publishTransaction(Model candidate) {
+        throw new UnsupportedOperationException("This model does not support save transactions.");
+    }
 }

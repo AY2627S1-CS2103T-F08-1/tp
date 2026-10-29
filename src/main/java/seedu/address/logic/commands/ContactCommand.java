@@ -17,7 +17,8 @@ public class ContactCommand extends Command {
     private final String method;
     private final boolean changeHours;
     private final String hours;
-    private boolean changed;
+    // The first call classifies this as persistence-bound before execution. execute() then records whether it mutated.
+    private boolean changed = true;
 
     /** Creates a command for the requested preference changes. */
     public ContactCommand(int id, boolean changeMethod, String method, boolean changeHours, String hours) {
