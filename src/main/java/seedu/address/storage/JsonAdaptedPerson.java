@@ -183,7 +183,10 @@ class JsonAdaptedPerson {
                 throw new IllegalValueException("Follow-up history entry cannot be null.");
             }
             FollowUpEvent modelEvent = event.toModelType(eventCurrentDate);
-            if (!modelEvent.getPreviousDate().equals(eventCurrentDate)) {
+            // A record may carry a pending date from before history was kept, so the first event
+            // starts from whichever date it says it replaced.
+            boolean isFirstEvent = modelFollowUpHistory.isEmpty();
+            if (!isFirstEvent && !modelEvent.getPreviousDate().equals(eventCurrentDate)) {
                 throw new IllegalValueException("Follow-up history contains a discontinuous date transition.");
             }
             modelFollowUpHistory.add(modelEvent);
