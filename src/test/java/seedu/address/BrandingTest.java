@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +24,8 @@ import seedu.address.ui.MainWindow;
 public class BrandingTest {
 
     private static final Pattern LONG_OPTION = Pattern.compile("--[a-z-]+");
+    private static final Pattern USER_GUIDE_SUMMARY_COMMAND =
+            Pattern.compile("(?m)^\\*\\*[^*]+\\*\\* \\| `(?<command>[a-z-]+)(?:\\s|`)");
     private static final Map<String, List<String>> RELEASED_COMMANDS = Map.ofEntries(
             Map.entry("add n/NAME p/PHONE e/EMAIL a/ADDRESS [o/AMOUNT] [t/TAG]...",
                     List.of("add n/Alice p/91234567 e/alice@example.com a/Example Street o/10 t/client")),
@@ -59,8 +64,18 @@ public class BrandingTest {
     }
 
     @Test
-    public void commandReference_listsEveryReleasedCommand() {
+    public void commandReferenceAndUserGuide_matchParserDispatchTable() throws IOException {
         Set<String> referenceLines = Set.copyOf(HelpWindow.COMMAND_REFERENCE.lines().toList());
+        Set<String> referenceCommandWords = RELEASED_COMMANDS.keySet().stream()
+                .map(syntax -> syntax.split(" ", 2)[0])
+                .collect(Collectors.toSet());
+        String userGuide = Files.readString(Path.of("docs", "UserGuide.md"));
+        Set<String> userGuideCommandWords = USER_GUIDE_SUMMARY_COMMAND.matcher(userGuide).results()
+                .map(match -> match.group("command"))
+                .collect(Collectors.toSet());
+
+        assertEquals(AddressBookParser.getSupportedCommandWords(), referenceCommandWords);
+        assertEquals(AddressBookParser.getSupportedCommandWords(), userGuideCommandWords);
         assertTrue(referenceLines.containsAll(RELEASED_COMMANDS.keySet()));
     }
 
