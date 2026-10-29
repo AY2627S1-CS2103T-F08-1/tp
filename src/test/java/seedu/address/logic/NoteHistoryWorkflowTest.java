@@ -24,6 +24,7 @@ import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.person.ContactOutcome;
 import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Person;
 import seedu.address.storage.JsonAddressBookStorage;
@@ -88,7 +89,8 @@ public class NoteHistoryWorkflowTest {
         String text = "Asked for $50.00; use the --identifier portal.  Follow-up? ".repeat(20).trim();
 
         logic.execute("note --text " + text + " --id " + debtor.getDebtorId());
-        logic.execute("note --id " + debtor.getDebtorId() + " --text " + text);
+        logic.execute("note --id " + debtor.getDebtorId()
+                + " --outcome callback-requested --text " + text);
         List<InteractionNote> originalNotes = model.getAddressBook().getPersonList().getFirst().getInteractionNotes();
         // Each parsed note command must save its mutation before the later edit.
         assertEquals(originalNotes, storage.readAddressBook().orElseThrow()
@@ -100,9 +102,29 @@ public class NoteHistoryWorkflowTest {
                 .getFirst().getInteractionNotes();
         assertEquals(originalNotes, restoredNotes);
         assertEquals(List.of(text, text), restoredNotes.stream().map(InteractionNote::getText).toList());
+        assertTrue(restoredNotes.getFirst().getOutcome().isEmpty());
+        assertEquals(ContactOutcome.CALLBACK_REQUESTED, restoredNotes.getLast().getOutcome().orElseThrow());
         String profile = createLogic(reloadedModel, storage)
                 .execute("show --id " + debtor.getDebtorId()).getFeedbackToUser();
         assertTrue(profile.contains(text));
+        assertTrue(profile.contains("[callback-requested]"));
+    }
+
+    @Test
+    public void execute_invalidOutcome_doesNotAddNoteOrSaveMutation() throws Exception {
+        Model model = new ModelManager();
+        Person debtor = model.addPerson(new PersonBuilder().build());
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        storage.saveAddressBook(model.getAddressBook());
+        Logic logic = createLogic(model, storage);
+
+        assertThrows(ParseException.class, ContactOutcome.MESSAGE_CONSTRAINTS, () ->
+                logic.execute("note --id " + debtor.getDebtorId()
+                        + " --outcome answered --text Called debtor."));
+
+        assertTrue(model.getAddressBook().getPersonList().getFirst().getInteractionNotes().isEmpty());
+        assertTrue(storage.readAddressBook().orElseThrow().getPersonList()
+                .getFirst().getInteractionNotes().isEmpty());
     }
 
     @Test
