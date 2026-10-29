@@ -1,9 +1,12 @@
 package seedu.address.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -98,6 +101,49 @@ public class DebtorIntegrationTest {
         parser.parseCommand("add n/Alice p/91234567 e/alice@example.com a/123 Street").execute(model);
         parser.parseCommand("add n/Another Alice p/6591234567 e/Alice@example.com a/456 Street").execute(model);
         assertEquals(2, model.getAddressBook().getPersonList().size());
+    }
+
+    @Test
+    public void followUpDoneOnStoredDateWithoutHistory_saveAndRestart_remainsReadable() throws Exception {
+        Person restored = followUpOnStoredDateWithoutHistory("followup --id 1 --done");
+        assertTrue(restored.getFollowUpDate().isEmpty());
+        assertEquals(1, restored.getFollowUpHistory().size());
+        assertEquals(LocalDate.of(2026, 11, 3), restored.getFollowUpHistory().getFirst().getPreviousDate().get());
+    }
+
+    @Test
+    public void followUpClearOnStoredDateWithoutHistory_saveAndRestart_remainsReadable() throws Exception {
+        Person restored = followUpOnStoredDateWithoutHistory("followup --id 1 --clear");
+        assertTrue(restored.getFollowUpDate().isEmpty());
+        assertEquals(1, restored.getFollowUpHistory().size());
+    }
+
+    @Test
+    public void followUpRescheduleOnStoredDateWithoutHistory_saveAndRestart_remainsReadable() throws Exception {
+        Person restored = followUpOnStoredDateWithoutHistory("followup --id 1 --date 2026-11-09");
+        assertEquals(LocalDate.of(2026, 11, 9), restored.getFollowUpDate().get());
+        assertEquals(1, restored.getFollowUpHistory().size());
+    }
+
+    @Test
+    public void followUpSameDateOnStoredDateWithoutHistory_saveAndRestart_addsNoHistory() throws Exception {
+        Person restored = followUpOnStoredDateWithoutHistory("followup --id 1 --date 2026-11-03");
+        assertEquals(LocalDate.of(2026, 11, 3), restored.getFollowUpDate().get());
+        assertTrue(restored.getFollowUpHistory().isEmpty());
+    }
+
+    /** Loads an accepted record with a pending date and no history, runs a command, saves and reloads the file. */
+    private Person followUpOnStoredDateWithoutHistory(String command) throws Exception {
+        Path file = testFolder.resolve("stored.json");
+        Files.writeString(file, "{\"persons\":[{\"name\":\"Alice Tan\",\"phone\":\"81234567\","
+                + "\"email\":\"alice@example.com\",\"address\":\"1 Main Street\",\"debtorId\":1,"
+                + "\"outstandingAmount\":\"50.00\",\"followUpDate\":\"2026-11-03\",\"followUpHistory\":[],"
+                + "\"tags\":[]}],\"nextDebtorId\":2}");
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(file);
+        Model model = new ModelManager(storage.readAddressBook().orElseThrow(), new UserPrefs());
+        parser.parseCommand(command).execute(model);
+        storage.saveAddressBook(model.getAddressBook());
+        return storage.readAddressBook().orElseThrow().getPersonList().getFirst();
     }
 
 }
