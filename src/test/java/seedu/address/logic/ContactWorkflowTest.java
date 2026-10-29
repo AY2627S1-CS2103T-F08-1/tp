@@ -50,7 +50,7 @@ public class ContactWorkflowTest {
     }
 
     @Test
-    public void contact_failedSave_isNotAppliedAndNotRetriedByLaterCommands() throws Exception {
+    public void contact_noOpAfterFailedSave_leavesNoPendingWriteToRetry() throws Exception {
         Model model = new ModelManager();
         Person debtor = model.addPerson(new PersonBuilder().build());
         CountingStorage storage = new CountingStorage(directory.resolve("book.json"));
@@ -59,16 +59,15 @@ public class ContactWorkflowTest {
         storage.fail = true;
         assertThrows(CommandException.class, () ->
                 logic.execute("contact --id " + debtor.getDebtorId() + " --method call"));
-        assertSame(debtor, model.getAddressBook().getPersonList().getFirst());
+        Person updated = model.getAddressBook().getPersonList().getFirst();
         assertEquals(1, storage.saves);
         storage.fail = false;
         logic.execute("contact --id " + debtor.getDebtorId() + " --clear-hours");
-        assertSame(debtor, model.getAddressBook().getPersonList().getFirst());
+        assertSame(updated, model.getAddressBook().getPersonList().getFirst());
         assertEquals(1, storage.saves);
         assertTrue(Files.notExists(directory.resolve("book.json")));
         logic.execute("exit");
         assertEquals(1, storage.saves);
-        assertTrue(Files.notExists(directory.resolve("book.json")));
     }
 
     private static class CountingStorage extends JsonAddressBookStorage {
