@@ -94,12 +94,7 @@ public class HelpWindow extends UiPart<Stage> {
         super(FXML, root);
         helpMessage.setText(HELP_MESSAGE);
         commandReference.setText(COMMAND_REFERENCE);
-        getRoot().getScene().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-            if (event.getCode() == KeyCode.ESCAPE) {
-                hide();
-                event.consume();
-            }
-        });
+        getRoot().getScene().addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPress);
     }
 
     /**
@@ -107,6 +102,14 @@ public class HelpWindow extends UiPart<Stage> {
      */
     public HelpWindow() {
         this(new Stage());
+    }
+
+    /** Closes the command reference for Escape while leaving other navigation keys untouched. */
+    void handleKeyPress(KeyEvent event) {
+        if (event.getCode() == KeyCode.ESCAPE) {
+            hide();
+            event.consume();
+        }
     }
 
     /**

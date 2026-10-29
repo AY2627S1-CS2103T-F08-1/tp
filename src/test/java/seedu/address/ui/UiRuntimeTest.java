@@ -19,7 +19,6 @@ import org.junit.jupiter.api.condition.OS;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
-import javafx.event.Event;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
@@ -149,13 +148,15 @@ public class UiRuntimeTest {
             assertTrue(reference.isFocusTraversable());
             KeyEvent enter = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER,
                     false, false, false, false);
-            Event.fireEvent(reference, enter);
+            helpWindow.handleKeyPress(enter);
+            assertFalse(enter.isConsumed());
             KeyEvent pageDown = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.PAGE_DOWN,
                     false, false, false, false);
-            Event.fireEvent(reference, pageDown);
+            helpWindow.handleKeyPress(pageDown);
+            assertFalse(pageDown.isConsumed());
             KeyEvent escape = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ESCAPE,
                     false, false, false, false);
-            Event.fireEvent(reference, escape);
+            helpWindow.handleKeyPress(escape);
             assertTrue(escape.isConsumed());
             assertFalse(helpWindow.isShowing());
         });
