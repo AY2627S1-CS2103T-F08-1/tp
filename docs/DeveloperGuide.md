@@ -743,6 +743,10 @@ regression checks, but they do not replace exploratory testing on each supported
 1. Resize and move the main window, then close OSPS using the **File → Exit** menu.
 1. Run `java -jar osps.jar` again.<br>
    Expected: The last window size and position are restored, subject to the available screen bounds.
+1. Create an empty sibling folder, open a terminal there and run `java -jar ../path/to/osps.jar` (the folder containing the JAR).
+   Add a debtor, then exit.<br>
+   Expected: The new folder contains no OSPS files. `preferences.json`, `osps.log.0` and `data/addressbook.json` are in the
+   folder containing the JAR, and the debtor is present when OSPS is launched from the JAR folder again.
 
 ### Adding and editing a debtor
 

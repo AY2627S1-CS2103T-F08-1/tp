@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
+import seedu.address.commons.core.AppHome;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
@@ -29,7 +30,7 @@ public class ExportCommand extends Command {
 
     /** Creates an export command using the application working directory. */
     public ExportCommand(int debtorId) {
-        this(debtorId, Path.of("exports"));
+        this(debtorId, AppHome.resolve("exports"));
     }
 
     /** Creates an export command targeting the supplied directory. */
