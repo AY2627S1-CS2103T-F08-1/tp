@@ -815,3 +815,7 @@ The `contact` command selects a debtor by persistent ID and replaces only the re
 ### Preview commands
 
 `preview` parses an edit or delete using the normal parser and executes it on an isolated transaction copy, retaining the current view. It does not publish the copy or save data.
+
+### Profile export
+
+`export --id ID` finds the debtor by persistent ID and writes the profile to a new UTF-8 file in the working-directory `exports` folder. Create-only file access prevents overwriting an existing record. The command does not modify or save the address book.

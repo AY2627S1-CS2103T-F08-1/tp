@@ -432,3 +432,7 @@ Unchanged fields retain their previous values. Use `show --id 3` to see the pref
 ### Previewing an edit or deletion: `preview`
 
 Use `preview edit INDEX [FIELDS]` or `preview delete INDEX` to see the result without changing or saving data. INDEX refers to the current displayed list, including filtering and sorting. Run the original command to apply it.
+
+### Exporting a debtor profile: `export`
+
+Use `export --id ID` to write the profile and interaction history as UTF-8 text to `exports/debtor-ID.txt` relative to the application working directory. An existing export is never overwritten; move or rename it before exporting the same ID again. The file contains sensitive debtor information, so share and store it carefully.
