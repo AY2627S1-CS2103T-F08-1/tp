@@ -373,3 +373,15 @@ Action | Format, Examples
 **Sort** | `sort --by id\|name\|amount [--order asc\|desc]`<br> e.g., `sort --by amount --order desc`
 **Help** | `help`
 **Exit** | `exit`
+
+### Setting contact preferences: `contact`
+
+Use `contact --id ID [--method METHOD | --clear-method] [--hours HH:mm-HH:mm | --clear-hours]` to update a debtor by persistent ID. Provide at least one change. Methods are `call`, `sms`, `email`, and `letter`. Hours are local, same-day, start-inclusive and end-exclusive, and the start must be before the end. The command records preferences; it does not contact the debtor.
+
+Examples:
+
+* `contact --id 3 --method sms --hours 09:00-17:30`
+* `contact --id 3 --clear-method`
+* `contact --id 3 --clear-hours`
+
+Unchanged fields retain their previous values. Use `show --id 3` to see the preferences.

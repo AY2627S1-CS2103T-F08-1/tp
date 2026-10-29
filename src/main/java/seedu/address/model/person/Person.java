@@ -31,6 +31,7 @@ public class Person {
     private final int debtorId;
     private final OutstandingAmount outstandingAmount;
     private final List<InteractionNote> interactionNotes;
+    private final ContactPreferences contactPreferences;
     private final Set<Tag> tags = new HashSet<>();
 
     /**
@@ -61,7 +62,15 @@ public class Person {
      */
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes, Set<Tag> tags) {
-        requireAllNonNull(name, phone, email, address, outstandingAmount, interactionNotes, tags);
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, tags,
+                new ContactPreferences(null, null));
+    }
+
+    /** Creates a person with contact preferences. */
+    public Person(Name name, Phone phone, Email email, Address address, int debtorId,
+            OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes, Set<Tag> tags,
+            ContactPreferences contactPreferences) {
+        requireAllNonNull(name, phone, email, address, outstandingAmount, interactionNotes, tags, contactPreferences);
         if (debtorId < 0) {
             throw new IllegalArgumentException(MESSAGE_INVALID_DEBTOR_ID);
         }
@@ -72,6 +81,7 @@ public class Person {
         this.debtorId = debtorId;
         this.outstandingAmount = outstandingAmount;
         this.interactionNotes = List.copyOf(interactionNotes);
+        this.contactPreferences = contactPreferences;
         this.tags.addAll(tags);
     }
 
@@ -102,7 +112,18 @@ public class Person {
      * Returns a copy of this person with the supplied persistent debtor ID.
      */
     public Person withDebtorId(int newDebtorId) {
-        return new Person(name, phone, email, address, newDebtorId, outstandingAmount, interactionNotes, tags);
+        return new Person(name, phone, email, address, newDebtorId, outstandingAmount,
+                interactionNotes, tags, contactPreferences);
+    }
+
+    public ContactPreferences getContactPreferences() {
+        return contactPreferences;
+    }
+
+    /** Returns a copy with updated preferences. */
+    public Person withContactPreferences(ContactPreferences preferences) {
+        return new Person(name, phone, email, address, debtorId, outstandingAmount,
+                interactionNotes, tags, preferences);
     }
 
     public OutstandingAmount getOutstandingAmount() {
@@ -123,7 +144,8 @@ public class Person {
         requireNonNull(note);
         List<InteractionNote> updatedNotes = new ArrayList<>(interactionNotes);
         updatedNotes.add(note);
-        return new Person(name, phone, email, address, debtorId, outstandingAmount, updatedNotes, tags);
+        return new Person(name, phone, email, address, debtorId, outstandingAmount,
+                updatedNotes, tags, contactPreferences);
     }
 
     /**
@@ -168,13 +190,14 @@ public class Person {
                 && address.equals(otherPerson.address)
                 && outstandingAmount.equals(otherPerson.outstandingAmount)
                 && interactionNotes.equals(otherPerson.interactionNotes)
+                && contactPreferences.equals(otherPerson.contactPreferences)
                 && tags.equals(otherPerson.tags);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, outstandingAmount, interactionNotes, tags);
+        return Objects.hash(name, phone, email, address, outstandingAmount, interactionNotes, tags, contactPreferences);
     }
 
     @Override
