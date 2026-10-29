@@ -236,6 +236,23 @@ Examples:
 * `followup --id 1 --date 2026-11-05` reschedules a pending date.
 * `followup --id 1 --done` marks the pending follow-up complete.
 
+### Updating recovery stage: `stage`
+
+Sets the manual recovery stage of the debtor identified by persistent ID. Available stages are `new`, `contacted`,
+`negotiating`, `disputed`, `broken-promise`, and `settled`. A settled debtor remains visible and retains its balance,
+contact details, and history.
+
+Format: `stage --id DEBTOR_ID --value STAGE`
+
+Example: `stage --id 3 --value contacted`
+
+### Summarising the workload: `summary`
+
+Shows the current displayed workload's debtor count, outstanding total, zero-balance count, and stage counts. Use
+`summary --all` to include every active debtor. The command does not change the displayed list or save data.
+
+Formats: `summary` or `summary --all`
+
 ### Viewing a debtor profile: `show`
 
 Shows the complete profile of the active debtor identified by persistent debtor ID. The profile includes the
@@ -448,6 +465,8 @@ Action | Format, Examples
 **Undo** | `undo`
 **Redo** | `redo`
 **Show** | `show --id DEBTOR_ID`<br> e.g., `show --id 3`
+**Stage** | `stage --id DEBTOR_ID --value STAGE`<br> e.g., `stage --id 3 --value contacted`
+**Summary** | `summary` or `summary --all`
 **Sort** | `sort --by id\|name\|amount [--order asc\|desc]`<br> e.g., `sort --by amount --order desc`
 **Help** | `help`
 **Exit** | `exit`

@@ -24,6 +24,7 @@ public class Messages {
     public static final String MESSAGE_UNKNOWN_COMMAND = "Unknown command.";
     public static final String MESSAGE_INVALID_COMMAND_FORMAT = "Invalid command format!\n%1$s";
     public static final String MESSAGE_INVALID_PERSON_DISPLAYED_INDEX = "The debtor index provided is invalid.";
+    public static final String MESSAGE_DEBTOR_NOT_FOUND = "No debtor with ID %1$d exists.";
     public static final String MESSAGE_PERSONS_LISTED_OVERVIEW = "%1$d debtor(s) listed!";
     public static final String MESSAGE_DUPLICATE_FIELDS =
                 "Multiple values specified for the following single-valued field(s): ";
@@ -109,6 +110,7 @@ public class Messages {
                 .append("Email: ").append(person.getEmail()).append('\n')
                 .append("Address: ").append(person.getAddress()).append('\n')
                 .append("Outstanding: S$").append(person.getOutstandingAmount()).append('\n')
+                .append("Recovery stage: ").append(person.getRecoveryStage()).append('\n')
                 .append("Tags: ").append(formattedTags).append('\n')
                 .append("Preferred contact method: ")
                 .append(person.getContactPreferences().getMethod() == null

@@ -35,6 +35,7 @@ public class MessagesTest {
                 Email: alice@example.com
                 Address: 1 Example Road, #02-03
                 Outstanding: S$1,250.50
+                Recovery stage: new
                 Tags: [alpha], [zeta]
                 Preferred contact method: Not set
                 Contact hours: Not set

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static seedu.address.testutil.Assert.assertThrows;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -28,9 +29,9 @@ class FollowUpCommandParserTest {
     @Test
     void parse_clearAndDone_returnCommands() throws Exception {
         FollowUpCommandParser parser = new FollowUpCommandParser();
-        assertEquals(new FollowUpCommand(7, FollowUpCommand.Operation.CLEAR, java.util.Optional.empty()),
+        assertEquals(new FollowUpCommand(7, FollowUpCommand.Operation.CLEAR, Optional.empty()),
                 parser.parse(" --id 7 --clear"));
-        assertEquals(new FollowUpCommand(7, FollowUpCommand.Operation.DONE, java.util.Optional.empty()),
+        assertEquals(new FollowUpCommand(7, FollowUpCommand.Operation.DONE, Optional.empty()),
                 parser.parse(" --done --id 7"));
     }
 

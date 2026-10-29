@@ -17,6 +17,7 @@ public class CliSyntax {
     public static final Prefix PREFIX_DEBTOR_ID = new Prefix("--id");
     public static final Prefix PREFIX_OUTCOME = new Prefix("--outcome");
     public static final Prefix PREFIX_NOTE_TEXT = new Prefix("--text");
+    public static final Prefix PREFIX_STAGE_VALUE = new Prefix("--value");
     public static final Prefix PREFIX_SORT_BY = new Prefix("--by");
     public static final Prefix PREFIX_SORT_ORDER = new Prefix("--order");
 

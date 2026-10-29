@@ -114,7 +114,7 @@ public class EditCommand extends Command {
 
         return new Person(updatedName, updatedPhone, updatedEmail, updatedAddress,
                 personToEdit.getDebtorId(), updatedOutstandingAmount,
-                personToEdit.getInteractionNotes(), personToEdit.getFollowUpDate(),
+                personToEdit.getInteractionNotes(), personToEdit.getRecoveryStage(), personToEdit.getFollowUpDate(),
                 personToEdit.getFollowUpHistory(), updatedTags, personToEdit.getContactPreferences());
     }
 

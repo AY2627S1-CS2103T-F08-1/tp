@@ -37,8 +37,11 @@ public class JsonContactPreferencesTest {
         Person restored = new JsonAdaptedPerson(original).toModelType();
         assertEquals(7, restored.getDebtorId());
         assertEquals(original.getContactPreferences(), restored.getContactPreferences());
-        Person legacy = new JsonAdaptedPerson(original.getName().toString(), original.getPhone().toString(),
-                original.getEmail().toString(), original.getAddress().toString(), null).toModelType();
+        Person legacy = new JsonAdaptedPersonBuilder(
+                original.getName().toString(), original.getPhone().toString(),
+                original.getEmail().toString(), original.getAddress().toString(), null)
+                .build()
+                .toModelType();
         assertEquals(new ContactPreferences(null, null), legacy.getContactPreferences());
     }
 

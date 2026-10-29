@@ -12,6 +12,13 @@ import java.util.Optional;
 /** An immutable transition between two scheduled follow-up dates. */
 public final class FollowUpEvent {
 
+    public static final String MESSAGE_INVALID_DATE =
+            "Follow-up date must use the valid YYYY-MM-DD format.";
+    public static final String MESSAGE_INVALID_STORAGE =
+            "Follow-up event contains an invalid timestamp, action or date.";
+    public static final String MESSAGE_INVALID_LEGACY_RESCHEDULE =
+            "Legacy rescheduled event has no prior scheduled date.";
+
     /** The kind of follow-up state change represented by an event. */
     public enum Action {
         SCHEDULED,
@@ -21,6 +28,7 @@ public final class FollowUpEvent {
     }
 
     public static final DateTimeFormatter STORAGE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    private static final DateTimeFormatter DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private final LocalDateTime timestamp;
     private final Action action;
@@ -81,7 +89,7 @@ public final class FollowUpEvent {
         Action parsedAction = parseAction(action);
         Optional<LocalDate> parsedDate = Optional.ofNullable(date).map(FollowUpEvent::parseDate);
         if (parsedAction == Action.RESCHEDULED && currentDate.isEmpty()) {
-            throw new IllegalArgumentException("Legacy rescheduled event has no prior scheduled date.");
+            throw new IllegalArgumentException(MESSAGE_INVALID_LEGACY_RESCHEDULE);
         }
         Optional<LocalDate> previousDate = parsedAction == Action.CLEARED || parsedAction == Action.COMPLETED
                 ? parsedDate : parsedAction == Action.RESCHEDULED ? currentDate : Optional.empty();
@@ -100,40 +108,41 @@ public final class FollowUpEvent {
     }
 
     private static LocalDateTime parseTimestamp(String timestamp) {
+        final LocalDateTime parsed;
         try {
-            LocalDateTime parsed = LocalDateTime.parse(timestamp, STORAGE_FORMATTER);
-            if (parsed.getYear() < 1 || parsed.getYear() > 9999) {
-                throw new DateTimeParseException("Year is outside 0001–9999", timestamp, 0);
-            }
-            return parsed;
-        } catch (DateTimeParseException | NullPointerException exception) {
-            throw new IllegalArgumentException("Follow-up event contains an invalid timestamp, action or date.",
-                    exception);
+            parsed = LocalDateTime.parse(timestamp, STORAGE_FORMATTER);
+        } catch (DateTimeParseException exception) {
+            throw new IllegalArgumentException(MESSAGE_INVALID_STORAGE, exception);
         }
+        if (parsed.getYear() < 1 || parsed.getYear() > 9999) {
+            throw new IllegalArgumentException(MESSAGE_INVALID_STORAGE);
+        }
+        return parsed;
     }
 
     private static Action parseAction(String action) {
+        requireNonNull(action);
         try {
             return Action.valueOf(action);
-        } catch (IllegalArgumentException | NullPointerException exception) {
-            throw new IllegalArgumentException("Follow-up event contains an invalid timestamp, action or date.",
-                    exception);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException(MESSAGE_INVALID_STORAGE, exception);
         }
     }
 
     private static LocalDate parseDate(String date) {
+        return tryParseDate(date).orElseThrow(() -> new IllegalArgumentException(MESSAGE_INVALID_STORAGE));
+    }
+
+    /** Returns the stored calendar date when it uses the strict supported format. */
+    public static Optional<LocalDate> tryParseDate(String date) {
+        if (date == null || !date.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            return Optional.empty();
+        }
         try {
-            if (!date.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                throw new DateTimeParseException("Not a four-digit ISO date", date, 0);
-            }
             LocalDate parsed = LocalDate.parse(date);
-            if (parsed.getYear() < 1) {
-                throw new DateTimeParseException("Year is outside 0001–9999", date, 0);
-            }
-            return parsed;
-        } catch (DateTimeParseException | NullPointerException exception) {
-            throw new IllegalArgumentException("Follow-up event contains an invalid timestamp, action or date.",
-                    exception);
+            return parsed.getYear() < 1 ? Optional.empty() : Optional.of(parsed);
+        } catch (DateTimeParseException exception) {
+            return Optional.empty();
         }
     }
 
@@ -156,13 +165,12 @@ public final class FollowUpEvent {
 
     @Override
     public String toString() {
-        DateTimeFormatter displayFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         String dates = switch (action) {
             case SCHEDULED -> newDate.map(value -> " " + value).orElse("");
             case RESCHEDULED -> previousDate.flatMap(from -> newDate.map(to -> " " + from + " -> " + to))
                     .orElse("");
             case CLEARED, COMPLETED -> previousDate.map(value -> " " + value).orElse("");
         };
-        return "[" + timestamp.format(displayFormatter) + "] " + action + dates;
+        return "[" + timestamp.format(DISPLAY_FORMATTER) + "] " + action + dates;
     }
 }

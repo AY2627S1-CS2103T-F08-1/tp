@@ -1,0 +1,17 @@
+{
+  "persons": [
+    {
+      "name": "Legacy Missing Stage",
+      "phone": "91234567",
+      "email": "missing@example.com",
+      "address": "1 Legacy Street"
+    },
+    {
+      "name": "Legacy Null Stage",
+      "phone": "92345678",
+      "email": "null@example.com",
+      "address": "2 Legacy Street",
+      "recoveryStage": null
+    }
+  ]
+}

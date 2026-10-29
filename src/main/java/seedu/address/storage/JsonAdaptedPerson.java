@@ -1,7 +1,6 @@
 package seedu.address.storage;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -22,6 +21,7 @@ import seedu.address.model.person.Name;
 import seedu.address.model.person.OutstandingAmount;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.model.person.RecoveryStage;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -40,6 +40,7 @@ class JsonAdaptedPerson {
     private final String address;
     private final Integer debtorId;
     private final String outstandingAmount;
+    private final String recoveryStage;
     private final JsonContactPreferences contactPreferences;
     private final List<JsonAdaptedInteractionNote> interactionNotes = new ArrayList<>();
     private final String followUpDate;
@@ -55,6 +56,7 @@ class JsonAdaptedPerson {
             @JsonProperty("debtorId") Integer debtorId,
             @JsonProperty("outstandingAmount") String outstandingAmount,
             @JsonProperty("interactionNotes") List<JsonAdaptedInteractionNote> interactionNotes,
+            @JsonProperty("recoveryStage") String recoveryStage,
             @JsonProperty("followUpDate") String followUpDate,
             @JsonProperty("followUpHistory") List<JsonAdaptedFollowUpEvent> followUpHistory,
             @JsonProperty("tags") List<JsonAdaptedTag> tags,
@@ -65,6 +67,7 @@ class JsonAdaptedPerson {
         this.address = address;
         this.debtorId = debtorId;
         this.outstandingAmount = outstandingAmount;
+        this.recoveryStage = recoveryStage;
         this.followUpDate = followUpDate;
         this.contactPreferences = contactPreferences;
         if (interactionNotes != null) {
@@ -78,45 +81,6 @@ class JsonAdaptedPerson {
         }
     }
 
-    /** Compatibility constructor for older callers. */
-    public JsonAdaptedPerson(String name, String phone, String email, String address, Integer debtorId,
-            String outstandingAmount, List<JsonAdaptedInteractionNote> interactionNotes, List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
-                null, null, tags, null);
-    }
-
-    /** Compatibility constructor for callers that specify contact preferences but no follow-up data. */
-    public JsonAdaptedPerson(String name, String phone, String email, String address, Integer debtorId,
-            String outstandingAmount, List<JsonAdaptedInteractionNote> interactionNotes, List<JsonAdaptedTag> tags,
-            JsonContactPreferences contactPreferences) {
-        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
-                null, null, tags, contactPreferences);
-    }
-
-    /** Compatibility constructor for callers that specify follow-up data but no contact preferences. */
-    public JsonAdaptedPerson(String name, String phone, String email, String address, Integer debtorId,
-            String outstandingAmount, List<JsonAdaptedInteractionNote> interactionNotes, String followUpDate,
-            List<JsonAdaptedFollowUpEvent> followUpHistory, List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
-                followUpDate, followUpHistory, tags, null);
-    }
-
-    /**
-     * Backwards-compatible constructor for data and tests that do not specify an amount.
-     */
-    public JsonAdaptedPerson(String name, String phone, String email, String address,
-            List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, null, null, null, null, null, tags, null);
-    }
-
-    /**
-     * Backwards-compatible constructor for callers specifying an amount but no remark.
-     */
-    public JsonAdaptedPerson(String name, String phone, String email, String address,
-            String outstandingAmount, List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, null, outstandingAmount, null, null, null, tags, null);
-    }
-
     /**
      * Converts a given {@code Person} into this class for Jackson use.
      */
@@ -127,6 +91,7 @@ class JsonAdaptedPerson {
         address = source.getAddress().value;
         debtorId = source.getDebtorId() == 0 ? null : source.getDebtorId();
         outstandingAmount = source.getOutstandingAmount().toString();
+        recoveryStage = source.getRecoveryStage().toString();
         followUpDate = source.getFollowUpDate().map(Object::toString).orElse(null);
         contactPreferences = new JsonContactPreferences(source.getContactPreferences());
         interactionNotes.addAll(source.getInteractionNotes().stream()
@@ -200,11 +165,16 @@ class JsonAdaptedPerson {
         } catch (IllegalArgumentException exception) {
             throw new IllegalValueException(OutstandingAmount.MESSAGE_CONSTRAINTS);
         }
-        final Optional<LocalDate> modelFollowUpDate;
+        final RecoveryStage modelRecoveryStage;
         try {
-            modelFollowUpDate = followUpDate == null ? Optional.empty() : Optional.of(parseFollowUpDate(followUpDate));
-        } catch (DateTimeParseException exception) {
-            throw new IllegalValueException("Follow-up date must be a valid ISO local date.");
+            modelRecoveryStage = recoveryStage == null ? RecoveryStage.NEW : RecoveryStage.parse(recoveryStage);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalValueException(RecoveryStage.MESSAGE_CONSTRAINTS);
+        }
+        final Optional<LocalDate> modelFollowUpDate = followUpDate == null
+                ? Optional.empty() : FollowUpEvent.tryParseDate(followUpDate);
+        if (followUpDate != null && modelFollowUpDate.isEmpty()) {
+            throw new IllegalValueException(FollowUpEvent.MESSAGE_INVALID_DATE);
         }
         final List<FollowUpEvent> modelFollowUpHistory = new ArrayList<>();
         Optional<LocalDate> eventCurrentDate = Optional.empty();
@@ -230,18 +200,8 @@ class JsonAdaptedPerson {
         }
         return new Person(modelName, modelPhone, modelEmail, modelAddress,
                 debtorId == null ? 0 : debtorId, modelOutstandingAmount, modelInteractionNotes,
-                modelFollowUpDate, modelFollowUpHistory, modelTags,
+                modelRecoveryStage, modelFollowUpDate, modelFollowUpHistory, modelTags,
                 contactPreferences == null ? new ContactPreferences(null, null) : contactPreferences.toModelType());
     }
 
-    private LocalDate parseFollowUpDate(String value) {
-        if (!value.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            throw new DateTimeParseException("Invalid ISO follow-up date", value, 0);
-        }
-        LocalDate parsed = LocalDate.parse(value);
-        if (parsed.getYear() < 1) {
-            throw new DateTimeParseException("Follow-up year must be 0001–9999", value, 0);
-        }
-        return parsed;
-    }
 }

@@ -15,8 +15,10 @@ import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -27,8 +29,10 @@ import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.person.FollowUpEvent;
 import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.RecoveryStage;
 import seedu.address.testutil.EditPersonDescriptorBuilder;
 import seedu.address.testutil.PersonBuilder;
 
@@ -131,6 +135,32 @@ public class EditCommandTest {
 
         assertCommandSuccess(editCommand, debtorModel, expectedMessage, expectedModel);
         assertEquals(notes, debtorModel.getFilteredPersonList().getFirst().getInteractionNotes());
+    }
+
+    @Test
+    public void execute_otherFieldsEdited_preservesRecoveryStageAndFollowUp() {
+        LocalDate followUpDate = LocalDate.of(2026, 11, 3);
+        FollowUpEvent event = new FollowUpEvent(LocalDateTime.of(2026, 10, 29, 12, 0),
+                FollowUpEvent.Action.SCHEDULED, Optional.empty(), Optional.of(followUpDate));
+        Person debtor = new PersonBuilder()
+                .withRecoveryStage(RecoveryStage.CONTACTED)
+                .withFollowUpDate(Optional.of(followUpDate))
+                .withFollowUpHistory(List.of(event))
+                .build();
+        Model debtorModel = new ModelManager(new AddressBook(), new UserPrefs());
+        Person debtorInModel = debtorModel.addPerson(debtor);
+        Person editedPerson = new PersonBuilder(debtorInModel).withName(VALID_NAME_BOB).build();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
+                new EditPersonDescriptorBuilder().withName(VALID_NAME_BOB).build());
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson));
+        Model expectedModel = new ModelManager(new AddressBook(debtorModel.getAddressBook()), new UserPrefs());
+        expectedModel.setPerson(debtorInModel, editedPerson);
+
+        assertCommandSuccess(editCommand, debtorModel, expectedMessage, expectedModel);
+        Person actual = debtorModel.getFilteredPersonList().getFirst();
+        assertEquals(RecoveryStage.CONTACTED, actual.getRecoveryStage());
+        assertEquals(Optional.of(followUpDate), actual.getFollowUpDate());
+        assertEquals(List.of(event), actual.getFollowUpHistory());
     }
 
     @Test
