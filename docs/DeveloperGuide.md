@@ -267,11 +267,26 @@ so a debtor is included when any keyword matches either field.
 ![Interactions for `find` followed by `list`](images/FindListSequenceDiagram.png)
 
 `FindCommandParser` normalises surrounding and repeated whitespace before constructing a
-`NameContainsKeywordsPredicate`. When `FindCommand` executes, it passes that predicate to
-`ModelManager#updateFilteredPersonList`. The JavaFX `FilteredList` applies the predicate to the active debtors, while
-the existing `SortedList` returned by `ModelManager#getFilteredPersonList` keeps the displayed matches in ascending
+`NameContainsKeywordsPredicate`. When `FindCommand` executes, it passes that predicate and the default ID comparator
+to `ModelManager#updatePersonView`. The JavaFX `FilteredList` applies the predicate to the active debtors, while the
+existing `SortedList` returned by `ModelManager#getFilteredPersonList` keeps the displayed matches in ascending
 persistent debtor ID order. The second half of the diagram shows how `list` restores all active debtors by replacing
-the search predicate with `Model#PREDICATE_SHOW_ALL_PERSONS`.
+the search predicate with `Model#PREDICATE_SHOW_ALL_PERSONS` and restoring the same default comparator.
+
+The `sort` command changes only the comparator of that `SortedList`, so the current `FilteredList` predicate and the
+backing `AddressBook` remain unchanged. `SortCommandParser` requires one `--by` option (`id`, `name`, or `amount`) and
+accepts an optional `--order` option (`asc` or `desc`). It rejects duplicate or unknown options and extra values before
+executing the command. The parser converts case-insensitive tokens to `PersonSort.Field` and `PersonSort.Direction`;
+the command asks `PersonSort` for the corresponding comparator and passes it to
+`ModelManager#updateSortedPersonList`.
+
+`PersonSort` compares names with `Locale.ROOT` case normalisation and outstanding amounts using their stored
+`BigDecimal` values. Name and amount comparators append persistent ID ascending as a deterministic final tie-breaker.
+Only the primary comparator is reversed for descending sorts, so equal names or amounts still appear by ascending ID.
+An ID sort applies the requested direction directly. The observable `SortedList` re-evaluates its order when a
+displayed person is edited, added, or deleted; index-based commands therefore operate on exactly the order visible in
+the UI. `find`, `list`, and a successful `add` deliberately restore the default ID-ascending view, while edit/delete
+preserve the current predicate and comparator.
 
 #### Design considerations
 
@@ -282,9 +297,13 @@ the search predicate with `Model#PREDICATE_SHOW_ALL_PERSONS`.
   additional punctuation or whitespace normalisation is needed at search time. This keeps phone searches predictable:
   the user must enter the complete stored number.
 * **One model-level `SortedList` instead of sorting inside each command:** `ModelManager` wraps its `FilteredList` in a
-  single `SortedList` ordered by persistent debtor ID. Both `find` and `list`, as well as any UI observer of
-  `getFilteredPersonList`, therefore see the same order without duplicating sorting logic. The list stays ordered when
-  the predicate or backing data changes, rather than only when a particular command happens to run.
+  single `SortedList`. `find`, `list`, `sort`, and every UI observer of `getFilteredPersonList` therefore share the
+  same order without copying or mutating persistent records. The list stays ordered when the predicate or backing data
+  changes, rather than only when a particular command happens to run.
+* **Deterministic tie-breaking instead of relying on insertion order:** Equal normalized names or numeric amounts are
+  ordered by persistent ID ascending. This makes displayed indexes reproducible after edits and restarts. Reversing
+  only the selected primary comparator avoids the surprising result where two equal amounts swap relative order when
+  the user changes from ascending to descending.
 * **Wrapping card content instead of truncating it:** Debtor-card labels for names, contact details, addresses, and
   outstanding amounts allow text wrapping, while tags are placed in a `FlowPane`. This preserves identifying and
   financial information when the window is narrow or a value is long. The persistent ID is kept at its preferred
@@ -651,6 +670,21 @@ regression checks, but they do not replace exploratory testing on each supported
    Expected: The complete active-debtor list is restored.
 1. Run `list extra` and then `find` with no keyword.<br>
    Expected: Each command is rejected and the displayed data remains unchanged.
+1. Run `find alex DAVID`, followed by `sort --by name --order desc`.<br>
+   Expected: The same two matching debtors remain visible and are ordered by name descending. No data file is written.
+1. Run `list`, then `sort --by amount --order desc`.<br>
+   Expected: Every active debtor is shown from largest to smallest numeric outstanding amount. Equal amounts are
+   ordered by persistent debtor ID ascending.
+1. Record the first visible debtor ID, run `delete 1`, and inspect the success message.<br>
+   Expected: The recorded visible debtor is deleted, and the remaining debtors retain the amount-descending order.
+1. Run `sort --by name`, edit the first debtor's name so it sorts last, and inspect the list.<br>
+   Expected: The same persistent debtor ID moves to its new position; no other record changes.
+1. Run `sort --by phone`, `sort --by amount --order ascending`, and
+   `sort --by amount --order desc --order asc`.<br>
+   Expected: Each command is rejected with a specific field, order, or duplicate-option error, and the current view and
+   stored data remain unchanged.
+1. Run `list` after any valid sort.<br>
+   Expected: Every active debtor is restored in ascending persistent-ID order.
 
 ### Showing profiles and recording interaction history
 
