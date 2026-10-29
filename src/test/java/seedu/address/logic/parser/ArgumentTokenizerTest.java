@@ -91,6 +91,11 @@ public class ArgumentTokenizerTest {
         argMultimap = ArgumentTokenizer.tokenize("x\tp/100", pSlash);
         assertArgumentPresent(argMultimap, pSlash, "100");
         assertPreamblePresent(argMultimap, "x");
+
+        // a prefix at the very start has no whitespace before it
+        argMultimap = ArgumentTokenizer.tokenize("p/100", pSlash);
+        assertPreamblePresent(argMultimap, "p/100");
+        assertFalse(argMultimap.getValue(pSlash).isPresent());
     }
 
     @Test
