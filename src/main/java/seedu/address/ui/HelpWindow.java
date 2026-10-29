@@ -55,6 +55,10 @@ public class HelpWindow extends UiPart<Stage> {
             list-amount [min/AMOUNT] [max/AMOUNT]
             Example: list-amount min/1000
 
+            Filter debtors by recovery stage in persistent-ID order
+            list-stage STAGE
+            Example: list-stage contacted
+
             Find debtors whose contact window includes a time
             contactable [--at HH:mm] [--method call|sms|email|letter]
             Example: contactable --at 09:30 --method sms

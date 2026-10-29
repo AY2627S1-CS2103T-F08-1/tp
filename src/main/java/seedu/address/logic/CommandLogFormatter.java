@@ -19,6 +19,7 @@ import seedu.address.logic.commands.FollowUpCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListAmountCommand;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.ListStageCommand;
 import seedu.address.logic.commands.NoteCommand;
 import seedu.address.logic.commands.PreviewCommand;
 import seedu.address.logic.commands.RedoCommand;
@@ -50,6 +51,7 @@ public final class CommandLogFormatter {
             HelpCommand.COMMAND_WORD,
             ListCommand.COMMAND_WORD,
             ListAmountCommand.COMMAND_WORD,
+            ListStageCommand.COMMAND_WORD,
             NoteCommand.COMMAND_WORD,
             PreviewCommand.COMMAND_WORD,
             RedoCommand.COMMAND_WORD,
