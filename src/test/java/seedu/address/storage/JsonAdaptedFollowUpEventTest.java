@@ -61,6 +61,17 @@ class JsonAdaptedFollowUpEventTest {
     }
 
     @Test
+    void toModelType_legacyDateWithOnlyNewDate_prefersCurrentField() throws Exception {
+        JsonAdaptedFollowUpEvent adapted = new JsonAdaptedFollowUpEvent(
+                TIMESTAMP, "SCHEDULED", "2099-12-31", null, "2026-11-03");
+
+        FollowUpEvent event = adapted.toModelType(Optional.empty());
+
+        assertEquals(Optional.empty(), event.getPreviousDate());
+        assertEquals(Optional.of(LocalDate.parse("2026-11-03")), event.getNewDate());
+    }
+
+    @Test
     void toModelType_missingTimestamp_throwsIllegalValueException() {
         JsonAdaptedFollowUpEvent adapted = new JsonAdaptedFollowUpEvent(
                 null, "SCHEDULED", null, null, "2026-11-03");

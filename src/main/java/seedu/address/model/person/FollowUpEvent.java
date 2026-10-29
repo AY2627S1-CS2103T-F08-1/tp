@@ -130,19 +130,20 @@ public final class FollowUpEvent {
     }
 
     private static LocalDate parseDate(String date) {
-        if (!date.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            throw new IllegalArgumentException(MESSAGE_INVALID_STORAGE);
+        return tryParseDate(date).orElseThrow(() -> new IllegalArgumentException(MESSAGE_INVALID_STORAGE));
+    }
+
+    /** Returns the stored calendar date when it uses the strict supported format. */
+    public static Optional<LocalDate> tryParseDate(String date) {
+        if (date == null || !date.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            return Optional.empty();
         }
-        final LocalDate parsed;
         try {
-            parsed = LocalDate.parse(date);
+            LocalDate parsed = LocalDate.parse(date);
+            return parsed.getYear() < 1 ? Optional.empty() : Optional.of(parsed);
         } catch (DateTimeParseException exception) {
-            throw new IllegalArgumentException(MESSAGE_INVALID_STORAGE, exception);
+            return Optional.empty();
         }
-        if (parsed.getYear() < 1) {
-            throw new IllegalArgumentException(MESSAGE_INVALID_STORAGE);
-        }
-        return parsed;
     }
 
     @Override

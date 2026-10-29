@@ -1,7 +1,6 @@
 package seedu.address.storage;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -173,7 +172,7 @@ class JsonAdaptedPerson {
             throw new IllegalValueException(RecoveryStage.MESSAGE_CONSTRAINTS);
         }
         final Optional<LocalDate> modelFollowUpDate = followUpDate == null
-                ? Optional.empty() : tryParseFollowUpDate(followUpDate);
+                ? Optional.empty() : FollowUpEvent.tryParseDate(followUpDate);
         if (followUpDate != null && modelFollowUpDate.isEmpty()) {
             throw new IllegalValueException(FollowUpEvent.MESSAGE_INVALID_DATE);
         }
@@ -205,15 +204,4 @@ class JsonAdaptedPerson {
                 contactPreferences == null ? new ContactPreferences(null, null) : contactPreferences.toModelType());
     }
 
-    private Optional<LocalDate> tryParseFollowUpDate(String value) {
-        if (!value.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            return Optional.empty();
-        }
-        try {
-            LocalDate parsed = LocalDate.parse(value);
-            return parsed.getYear() < 1 ? Optional.empty() : Optional.of(parsed);
-        } catch (DateTimeParseException exception) {
-            return Optional.empty();
-        }
-    }
 }
