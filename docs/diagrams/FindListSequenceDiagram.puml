@@ -16,8 +16,10 @@ participant "sortedPersons:\nSortedList" as SortedList MODEL_COLOR
 end box
 
 note over ModelManager, SortedList
-sortedPersons wraps filteredPersons and orders
-results by ascending persistent debtor ID.
+sortedPersons wraps filteredPersons. find and list reset the comparator to
+PersonSort.DEFAULT_COMPARATOR (ascending persistent debtor ID), replacing any earlier sort.
+LogicManager runs each command on a transaction copy; as these commands change no
+debtor data, the copy is published without saving (m below stands for that copy).
 end note
 
 [-> LogicManager : execute("find Alice 91234567")
@@ -28,7 +30,7 @@ with predicate p.
 end note
 LogicManager -> FindCommand : execute(m)
 activate FindCommand
-FindCommand -> ModelManager : updateFilteredPersonList(p)
+FindCommand -> ModelManager : updatePersonView(p, DEFAULT_COMPARATOR)
 activate ModelManager
 ModelManager -> FilteredList : setPredicate(p)
 activate FilteredList
@@ -41,6 +43,7 @@ end
 FilteredList -> SortedList : change notification
 FilteredList --> ModelManager
 deactivate FilteredList
+ModelManager -> SortedList : setComparator(DEFAULT_COMPARATOR)
 ModelManager --> FindCommand
 deactivate ModelManager
 FindCommand -> ModelManager : getFilteredPersonList()
@@ -61,13 +64,14 @@ The parser has already created l.
 end note
 LogicManager -> ListCommand : execute(m)
 activate ListCommand
-ListCommand -> ModelManager : updateFilteredPersonList(\nPREDICATE_SHOW_ALL_PERSONS)
+ListCommand -> ModelManager : updatePersonView(\nPREDICATE_SHOW_ALL_PERSONS,\nDEFAULT_COMPARATOR)
 activate ModelManager
 ModelManager -> FilteredList : setPredicate(\nPREDICATE_SHOW_ALL_PERSONS)
 activate FilteredList
 FilteredList -> SortedList : change notification
 FilteredList --> ModelManager
 deactivate FilteredList
+ModelManager -> SortedList : setComparator(DEFAULT_COMPARATOR)
 ModelManager --> ListCommand
 deactivate ModelManager
 ListCommand -> ModelManager : getFilteredPersonList()

@@ -113,7 +113,7 @@ How the `Logic` component works:
 
 #### Delete command implementation
 
-`delete INDEX` uses a one-based index into the debtor list currently shown by the model. `ModelManager#getFilteredPersonList()` returns that filtered list sorted by persistent debtor ID, so a preceding `find` affects which debtor `delete 1` selects. The index is not a debtor ID and is checked against the displayed list at execution time.
+`delete INDEX` uses a one-based index into the debtor list currently shown by the model. `ModelManager#getFilteredPersonList()` returns that filtered list in its current display order, which is ascending persistent debtor ID unless a `sort` command changed it, so a preceding `find` or `sort` affects which debtor `delete 1` selects. The index is not a debtor ID and is checked against the displayed list at execution time.
 
 `DeleteCommandParser` accepts a positive decimal integer and strips leading zeroes. Empty input, non-digits, zero, and negative values produce an invalid-command-format error with the command usage. The parser keeps the normalized index as decimal text, so very large inputs do not overflow an integer during parsing. `DeleteCommand` checks it against the current displayed-list size using decimal length and lexical comparison before converting an in-range value to an integer. An index outside the list produces an actionable range error; when the list is empty, the error suggests running `list` or adjusting the `find` query. For an index longer than 100 digits, feedback shows its first 20 digits and total digit count. These parse and range failures do not change the model or trigger a save.
 
@@ -793,8 +793,11 @@ regression checks, but they do not replace exploratory testing on each supported
 
 ### Filtering by outstanding amount
 
-1. Add three debtors with outstanding amounts `o/0`, `o/500`, and `o/1000`, then run `list` and note their IDs.<br>
-   Expected: All three debtors are displayed in ascending persistent-ID order.
+Use a disposable data folder and run `clear` first, because a fresh folder starts with sample debtors.
+
+1. Add three debtors with distinct phone numbers and email addresses and outstanding amounts `o/0`, `o/500`, and
+   `o/1000`, then run `list` and note their IDs.<br>
+   Expected: Exactly these three debtors are displayed in ascending persistent-ID order.
 1. Run `list-amount min/500 max/1000`.<br>
    Expected: The `S$500.00` and `S$1,000.00` debtors are displayed; both boundaries are included.
 1. Run `list-amount max/500`, then use `edit 1` on the first displayed debtor with a harmless name change.<br>

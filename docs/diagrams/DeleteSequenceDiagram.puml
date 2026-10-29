@@ -13,6 +13,7 @@ end box
 
 box Model MODEL_COLOR_T1
 participant "m:ModelManager" as Model MODEL_COLOR
+participant "c:ModelManager\n(candidate copy)" as Candidate MODEL_COLOR
 participant "a:AddressBook" as AddressBook MODEL_COLOR
 end box
 
@@ -54,16 +55,22 @@ else INDEX is a positive decimal integer
     AddressBookParser --> LogicManager : d
     deactivate AddressBookParser
 
-    LogicManager -> DeleteCommand : execute(m)
+    LogicManager -> Model : createTransactionCopy()
+    activate Model
+    Model --> LogicManager : c
+    deactivate Model
+
+    LogicManager -> DeleteCommand : execute(c)
     activate DeleteCommand
 
-    DeleteCommand -> Model : getFilteredPersonList()
-    activate Model
-    Model --> DeleteCommand : filtered list sorted by debtor ID
-    deactivate Model
+    DeleteCommand -> Candidate : getFilteredPersonList()
+    activate Candidate
+    Candidate --> DeleteCommand : displayed list
+    deactivate Candidate
     note right of DeleteCommand
         INDEX is one-based in the currently displayed list.
-        A find filter changes which person each index selects.
+        A find filter or sort changes which person each index selects;
+        the default order is ascending debtor ID.
     end note
 
     alt INDEX is greater than displayed list size
@@ -71,15 +78,17 @@ else INDEX is a positive decimal integer
         Messages --> DeleteCommand : range error or empty-list guidance
         DeleteCommand --> LogicManager : throws CommandException
         deactivate DeleteCommand
-        [<--LogicManager : throws CommandException
+        [<--LogicManager : throws CommandException\n(candidate discarded, m unchanged)
         deactivate LogicManager
     else INDEX is within displayed list
-        DeleteCommand -> Model : deletePerson(person at INDEX - 1)
-        Model -> AddressBook : removePerson(person)
+        DeleteCommand -> Candidate : deletePerson(person at INDEX - 1)
+        activate Candidate
+        Candidate -> AddressBook : removePerson(person)
         activate AddressBook
-        AddressBook --> Model
+        AddressBook --> Candidate
         deactivate AddressBook
-        Model --> DeleteCommand
+        Candidate --> DeleteCommand
+        deactivate Candidate
 
         create CommandResult
         DeleteCommand -> CommandResult : success with formatted debtor details
@@ -89,19 +98,26 @@ else INDEX is a positive decimal integer
         DeleteCommand --> LogicManager : r
         deactivate DeleteCommand
 
-        LogicManager -> Model : getAddressBook()
-        Model --> LogicManager : updated address book
-        LogicManager -> Storage : saveAddressBook(address book)
+        LogicManager -> Candidate : commitAddressBook()
+        note right of Candidate
+            The undo history entry lives on the candidate,
+            so a failed save discards it too.
+        end note
+        LogicManager -> Storage : saveAddressBook(c's address book)
         activate Storage
         alt save succeeds
             Storage --> LogicManager : saved
             deactivate Storage
+            LogicManager -> Model : publishTransaction(c)
+            activate Model
+            Model --> LogicManager
+            deactivate Model
             [<--LogicManager : r
             deactivate LogicManager
         else save fails
             Storage --> LogicManager : IOException / AccessDeniedException
             deactivate Storage
-            [<--LogicManager : throws CommandException\n(in-memory removal remains)
+            [<--LogicManager : throws CommandException\n(c discarded: data, history and view in m unchanged)
             deactivate LogicManager
         end
     end
@@ -109,8 +125,8 @@ end
 
 note over Model, Storage
     The removed Person includes the debtor profile and interaction notes.
-    A successful save removes the complete record from persisted data.
-    The current model has no undo/redo history; show --id cannot find a deleted debtor.
+    A successful save removes the complete record from persisted data, and undo can restore it
+    during the current session. show --id cannot find a deleted debtor.
 end note
 
 @enduml
