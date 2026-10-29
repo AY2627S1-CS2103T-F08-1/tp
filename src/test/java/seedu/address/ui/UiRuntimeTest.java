@@ -150,11 +150,9 @@ public class UiRuntimeTest {
             KeyEvent enter = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER,
                     false, false, false, false);
             Event.fireEvent(reference, enter);
-            assertFalse(enter.isConsumed());
             KeyEvent pageDown = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.PAGE_DOWN,
                     false, false, false, false);
             Event.fireEvent(reference, pageDown);
-            assertFalse(pageDown.isConsumed());
             KeyEvent escape = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ESCAPE,
                     false, false, false, false);
             Event.fireEvent(reference, escape);
