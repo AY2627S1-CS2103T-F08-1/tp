@@ -67,6 +67,24 @@ public class EmailTest {
     }
 
     @Test
+    public void isValidEmail_longInput_validatesWithoutRecursiveMatching() {
+        assertTrue(Email.isValidEmail("a.".repeat(10000) + "a@example.com"));
+        assertTrue(Email.isValidEmail("person@" + "a".repeat(20000) + ".com"));
+        assertFalse(Email.isValidEmail("person@" + "a".repeat(20000) + "!"));
+        assertFalse(Email.isValidEmail("a.".repeat(10000) + "@example.com"));
+    }
+
+    @Test
+    public void isValidEmail_consecutiveDomainHyphens_acceptsPunycode() {
+        assertTrue(Email.isValidEmail("person@xn--bcher-kva.de"));
+        assertTrue(Email.isValidEmail("person@example.xn--p1ai"));
+        assertTrue(Email.isValidEmail("person@a--b.com"));
+        assertFalse(Email.isValidEmail("person@-xn--bcher-kva.de"));
+        assertFalse(Email.isValidEmail("person@xn--bcher-kva-.de"));
+        assertFalse(Email.isValidEmail("person@xn--bcher-kva..de"));
+    }
+
+    @Test
     public void equals() {
         Email email = new Email("valid@email");
 

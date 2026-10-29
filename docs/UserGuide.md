@@ -113,6 +113,9 @@ A debtor can have any number of tags, including zero.
 * Leading and trailing spaces around command values are removed. Phone numbers accept digits only (at least
   three); spaces within a number, hyphens and `+` are rejected. Country codes and leading zeroes are not
   normalised, so `6591234567` and `91234567` are treated as different numbers.
+* Email addresses accept ASCII Punycode domain labels such as `person@xn--bcher-kva.de`. Domain labels may
+  contain consecutive internal hyphens but must start and end with letters or digits.
+* Addresses must not be blank, including addresses containing only Unicode spaces.
 * Email duplicate checks are case-sensitive: `Alice@example.com` and `alice@example.com` are treated as
   different addresses. Aliases such as `alice+work@example.com` are not matched to `alice@example.com`.
   Check existing records before adding a debtor under a different spelling of the same contact.
@@ -275,9 +278,18 @@ OSPS automatically saves data after every successful data-changing command. You 
 
 ### Editing the data file
 
-OSPS data is saved as `[JAR file location]/data/addressbook.json`. The path is unchanged from the earlier application,
-so an existing data file continues to be discovered after upgrading to `osps.jar`. Advanced users may update data
-directly by editing that JSON file.
+OSPS data is saved as `data/addressbook.json` relative to the **current working folder** (the folder your terminal
+is in when you launch OSPS). This can differ from the folder containing `osps.jar`. Always launch from the same
+working folder to use the same records, including after upgrading the JAR. For example:
+
+```bash
+cd ~/Downloads/osps-data
+java -jar ../osps.jar
+```
+
+Create `osps-data` first if it does not exist. In this example, records are saved to
+`~/Downloads/osps-data/data/addressbook.json`; `preferences.json` is also in `osps-data`.
+Launching from another folder uses a separate dataset. Advanced users may update data directly by editing that JSON file.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 If your changes make the data file invalid, OSPS starts with no debtor records at the next run. The invalid file remains
@@ -290,7 +302,7 @@ range). Edit the data file only if you are confident that you can update it corr
 
 **Q**: How do I transfer my data to another computer?<br>
 **A**: Install OSPS on the other computer and overwrite the data file it creates with the `data/addressbook.json` file
-from your previous OSPS home folder.
+from your previous OSPS working folder. Launch OSPS from the destination working folder each time.
 
 --------------------------------------------------------------------------------------------------------------------
 

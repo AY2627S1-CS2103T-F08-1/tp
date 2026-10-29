@@ -21,16 +21,6 @@ public class Email {
             + "    - end with a domain label at least 2 characters long\n"
             + "    - have each domain label start and end with alphanumeric characters\n"
             + "    - have each domain label consist of alphanumeric characters, separated only by hyphens, if any.";
-    // alphanumeric and special characters
-    private static final String ALPHANUMERIC_NO_UNDERSCORE = "[^\\W_]+"; // alphanumeric characters except underscore
-    private static final String LOCAL_PART_REGEX = "^" + ALPHANUMERIC_NO_UNDERSCORE + "([" + SPECIAL_CHARACTERS + "]"
-            + ALPHANUMERIC_NO_UNDERSCORE + ")*";
-    private static final String DOMAIN_PART_REGEX = ALPHANUMERIC_NO_UNDERSCORE
-            + "(-" + ALPHANUMERIC_NO_UNDERSCORE + ")*";
-    private static final String DOMAIN_LAST_PART_REGEX = "(" + DOMAIN_PART_REGEX + "){2,}$"; // At least two chars
-    private static final String DOMAIN_REGEX = "(" + DOMAIN_PART_REGEX + "\\.)*" + DOMAIN_LAST_PART_REGEX;
-    public static final String VALIDATION_REGEX = LOCAL_PART_REGEX + "@" + DOMAIN_REGEX;
-
     public final String value;
 
     /**
@@ -48,7 +38,51 @@ public class Email {
      * Returns true if a given string is a valid email.
      */
     public static boolean isValidEmail(String test) {
-        return test.matches(VALIDATION_REGEX);
+        requireNonNull(test);
+        int atIndex = test.indexOf('@');
+        return atIndex > 0 && isValidLocalPart(test, atIndex) && isValidDomain(test, atIndex + 1);
+    }
+
+    /** Checks the local part iteratively so long accepted values cannot exhaust the regex stack. */
+    private static boolean isValidLocalPart(String email, int endIndex) {
+        boolean previousIsAlphanumeric = false;
+        for (int i = 0; i < endIndex; i++) {
+            char character = email.charAt(i);
+            if (isAsciiAlphanumeric(character)) {
+                previousIsAlphanumeric = true;
+            } else if (SPECIAL_CHARACTERS.indexOf(character) >= 0 && previousIsAlphanumeric) {
+                previousIsAlphanumeric = false;
+            } else {
+                return false;
+            }
+        }
+        return previousIsAlphanumeric;
+    }
+
+    /** Checks domain labels, allowing internal hyphen runs such as the ASCII Punycode prefix. */
+    private static boolean isValidDomain(String email, int startIndex) {
+        int labelStart = startIndex;
+        for (int i = startIndex; i <= email.length(); i++) {
+            if (i == email.length() || email.charAt(i) == '.') {
+                if (i == labelStart || !isAsciiAlphanumeric(email.charAt(labelStart))
+                        || !isAsciiAlphanumeric(email.charAt(i - 1))) {
+                    return false;
+                }
+                if (i == email.length()) {
+                    return i - labelStart >= 2;
+                }
+                labelStart = i + 1;
+            } else if (!isAsciiAlphanumeric(email.charAt(i)) && email.charAt(i) != '-') {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /** Matches the ASCII letters and digits accepted by the command syntax. */
+    private static boolean isAsciiAlphanumeric(char character) {
+        return character >= 'a' && character <= 'z' || character >= 'A' && character <= 'Z'
+                || character >= '0' && character <= '9';
     }
 
     @Override
