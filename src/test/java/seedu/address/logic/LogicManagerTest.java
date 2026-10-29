@@ -255,6 +255,7 @@ public class LogicManagerTest {
                 "find Amy",
                 "sort --by amount --order desc",
                 "list",
+                "list-amount min/0",
                 "show --id " + debtor.getDebtorId(),
                 "help",
                 "exit")) {
@@ -262,6 +263,41 @@ public class LogicManagerTest {
         }
 
         assertEquals(0, addressBookStorage.getSaveAttemptCount());
+    }
+
+    @Test
+    public void execute_listAmountThenEditByDisplayedIndex_editsVisibleDebtor() throws Exception {
+        Person hiddenDebtor = model.addPerson(new PersonBuilder(AMY)
+                .withOutstandingAmount("10").build());
+        Person visibleDebtor = model.addPerson(new PersonBuilder(BOB)
+                .withOutstandingAmount("500").build());
+
+        logic.execute("list-amount min/500");
+        assertEquals(List.of(visibleDebtor), logic.getFilteredPersonList());
+
+        logic.execute("edit 1 n/Edited Visible Debtor");
+
+        Person unchangedHiddenDebtor = findPersonById(hiddenDebtor.getDebtorId());
+        Person editedVisibleDebtor = findPersonById(visibleDebtor.getDebtorId());
+        assertEquals(hiddenDebtor.getName(), unchangedHiddenDebtor.getName());
+        assertEquals("Edited Visible Debtor", editedVisibleDebtor.getName().fullName);
+        assertEquals(List.of(editedVisibleDebtor), logic.getFilteredPersonList());
+    }
+
+    @Test
+    public void execute_listAmountThenDeleteByDisplayedIndex_deletesVisibleDebtor() throws Exception {
+        Person hiddenDebtor = model.addPerson(new PersonBuilder(AMY)
+                .withOutstandingAmount("10").build());
+        Person visibleDebtor = model.addPerson(new PersonBuilder(BOB)
+                .withOutstandingAmount("500").build());
+
+        logic.execute("list-amount min/500");
+        assertEquals(List.of(visibleDebtor), logic.getFilteredPersonList());
+
+        logic.execute("delete 1");
+
+        assertEquals(List.of(hiddenDebtor), model.getAddressBook().getPersonList());
+        assertTrue(logic.getFilteredPersonList().isEmpty());
     }
 
     @Test
@@ -739,6 +775,13 @@ public class LogicManagerTest {
         CommandResult result = logic.execute(inputCommand);
         assertEquals(expectedMessage, result.getFeedbackToUser());
         assertEquals(expectedModel, model);
+    }
+
+    private Person findPersonById(int debtorId) {
+        return model.getAddressBook().getPersonList().stream()
+                .filter(person -> person.getDebtorId() == debtorId)
+                .findFirst()
+                .orElseThrow();
     }
 
     /**
