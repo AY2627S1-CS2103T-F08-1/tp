@@ -16,5 +16,7 @@ public class CliSyntax {
     public static final Prefix PREFIX_MAX_AMOUNT = new Prefix("max/");
     public static final Prefix PREFIX_DEBTOR_ID = new Prefix("--id");
     public static final Prefix PREFIX_NOTE_TEXT = new Prefix("--text");
+    public static final Prefix PREFIX_SORT_BY = new Prefix("--by");
+    public static final Prefix PREFIX_SORT_ORDER = new Prefix("--order");
 
 }

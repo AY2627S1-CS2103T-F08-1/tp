@@ -144,6 +144,33 @@ Examples of result messages:
 * `1 active debtor listed.`
 * `5 active debtors listed.`
 
+### Sorting the displayed debtor worklist: `sort`
+
+Sorts the debtors currently shown in the list. It does not add, remove, or modify debtor records, and it does not
+change which debtors an active `find` filter includes.
+
+Format: `sort --by id|name|amount [--order asc|desc]`
+
+* `--by` is required. Choose `id`, `name`, or `amount`.
+* `--order` is optional and defaults to `asc`. Choose `asc` or `desc`.
+* Field and order values are case-insensitive. Options may be written in either order, but each option may appear
+  only once. Unknown options and extra values are rejected without changing the displayed list.
+* Names are compared case-insensitively. Outstanding amounts are compared by their numeric value, not their
+  formatted text.
+* When two debtors have the same name or amount, the lower persistent debtor ID is shown first. This ID tie-breaker
+  remains ascending even when the chosen field is descending.
+* Sorting changes displayed indexes. A following `edit INDEX` or `delete INDEX` acts on the debtor shown at that
+  index after sorting. Check the visible ID before running an index-based command.
+* `sort` preserves the current filtered set. Running `find` starts a new filtered view in ascending ID order.
+  Running `list` restores all active debtors in ascending ID order. A successful `add` also restores that normal
+  list. Edit and delete keep the active filter and sort, and the list refreshes if a changed field affects its order.
+* Sort settings last only for the current session and are not written to the data file.
+
+Examples:
+* `sort --by amount --order desc` shows the largest outstanding amount first.
+* `find Alice` followed by `sort --by name` sorts only the matching debtors by name.
+* `sort --order DESC --by ID` shows the highest persistent debtor ID first.
+
 ### Adding an interaction note: `note`
 
 Adds a timestamped interaction note to the debtor identified by debtor ID.
@@ -221,12 +248,13 @@ Format: `find KEYWORD [MORE_KEYWORDS]`
 
 * The search is case-insensitive; for example, `hans` matches `Hans`.
 * Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
-* Name searches match only full words; for example, `Han` does not match `Hans`.
+* Name searches use literal substrings; for example, `Han` matches `Hans` and `lex` matches `Alex Yeoh`.
+  Punctuation and symbols are matched as ordinary text rather than as regular expressions.
 * A phone search must provide the complete phone number. For example, `91234567` matches that exact phone number,
   but `9123` does not match a phone number such as `91234567`. As every keyword also searches names, `9123` can
-  still match a debtor whose name contains the complete word `9123`.
+  still match a debtor whose name contains the literal substring `9123`.
 * Debtors matching at least one name or phone keyword are returned (an `OR` search). For example,
-  `Alice 98765432` returns debtors whose names contain `Alice` as a full word as well as the debtor whose phone is
+  `Alice 98765432` returns debtors whose names contain `Alice` as a substring as well as the debtor whose phone is
   exactly `98765432`.
 * Leading, trailing, and repeated whitespace is ignored. A blank search is rejected.
 * Results are displayed in ascending persistent debtor ID order. If nothing matches, OSPS reports that no debtors
@@ -234,7 +262,8 @@ Format: `find KEYWORD [MORE_KEYWORDS]`
 * Run `list` to clear the search filter and restore every active debtor.
 
 Examples:
-* `find John` returns `john` and `John Doe`
+* `find Joh` returns `john` and `John Doe`.
+* `find lex` returns names such as `Alex Yeoh` and `Alexandra Tan`.
 * `find 91234567` returns the debtor whose phone number is exactly `91234567`.
 * `find Alice 98765432` returns matches from either the name or phone search term.
 * `find alex david` returns `Alex Yeoh`, `David Li`<br>
@@ -353,5 +382,6 @@ Action | Format, Examples
 **List** | `list`
 **Note** | `note --id DEBTOR_ID --text NOTE_TEXT`<br> e.g., `note --id 1 --text Called debtor, promised payment on Friday.`
 **Show** | `show --id DEBTOR_ID`<br> e.g., `show --id 3`
+**Sort** | `sort --by id\|name\|amount [--order asc\|desc]`<br> e.g., `sort --by amount --order desc`
 **Help** | `help`
 **Exit** | `exit`

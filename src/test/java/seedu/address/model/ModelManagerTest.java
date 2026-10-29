@@ -16,6 +16,9 @@ import org.junit.jupiter.api.Test;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.PersonSort;
+import seedu.address.model.person.PersonSort.Direction;
+import seedu.address.model.person.PersonSort.Field;
 import seedu.address.testutil.AddressBookBuilder;
 import seedu.address.testutil.PersonBuilder;
 
@@ -100,6 +103,57 @@ public class ModelManagerTest {
 
         modelManager.deletePerson(debtorWithIdOne);
         assertEquals(List.of(2, 3, 4), getDisplayedDebtorIds(modelManager));
+    }
+
+    @Test
+    public void updateSortedPersonList_preservesFilterAndUsesComparatorForLaterMutations() {
+        Person alpha = new PersonBuilder(ALICE).withName("Alpha Tan").withDebtorId(3)
+                .withOutstandingAmount("10.00").build();
+        Person beta = new PersonBuilder(BENSON).withName("Beta Lim").withDebtorId(1)
+                .withOutstandingAmount("30.00").build();
+        Person gamma = new PersonBuilder(CARL).withName("Gamma Ong").withDebtorId(2)
+                .withOutstandingAmount("20.00").build();
+        AddressBook addressBook = new AddressBookBuilder().withPerson(alpha).withPerson(beta).withPerson(gamma).build();
+        modelManager = new ModelManager(addressBook, new UserPrefs());
+        modelManager.updateFilteredPersonList(person -> person.getDebtorId() != gamma.getDebtorId());
+
+        modelManager.updateSortedPersonList(PersonSort.createComparator(Field.AMOUNT, Direction.DESCENDING));
+
+        assertEquals(List.of(1, 3), getDisplayedDebtorIds(modelManager));
+        Person editedAlpha = new PersonBuilder(alpha).withOutstandingAmount("40.00").build();
+        modelManager.setPerson(alpha, editedAlpha);
+        assertEquals(List.of(3, 1), getDisplayedDebtorIds(modelManager));
+    }
+
+    @Test
+    public void updatePersonView_replacesFilterAndComparatorTogether() {
+        Person alpha = new PersonBuilder(ALICE).withName("Alpha Tan").withDebtorId(3).build();
+        Person beta = new PersonBuilder(BENSON).withName("Beta Lim").withDebtorId(1).build();
+        Person gamma = new PersonBuilder(CARL).withName("Gamma Ong").withDebtorId(2).build();
+        AddressBook addressBook = new AddressBookBuilder().withPerson(alpha).withPerson(beta).withPerson(gamma).build();
+        modelManager = new ModelManager(addressBook, new UserPrefs());
+
+        modelManager.updatePersonView(person -> person.getDebtorId() != beta.getDebtorId(),
+                PersonSort.createComparator(Field.NAME, Direction.DESCENDING));
+
+        assertEquals(List.of(2, 3), getDisplayedDebtorIds(modelManager));
+    }
+
+    @Test
+    public void updatePersonView_nullArguments_throwNullPointerExceptionWithoutChangingView() {
+        modelManager = new ModelManager(getTypicalAddressBookForNullViewTest(), new UserPrefs());
+        List<Person> originalView = List.copyOf(modelManager.getFilteredPersonList());
+
+        assertThrows(NullPointerException.class, () ->
+                modelManager.updatePersonView(null, PersonSort.DEFAULT_COMPARATOR));
+        assertThrows(NullPointerException.class, () ->
+                modelManager.updatePersonView(PREDICATE_SHOW_ALL_PERSONS, null));
+        assertThrows(NullPointerException.class, () -> modelManager.updateSortedPersonList(null));
+        assertEquals(originalView, modelManager.getFilteredPersonList());
+    }
+
+    private static AddressBook getTypicalAddressBookForNullViewTest() {
+        return new AddressBookBuilder().withPerson(ALICE).withPerson(BENSON).build();
     }
 
     private static List<Integer> getDisplayedDebtorIds(ModelManager modelManager) {

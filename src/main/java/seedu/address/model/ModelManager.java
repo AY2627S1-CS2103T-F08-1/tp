@@ -13,6 +13,7 @@ import javafx.collections.transformation.SortedList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.PersonSort;
 
 /**
  * Represents the in-memory model of the address book data.
@@ -36,7 +37,7 @@ public class ModelManager implements Model {
         this.addressBook = new AddressBook(addressBook);
         this.userPrefs = new UserPrefs(userPrefs);
         filteredPersons = new FilteredList<>(this.addressBook.getPersonList());
-        sortedPersons = new SortedList<>(filteredPersons, Comparator.comparingInt(Person::getDebtorId));
+        sortedPersons = new SortedList<>(filteredPersons, PersonSort.DEFAULT_COMPARATOR);
     }
 
     public ModelManager() {
@@ -87,7 +88,7 @@ public class ModelManager implements Model {
     @Override
     public Person addPerson(Person person) {
         Person addedPerson = addressBook.addPerson(person);
-        updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
+        updatePersonView(PREDICATE_SHOW_ALL_PERSONS, PersonSort.DEFAULT_COMPARATOR);
         return addedPerson;
     }
 
@@ -113,6 +114,19 @@ public class ModelManager implements Model {
     public void updateFilteredPersonList(Predicate<Person> predicate) {
         requireNonNull(predicate);
         filteredPersons.setPredicate(predicate);
+    }
+
+    @Override
+    public void updateSortedPersonList(Comparator<Person> comparator) {
+        requireNonNull(comparator);
+        sortedPersons.setComparator(comparator);
+    }
+
+    @Override
+    public void updatePersonView(Predicate<Person> predicate, Comparator<Person> comparator) {
+        requireAllNonNull(predicate, comparator);
+        filteredPersons.setPredicate(predicate);
+        sortedPersons.setComparator(comparator);
     }
 
     @Override

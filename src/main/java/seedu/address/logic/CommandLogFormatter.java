@@ -17,6 +17,7 @@ import seedu.address.logic.commands.ListAmountCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.NoteCommand;
 import seedu.address.logic.commands.ShowCommand;
+import seedu.address.logic.commands.SortCommand;
 
 /**
  * Formats command information for logs without including command arguments.
@@ -37,7 +38,8 @@ public final class CommandLogFormatter {
             ListCommand.COMMAND_WORD,
             ListAmountCommand.COMMAND_WORD,
             NoteCommand.COMMAND_WORD,
-            ShowCommand.COMMAND_WORD);
+            ShowCommand.COMMAND_WORD,
+            SortCommand.COMMAND_WORD);
 
     private CommandLogFormatter() {
     }
