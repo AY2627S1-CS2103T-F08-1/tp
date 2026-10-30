@@ -3,9 +3,16 @@ layout: page
 title: User Guide
 ---
 
-Orchestration and Scheduling of Payment Scheme (OSPS) v1.5 is a **desktop application for debt recovery agents**.
+Orchestration and Scheduling of Payment Scheme (OSPS) is a **desktop application for debt recovery agents**.
 It manages debtor contact details, outstanding balances, and interaction histories through keyboard-driven commands
 while retaining the benefits of a graphical user interface (GUI).
+
+> **Development guide for the upcoming v1.6:** this page describes the current source branch, not the published
+> v1.5 JAR. If you downloaded v1.5, follow the
+> [versioned v1.5 User Guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/UserGuide.md).
+> That release supports `add`, `edit`, `delete`, `clear`, `find`, `list`, `contact`, `note`, `show`, `sort`,
+> `help`, and `exit`. Other commands below require a development build or a later matching release.
+> Development builds may still display v1.5 in their window title; check the source commit or release asset instead.
 
 * Table of Contents
 {:toc}
@@ -17,8 +24,10 @@ while retaining the benefits of a graphical user interface (GUI).
 1. Ensure that Java `25` or later is installed on your computer.<br>
    **Mac users:** Ensure you have the precise JDK version prescribed [here](https://se-education.org/guides/tutorials/javaInstallationMac.html).
 
-1. Download `osps.jar` from the latest
-   [OSPS release](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases).
+1. For this development version, follow [the setup guide](SettingUp.md) and build the checked-out source with
+   `gradlew.bat shadowJar` on Windows or `./gradlew shadowJar` on macOS/Linux. The output is `build/libs/osps.jar`.
+   The currently published v1.5 download does not implement all commands in this development guide.
+   Use a fresh folder and disposable records when testing a development build.
 
 1. Copy the file to the folder you want to use as the _home folder_ for OSPS.
 
@@ -60,6 +69,12 @@ while retaining the benefits of a graphical user interface (GUI).
 
 ## Features
 
+OSPS commands form one debt-recovery workflow: capture a case, prioritise the current worklist, record recovery work,
+then review or report progress. Read-only worklist commands never modify debtor records, while data-changing commands
+are saved automatically.
+
+![OSPS workflow from case capture through prioritisation and recovery work to review](images/WorkflowOverview.svg)
+
 <div markdown="block" class="alert alert-info">
 
 **:information_source: Notes about the command format:**<br>
@@ -99,16 +114,25 @@ while retaining the benefits of a graphical user interface (GUI).
 Each debtor card shows both a displayed index and a persistent debtor ID. In a heading such as `2. [ID 7] Alex Tan`,
 `2` is the debtor's current displayed index while `7` is the debtor's persistent ID.
 
-* Use the persistent ID with `show --id DEBTOR_ID` and
-  `note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT`.
-* Use the displayed index with `delete INDEX` and `edit INDEX ...`.
-* A persistent ID stays with the same debtor until that debtor is deleted. A displayed index can change after a `find`,
-  `list`, `add`, `edit`, or `delete` command.
+![How displayed index 2 and persistent debtor ID 7 target the same example debtor](images/IdentifierGuide.svg)
+
+Number to use | Commands | How to recognise it | Stability
+--------------|----------|---------------------|----------
+**Persistent debtor ID** | `show`, `note`, `followup`, `promise`, `stage`, `contact`, `export` | The command contains `--id`; use the number inside `[ID ...]` | Stays with the same debtor until deletion
+**Displayed index** | `edit`, `delete`, `preview edit`, `preview delete` | The syntax says `INDEX`; use the number before `[ID ...]` | Can change whenever the visible worklist changes
+
+For example, if a card reads `2. [ID 7] Alex Tan`, use `show --id 7` to view Alex and `delete 2` to delete the
+currently displayed Alex card. Before an index-based edit or deletion, confirm the visible name and `[ID ...]` on
+that card. You can run `preview edit INDEX ...` or `preview delete INDEX` first when you want an additional check.
+
+Filtering and sorting can change displayed indexes without changing persistent IDs. Commands such as `find`, `sort`,
+`list-amount`, `list-stage`, `due`, and `contactable` replace or reorder the visible worklist. After using one of them,
+read the displayed list again before running `edit INDEX` or `delete INDEX`.
 
 ### Viewing help: `help`
 
 Opens a scrollable, keyboard-accessible in-app command reference. It includes the syntax and a short example for
-each released command. The window also retains a button to copy the link to this online User Guide.
+each supported command in that build. The window also retains a button to copy the link to this online User Guide.
 
 ![help message](images/helpMessage.png)
 
@@ -246,6 +270,30 @@ Examples:
 * `followup --id 1 --date 2026-11-05` reschedules a pending date.
 * `followup --id 1 --done` marks the pending follow-up complete.
 
+### Listing follow-ups by date: `due`
+
+Use `due` for follow-ups on or before today, or `due YYYY-MM-DD` for an inclusive cutoff. Use
+`due --from YYYY-MM-DD --to YYYY-MM-DD` for an inclusive range. For the next seven days, enter today as the start and
+six days later as the end. Results are ordered by date then persistent debtor ID; overdue, due-today and upcoming
+labels compare with the computer's local today. `list` restores the complete list. The view does not modify or save
+records.
+
+Details:
+* `due` replaces any current `find`, `list-amount`, `list-stage` or `sort` view with its own list, in follow-up date
+  then persistent-ID order. Displayed indexes used by `edit` and `delete` then refer to that list.
+* Debtors without a pending follow-up are never listed. If nothing matches, OSPS reports `No matching follow-ups.`
+* Dates must be real calendar dates in `YYYY-MM-DD` format, with years from `0001` to `9999`, as for `followup`.
+  Missing, repeated or extra arguments and a start date after the end date are rejected, and the current list stays
+  unchanged.
+* `due` does not change or save debtor data and is not added to the undo history.
+
+Format: `due [YYYY-MM-DD]` or `due --from YYYY-MM-DD --to YYYY-MM-DD`
+
+Examples:
+* `due` lists follow-ups due today or overdue.
+* `due 2026-11-10` lists follow-ups on or before 10 November 2026.
+* `due --from 2026-11-01 --to 2026-11-07` lists follow-ups from 1 to 7 November 2026, both included.
+
 ### Tracking a promised payment date: `promise`
 
 Sets or clears the calendar date on which a debtor promised to pay. This date is separate from the follow-up date.
@@ -268,6 +316,31 @@ Formats:
 Examples:
 * `promise --id 1 --date 2026-11-05`
 * `promise --id 1 --clear`
+
+### Setting contact preferences: `contact`
+
+Use `contact --id ID [--method METHOD | --clear-method] [--hours HH:mm-HH:mm | --clear-hours]` to update a debtor by
+persistent ID. Provide at least one change. Methods are `call`, `sms`, `email`, and `letter`. Hours are local,
+same-day, start-inclusive and end-exclusive, and the start must be before the end. The command records preferences;
+it does not contact the debtor.
+
+Examples:
+
+* `contact --id 3 --method sms --hours 09:00-17:30`
+* `contact --id 3 --clear-method`
+* `contact --id 3 --clear-hours`
+
+Unchanged fields retain their previous values. Use `show --id 3` to see the preferences.
+
+### Finding contactable debtors: `contactable`
+
+Use `contactable [--at HH:mm] [--method call|sms|email|letter]` to find debtors with a configured contact window that
+includes the given local time. Omit `--at` to use the current local time. The start is included and the end is
+excluded. Debtors without hours are excluded; when a method is specified, only debtors with that explicit preference
+match. This is a scheduling aid, not a permission check, and does not contact anyone.
+
+Example: `contactable --at 09:30 --method sms`. The command replaces the displayed list; use `list` to restore all
+debtors.
 
 ### Updating recovery stage: `stage`
 
@@ -305,6 +378,24 @@ Format: `show --id DEBTOR_ID`
 
 Example:
 * `show --id 3` shows the complete profile of the active debtor with ID 3.
+
+### Exporting a debtor profile: `export`
+
+Use `export --id ID` to write the profile and interaction history as UTF-8 text to `exports/debtor-ID.txt` inside the
+OSPS home folder (the folder containing `osps.jar`). An existing export is never overwritten; move or rename it before
+exporting the same ID again. The file contains sensitive debtor information, so share and store it carefully.
+
+Example: `export --id 3` exports the active debtor with persistent ID 3.
+
+### Previewing an edit or deletion: `preview`
+
+Use `preview edit INDEX [FIELDS]` or `preview delete INDEX` to see the result without changing or saving data. `INDEX`
+refers to the current displayed list, including filtering and sorting. Check the previewed name and persistent ID, then
+run the original `edit` or `delete` command to apply the change.
+
+Examples:
+* `preview edit 2 o/S$500.00` shows the proposed balance change for the 2nd displayed debtor.
+* `preview delete 2` identifies the 2nd displayed debtor without deleting the record.
 
 ### Editing a debtor: `edit`
 
@@ -530,49 +621,3 @@ Action | Format, Examples
 **Sort** | `sort --by id\|name\|amount [--order asc\|desc]`<br> e.g., `sort --by amount --order desc`
 **Help** | `help`
 **Exit** | `exit`
-
-### Listing follow-ups by date: `due`
-
-Use `due` for follow-ups on or before today, or `due YYYY-MM-DD` for an inclusive cutoff. Use `due --from YYYY-MM-DD --to YYYY-MM-DD` for an inclusive range. For the next seven days, enter today as the start and six days later as the end. Results are ordered by date then persistent debtor ID; overdue, due-today and upcoming labels compare with the computer's local today. `list` restores the complete list. The view does not modify or save records.
-
-Details:
-* `due` replaces any current `find`, `list-amount`, `list-stage` or `sort` view with its own list, in follow-up date
-  then persistent-ID order. Displayed indexes used by `edit` and `delete` then refer to that list.
-* Debtors without a pending follow-up are never listed. If nothing matches, OSPS reports `No matching follow-ups.`
-* Dates must be real calendar dates in `YYYY-MM-DD` format, with years from `0001` to `9999`, as for `followup`.
-  Missing, repeated or extra arguments and a start date after the end date are rejected, and the current list stays
-  unchanged.
-* `due` does not change or save debtor data and is not added to the undo history.
-
-Format: `due [YYYY-MM-DD]` or `due --from YYYY-MM-DD --to YYYY-MM-DD`
-
-Examples:
-* `due` lists follow-ups due today or overdue.
-* `due 2026-11-10` lists follow-ups on or before 10 November 2026.
-* `due --from 2026-11-01 --to 2026-11-07` lists follow-ups from 1 to 7 November 2026, both included.
-
-### Setting contact preferences: `contact`
-
-Use `contact --id ID [--method METHOD | --clear-method] [--hours HH:mm-HH:mm | --clear-hours]` to update a debtor by persistent ID. Provide at least one change. Methods are `call`, `sms`, `email`, and `letter`. Hours are local, same-day, start-inclusive and end-exclusive, and the start must be before the end. The command records preferences; it does not contact the debtor.
-
-Examples:
-
-* `contact --id 3 --method sms --hours 09:00-17:30`
-* `contact --id 3 --clear-method`
-* `contact --id 3 --clear-hours`
-
-Unchanged fields retain their previous values. Use `show --id 3` to see the preferences.
-
-### Previewing an edit or deletion: `preview`
-
-Use `preview edit INDEX [FIELDS]` or `preview delete INDEX` to see the result without changing or saving data. INDEX refers to the current displayed list, including filtering and sorting. Run the original command to apply it.
-
-### Exporting a debtor profile: `export`
-
-Use `export --id ID` to write the profile and interaction history as UTF-8 text to `exports/debtor-ID.txt` inside the OSPS home folder (the folder containing `osps.jar`). An existing export is never overwritten; move or rename it before exporting the same ID again. The file contains sensitive debtor information, so share and store it carefully.
-
-### Finding contactable debtors: `contactable`
-
-Use `contactable [--at HH:mm] [--method call|sms|email|letter]` to find debtors with a configured contact window that includes the given local time. Omit `--at` to use the current local time. The start is included and the end is excluded. Debtors without hours are excluded; when a method is specified, only debtors with that explicit preference match. This is a scheduling aid, not a permission check, and does not contact anyone.
-
-Example: `contactable --at 09:30 --method sms`. The command replaces the displayed list; use `list` to restore all debtors.

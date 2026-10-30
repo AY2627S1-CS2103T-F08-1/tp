@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="360" viewBox="0 0 1100 360" role="img"
+     aria-labelledby="title description">
+  <title id="title">OSPS debt-recovery workflow</title>
+  <desc id="description">Four connected stages: capture a debtor, prioritise a worklist, record recovery work,
+    and review or report progress.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"
+            markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#475569"/>
+    </marker>
+    <style>
+      .stage { fill: #f8fafc; stroke: #2563eb; stroke-width: 2; rx: 14; }
+      .number { fill: #2563eb; }
+      .heading { fill: #0f172a; font: 700 17px Arial, sans-serif; }
+      .command { fill: #334155; font: 14px Consolas, monospace; }
+      .caption { fill: #475569; font: 14px Arial, sans-serif; }
+      .arrow { stroke: #475569; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .numberText { fill: white; font: 700 18px Arial, sans-serif; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect width="1100" height="360" fill="white"/>
+
+  <rect class="stage" x="20" y="50" width="245" height="245"/>
+  <circle class="number" cx="50" cy="83" r="19"/>
+  <text class="numberText" x="50" y="89">1</text>
+  <text class="heading" x="78" y="90">Capture the case</text>
+  <text class="command" x="45" y="135">add · edit · contact</text>
+  <text class="caption" x="45" y="175">Store contact details, balance,</text>
+  <text class="caption" x="45" y="198">tags and contact preferences.</text>
+  <text class="caption" x="45" y="244">Each debtor receives a stable</text>
+  <text class="caption" x="45" y="267">persistent ID.</text>
+
+  <rect class="stage" x="295" y="50" width="245" height="245"/>
+  <circle class="number" cx="325" cy="83" r="19"/>
+  <text class="numberText" x="325" y="89">2</text>
+  <text class="heading" x="353" y="90">Prioritise work</text>
+  <text class="command" x="320" y="135">find · sort · list-*</text>
+  <text class="command" x="320" y="162">due · contactable</text>
+  <text class="caption" x="320" y="205">Build a focused worklist without</text>
+  <text class="caption" x="320" y="228">changing debtor records.</text>
+  <text class="caption" x="320" y="267">Visible indexes follow this list.</text>
+
+  <rect class="stage" x="570" y="50" width="245" height="245"/>
+  <circle class="number" cx="600" cy="83" r="19"/>
+  <text class="numberText" x="600" y="89">3</text>
+  <text class="heading" x="628" y="90">Record recovery work</text>
+  <text class="command" x="595" y="135">note · followup · promise</text>
+  <text class="command" x="595" y="162">stage</text>
+  <text class="caption" x="595" y="205">Keep outcomes, dates and history</text>
+  <text class="caption" x="595" y="228">with the selected debtor.</text>
+  <text class="caption" x="595" y="267">Changes persist across restarts.</text>
+
+  <rect class="stage" x="845" y="50" width="235" height="245"/>
+  <circle class="number" cx="875" cy="83" r="19"/>
+  <text class="numberText" x="875" y="89">4</text>
+  <text class="heading" x="903" y="90">Review and report</text>
+  <text class="command" x="870" y="135">show · summary · export</text>
+  <text class="command" x="870" y="162">preview · undo · redo</text>
+  <text class="caption" x="870" y="205">Verify the target, assess progress,</text>
+  <text class="caption" x="870" y="228">and recover from mistakes.</text>
+
+  <path class="arrow" d="M265 172 H288"/>
+  <path class="arrow" d="M540 172 H563"/>
+  <path class="arrow" d="M815 172 H838"/>
+
+  <text class="caption" x="550" y="335" text-anchor="middle">A single case moves through one connected recovery workflow.</text>
+</svg>

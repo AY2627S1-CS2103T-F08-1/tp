@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="420" viewBox="0 0 1120 420" role="img" aria-labelledby="title description">
+  <title id="title">OSPS command target resolution</title>
+  <desc id="description">Persistent-ID commands resolve a debtor from every active record, while displayed-index commands resolve a debtor from the currently filtered and sorted worklist.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#40566f"/>
+    </marker>
+    <style>
+      .heading { font: 700 24px Arial, sans-serif; fill: #1f2d3d; }
+      .label { font: 700 17px Arial, sans-serif; fill: #1f2d3d; }
+      .body { font: 15px Arial, sans-serif; fill: #34495e; }
+      .code { font: 14px Consolas, monospace; fill: #1f2d3d; }
+      .arrow { stroke: #40566f; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1120" height="420" rx="18" fill="#f5f8fc"/>
+  <text x="560" y="42" text-anchor="middle" class="heading">Two explicit paths resolve a command's debtor target</text>
+  <rect x="35" y="75" width="270" height="125" rx="14" fill="#e8f1ff" stroke="#4b78b8" stroke-width="2"/>
+  <text x="170" y="105" text-anchor="middle" class="label">Persistent-ID commands</text>
+  <text x="170" y="137" text-anchor="middle" class="code">show --id 7</text>
+  <text x="170" y="162" text-anchor="middle" class="code">note / followup / promise</text>
+  <text x="170" y="185" text-anchor="middle" class="code">stage / contact / export</text>
+  <rect x="35" y="245" width="270" height="125" rx="14" fill="#fff3df" stroke="#cf8c2f" stroke-width="2"/>
+  <text x="170" y="275" text-anchor="middle" class="label">Displayed-index commands</text>
+  <text x="170" y="307" text-anchor="middle" class="code">edit 2</text>
+  <text x="170" y="332" text-anchor="middle" class="code">delete 2</text>
+  <text x="170" y="355" text-anchor="middle" class="code">preview edit/delete 2</text>
+  <path d="M305 138 H400" class="arrow"/>
+  <path d="M305 308 H400" class="arrow"/>
+  <rect x="405" y="75" width="305" height="125" rx="14" fill="#ffffff" stroke="#4b78b8" stroke-width="2"/>
+  <text x="557" y="105" text-anchor="middle" class="label">Model.findPersonById(7)</text>
+  <text x="557" y="137" text-anchor="middle" class="body">Searches every active record</text>
+  <text x="557" y="162" text-anchor="middle" class="body">Ignores the current filter and sort</text>
+  <text x="557" y="185" text-anchor="middle" class="body">Returns the debtor with stable ID 7</text>
+  <rect x="405" y="245" width="305" height="125" rx="14" fill="#ffffff" stroke="#cf8c2f" stroke-width="2"/>
+  <text x="557" y="275" text-anchor="middle" class="label">getFilteredPersonList().get(1)</text>
+  <text x="557" y="307" text-anchor="middle" class="body">Uses the visible filtered and sorted view</text>
+  <text x="557" y="332" text-anchor="middle" class="body">Converts one-based index 2 to offset 1</text>
+  <text x="557" y="355" text-anchor="middle" class="body">Returns exactly the second displayed card</text>
+  <path d="M710 138 H805" class="arrow"/>
+  <path d="M710 308 H805" class="arrow"/>
+  <rect x="810" y="120" width="275" height="220" rx="14" fill="#eaf7ef" stroke="#3d9960" stroke-width="2"/>
+  <text x="947" y="165" text-anchor="middle" class="label">Selected Person</text>
+  <text x="947" y="200" text-anchor="middle" class="body">Commands read or replace the same</text>
+  <text x="947" y="223" text-anchor="middle" class="body">immutable debtor record.</text>
+  <line x1="845" y1="245" x2="1050" y2="245" stroke="#9eb8a8"/>
+  <text x="947" y="275" text-anchor="middle" class="body">The two paths are intentionally</text>
+  <text x="947" y="298" text-anchor="middle" class="body">different and are named explicitly</text>
+  <text x="947" y="321" text-anchor="middle" class="body">in command syntax and feedback.</text>
+</svg>

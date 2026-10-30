@@ -2,6 +2,10 @@
 layout: page
 title: Developer Guide
 ---
+> **Development documentation for the upcoming v1.6.** This guide describes the current source branch.
+> For the implementation shipped in the published v1.5 JAR, refer to the
+> [versioned v1.5 Developer Guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/DeveloperGuide.md).
+
 * Table of Contents
 {:toc}
 
@@ -267,6 +271,41 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### Feature design map
+
+OSPS presents many commands, but they are built from four shared design paths rather than as unrelated features.
+The table below points reviewers to the main design evidence for each product workflow. Parser validation and storage
+round-trip details are described with the owning path instead of being repeated for every command.
+
+Workflow | Commands | Main design coverage
+---------|----------|---------------------
+**Case identity and profile** | `add`, `show`, `edit`, `delete`, `preview`, `export` | [Logic component](#logic-component), [Model component](#model-component), [Storage component](#storage-component), and [Command target resolution](#command-target-resolution)
+**Worklist prioritisation** | `list`, `find`, `sort`, `list-amount`, `list-stage`, `due`, `contactable`, `summary` | [Finding and listing debtors](#finding-and-listing-debtors), [Filtering by outstanding amount](#filtering-by-outstanding-amount), [Filtering by recovery stage](#filtering-by-recovery-stage), [Due-date worklist](#due-date-worklist), and [Contactability worklist](#contactability-worklist)
+**Recovery record** | `note`, `followup`, `promise`, `stage`, `contact` | [Storage component](#storage-component), [Follow-up command and history](#follow-up-command-and-history), [Promised payment date](#promised-payment-date), and [Contact preferences](#contact-preferences)
+**Safety and recovery** | `preview`, `undo`, `redo` | [Preview commands](#preview-commands), [Undo/redo feature](#undoredo-feature), and the transaction boundary described in the [Logic component](#logic-component)
+
+This grouping mirrors the User Guide workflow: capture a case, prioritise the worklist, record recovery work, then
+review or report progress. Read-only views reuse one observable model list; data-changing commands reuse one
+transactional save boundary. This keeps the product cohesive while letting each command validate its own syntax.
+
+### Command target resolution
+
+OSPS supports two deliberately different selection models. Commands whose syntax contains `--id` use
+`Model#findPersonById` to search the complete active address book. The lookup is independent of the current filter and
+sort order, so a persistent-ID command can safely update a debtor who is not visible in the worklist. A deleted ID
+does not resolve, and IDs are never silently redirected to another debtor.
+
+`edit INDEX`, `delete INDEX`, and their previews instead select from `Model#getFilteredPersonList`. Their one-based
+index therefore refers to exactly the list and order shown in the UI at execution time. Filtering or sorting may
+change that index. The parser and command validate the index before conversion, and the success or preview feedback
+identifies the selected debtor. The User Guide gives the corresponding user-facing rule and a card example.
+
+![Persistent-ID commands search all active records while index commands use the displayed worklist](images/CommandTargetResolution.svg)
+
+Both paths return a `Person`. A data-changing command creates an immutable replacement or removes the selected
+record on a transaction copy; `LogicManager` publishes it only after a successful save. `preview` executes the same
+edit or delete against an isolated copy but deliberately neither publishes nor saves it.
+
 ### Privacy-preserving logging
 
 OSPS stores debtor records, so its logs must not become a second, less protected copy of those records. The logging
@@ -399,6 +438,37 @@ The command returns separate empty, singular, and plural messages and overrides 
 Filtering therefore neither writes the JSON file nor creates an undo entry or retries a failed save. The filter is
 session-only: `list`, undo/redo, or a restart restores the default view. `ListStageWorkflowTest` covers stage changes,
 filtered edit/delete, summary scopes, failed saves, undo/redo, and preservation of profile fields through storage.
+
+### Contact preferences
+
+The `contact` command selects a debtor by persistent ID and replaces only the requested preference fields.
+`ContactPreferences` validates a canonical method and a strict same-day window. The immutable value is carried through
+person copies, edits and notes, and stored with the debtor in JSON. Older records without the object load with both
+fields unset; malformed present values follow the normal data-loading error path.
+
+### Preview commands
+
+`preview` parses an edit or delete using the normal parser and executes it on an isolated transaction copy that retains
+the current view. It therefore uses the same displayed-index validation and target as the corresponding real command.
+The preview formats the proposed result but does not publish the copy, save data, or add an undo-history entry.
+
+### Profile export
+
+`export --id ID` uses `Model#findPersonById` and writes the formatted profile to a new UTF-8 file under the application
+home folder's `exports` directory. `CREATE_NEW` access prevents overwriting an existing export, while a symbolic-link
+directory is rejected before writing. The command does not modify or save the address book.
+
+### Contactability worklist
+
+The read-only `contactable` command fixes a local reference time once, then filters the existing observable debtor view
+by the configured window and optional method. Start times are inclusive and end times exclusive. Records without
+configured windows never match. The command does not persist changes; `list` restores the full view.
+
+### Due-date worklist
+
+The read-only `due` command applies an inclusive date predicate and a follow-up-date/ID comparator to the shared
+observable view. It captures the local date once per invocation for status labels. Displayed-index commands operate on
+the same view, while `list` restores the normal ordering.
 
 ### Undo/redo feature
 
@@ -984,23 +1054,3 @@ that debtor's displayed index.
    Expected: The command reference lists every released command and closes without affecting the main window.
 1. Run `exit`, then launch the JAR again.<br>
    Expected: OSPS closes all windows. After relaunch the data from before `exit` is present.
-
-### Contact preferences
-
-The `contact` command selects a debtor by persistent ID and replaces only the requested preference fields. `ContactPreferences` validates a canonical method and a strict same-day window. The immutable value is carried through person copies, edits and notes, and stored with the debtor in JSON. Older records without the object load with both fields unset; malformed present values follow the normal data-loading error path.
-
-### Preview commands
-
-`preview` parses an edit or delete using the normal parser and executes it on an isolated transaction copy, retaining the current view. It does not publish the copy or save data.
-
-### Profile export
-
-`export --id ID` finds the debtor by persistent ID and writes the profile to a new UTF-8 file in the working-directory `exports` folder. Create-only file access prevents overwriting an existing record. The command does not modify or save the address book.
-
-### Contactability worklist
-
-The read-only `contactable` command fixes a local reference time once, then filters the existing observable debtor view by the configured window and optional method. Start times are inclusive and end times exclusive. Records without configured windows never match. The command does not persist changes; `list` restores the full view.
-
-### Due-date worklist
-
-The read-only `due` command applies an inclusive date predicate and a follow-up-date/ID comparator to the shared observable view. It captures the local date once per invocation for status labels. Displayed-index commands operate on the same view, while `list` restores the normal ordering.
