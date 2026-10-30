@@ -107,13 +107,13 @@ How the `Logic` component works:
 
 1. When `Logic` is called upon to execute a command, the command is passed to an `AddressBookParser` object, which in turn creates a parser that matches the command (e.g., `DeleteCommandParser`) and uses it to parse the command.
 1. This results in a `Command` object (more precisely, an object of one of its subclasses e.g., `DeleteCommand`) which is executed by the `LogicManager`.
-1. The command can communicate with the `Model` when it is executed (e.g. to delete a person).<br>
+1. `LogicManager` runs the command on a transaction copy of the `Model`. The command can communicate with that copy when it is executed (e.g. to delete a person). The copy replaces the live data only after a successful save, so a failed save leaves the live data, undo history and view unchanged.<br>
    Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
 1. The result of the command execution is encapsulated as a `CommandResult` object which is returned from `Logic`.
 
 #### Delete command implementation
 
-`delete INDEX` uses a one-based index into the debtor list currently shown by the model. `ModelManager#getFilteredPersonList()` returns that filtered list sorted by persistent debtor ID, so a preceding `find` affects which debtor `delete 1` selects. The index is not a debtor ID and is checked against the displayed list at execution time.
+`delete INDEX` uses a one-based index into the debtor list currently shown by the model. `ModelManager#getFilteredPersonList()` returns that filtered list in its current display order, which is ascending persistent debtor ID unless a `sort` command changed it, so a preceding `find` or `sort` affects which debtor `delete 1` selects. The index is not a debtor ID and is checked against the displayed list at execution time.
 
 `DeleteCommandParser` accepts a positive decimal integer and strips leading zeroes. Empty input, non-digits, zero, and negative values produce an invalid-command-format error with the command usage. The parser keeps the normalized index as decimal text, so very large inputs do not overflow an integer during parsing. `DeleteCommand` checks it against the current displayed-list size using decimal length and lexical comparison before converting an in-range value to an integer. An index outside the list produces an actionable range error; when the list is empty, the error suggests running `list` or adjusting the `find` query. For an index longer than 100 digits, feedback shows its first 20 digits and total digit count. These parse and range failures do not change the model or trigger a save.
 
@@ -743,6 +743,11 @@ regression checks, but they do not replace exploratory testing on each supported
 1. Resize and move the main window, then close OSPS using the **File → Exit** menu.
 1. Run `java -jar osps.jar` again.<br>
    Expected: The last window size and position are restored, subject to the available screen bounds.
+1. Exit OSPS, then edit `preferences.json` so that `windowCoordinates` is `{"x":5000,"y":5000}` (or move the window to a
+   second monitor, exit, and disconnect that monitor). Run `java -jar osps.jar` again.<br>
+   Expected: OSPS opens fully visible and centred on the primary screen. The stale coordinates stay in `preferences.json`
+   (it is saved again at startup) until you exit normally, which saves the real bounds. A saved position that is still on a
+   connected screen, including a second monitor, is kept as saved.
 1. Create an empty sibling folder, open a terminal there and run `java -jar ../path/to/osps.jar` (the folder containing the JAR).
    Add a debtor, then exit.<br>
    Expected: The new folder contains no OSPS files. `preferences.json`, `osps.log.0` and `data/addressbook.json` are in the
@@ -793,8 +798,11 @@ regression checks, but they do not replace exploratory testing on each supported
 
 ### Filtering by outstanding amount
 
-1. Add three debtors with outstanding amounts `o/0`, `o/500`, and `o/1000`, then run `list` and note their IDs.<br>
-   Expected: All three debtors are displayed in ascending persistent-ID order.
+Use a disposable data folder and run `clear` first, because a fresh folder starts with sample debtors.
+
+1. Add three debtors with distinct phone numbers and email addresses and outstanding amounts `o/0`, `o/500`, and
+   `o/1000`, then run `list` and note their IDs.<br>
+   Expected: Exactly these three debtors are displayed in ascending persistent-ID order.
 1. Run `list-amount min/500 max/1000`.<br>
    Expected: The `S$500.00` and `S$1,000.00` debtors are displayed; both boundaries are included.
 1. Run `list-amount max/500`, then use `edit 1` on the first displayed debtor with a harmless name change.<br>
