@@ -368,6 +368,37 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_lastDebtorId_savedFileReloadsAndFurtherAddRejected() throws Exception {
+        Path file = temporaryFolder.resolve("addressBook.json");
+        Files.writeString(file, "{\"persons\":[],\"nextDebtorId\":" + (Integer.MAX_VALUE - 1) + "}");
+        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(file);
+        model = new ModelManager(addressBookStorage.readAddressBook().orElseThrow(), new UserPrefs());
+        logic = new LogicManager(model, new StorageManager(addressBookStorage,
+                new JsonUserPrefsStorage(temporaryFolder.resolve("userPrefs.json"))));
+
+        logic.execute("add n/Boundary Debtor p/89990001 e/boundary@example.com a/Test");
+
+        assertEquals(Integer.MAX_VALUE - 1, model.getAddressBook().getPersonList().get(0).getDebtorId());
+        assertEquals(Integer.MAX_VALUE, addressBookStorage.readAddressBook().orElseThrow().getNextDebtorId());
+        assertEquals(1, addressBookStorage.readAddressBook().orElseThrow().getPersonList().size());
+
+        String savedJson = Files.readString(file);
+        assertThrows(CommandException.class, AddCommand.MESSAGE_ID_EXHAUSTED, () ->
+                logic.execute("add n/Other Debtor p/89990002 e/other@example.com a/Test"));
+        assertEquals(savedJson, Files.readString(file));
+        assertEquals(1, model.getAddressBook().getPersonList().size());
+
+        logic.execute("clear");
+        assertEquals(Integer.MAX_VALUE, addressBookStorage.readAddressBook().orElseThrow().getNextDebtorId());
+        logic.execute("undo");
+        assertEquals(1, addressBookStorage.readAddressBook().orElseThrow().getPersonList().size());
+        logic.execute("undo");
+        // IDs are never reused, so the exhausted counter survives undo.
+        assertEquals(0, addressBookStorage.readAddressBook().orElseThrow().getPersonList().size());
+        assertEquals(Integer.MAX_VALUE, addressBookStorage.readAddressBook().orElseThrow().getNextDebtorId());
+    }
+
+    @Test
     public void execute_undoRedoRestoresEditNoteAndDeletedProfile() throws Exception {
         logic.execute("add n/Amy Smith p/90111111 e/amy@example.com a/1 Main Street");
         int debtorId = model.getAddressBook().getPersonList().get(0).getDebtorId();

@@ -38,6 +38,19 @@ public class JsonSerializableAddressBookTest {
     }
 
     @Test
+    public void toModelType_exhaustedNextDebtorId_roundTrips() throws Exception {
+        AddressBook source = new AddressBook();
+        source.setNextDebtorId(Integer.MAX_VALUE - 1);
+        source.addPerson(TypicalPersons.ALICE.withDebtorId(0));
+        assertEquals(Integer.MAX_VALUE, source.getNextDebtorId());
+
+        AddressBook reloaded = new JsonSerializableAddressBook(source).toModelType();
+
+        assertEquals(source, reloaded);
+        assertEquals(Integer.MAX_VALUE, reloaded.getNextDebtorId());
+    }
+
+    @Test
     public void toModelType_legacyZeroAndMissingDebtorIds_assignsUniqueIds() throws Exception {
         JsonSerializableAddressBook dataFromFile = JsonUtil.readJsonFile(LEGACY_ZERO_DEBTOR_ID_FILE,
                 JsonSerializableAddressBook.class).get();
