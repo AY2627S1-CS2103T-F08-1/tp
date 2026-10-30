@@ -141,7 +141,7 @@ does not cause ID reuse after restart. `clear` deliberately resets allocation. M
 are allocated on load.
 
 `EditCommand` creates a replacement immutable `Person`, preserving its ID, outstanding amount, notes, contact
-preferences, pending follow-up date, follow-up history, and recovery
+preferences, pending follow-up date, follow-up history, promised payment date, and recovery
 stage. A recovery stage is one of `new`, `contacted`, `negotiating`, `disputed`, `broken-promise`, or `settled`.
 `stage --id ID --value STAGE` selects a debtor by persistent ID, so it still targets the correct debtor while the list
 is filtered. Old JSON omits the optional stage and loads as `new`.
@@ -227,6 +227,23 @@ history. Invalid dates, timestamps, actions, or event entries are reported as da
 command runs inside the same isolated save transaction as other persistence-bound commands. A save failure leaves the
 live model, its undo/redo history, and the previous file bytes unchanged; the user can correct the storage problem and
 run the command again.
+
+### Promised payment date
+
+`AddressBookParser` routes `promise` to `PromiseCommandParser`. The parser requires one positive persistent debtor ID
+and exactly one action: a strict real `--date YYYY-MM-DD` from year 0001 through 9999, or `--clear`. Past dates remain
+valid because an agent can record an earlier agreement. `PromiseCommand` searches the complete address book, so a
+current list filter does not affect ID lookup.
+
+`Person` stores the value as an independent `Optional<LocalDate>`. Every immutable copy path, including debtor-ID
+allocation, edits, notes, and follow-up changes, carries the value forward. Setting the same date or clearing an unset
+date returns explicit no-change feedback; the command then reports itself as read-only so `LogicManager` does not write
+the address book. The field does not modify balances, follow-ups, note outcomes, or recovery state.
+
+`JsonAdaptedPerson` stores the optional value as `promisedPaymentDate`. An absent or JSON `null` value loads as unset
+for compatibility with older files. A present malformed value follows the existing structured data-loading error path,
+which leaves the invalid file untouched. `PromiseWorkflowTest` covers other mutations, filtered ID lookup, profile
+display, save/reload, and clearing the persisted value.
 
 ### Contact validation and preference recovery
 
@@ -924,6 +941,24 @@ Use sample data in a fresh folder. In the steps below, `ID1` and `ID2` are persi
    Expected: Each is rejected with an error and the current list is unchanged.
 1. Run `list`.<br>
    Expected: All debtors are shown again in persistent-ID order. `due` never changes or saves debtor data.
+
+### Promised payment dates
+
+Use sample data in a fresh folder. In the steps below, `ID` is a persistent debtor ID shown in the list and `INDEX` is
+that debtor's displayed index.
+
+1. Run `promise --id ID --date 2026-11-05`, then `show --id ID`.<br>
+   Expected: `Promised payment date set to 2026-11-05 for debtor ID ID.` The profile shows the promised payment date,
+   and the follow-up date and outstanding amount are unchanged.
+1. Run `promise --id ID --date 2026-11-05` again.<br>
+   Expected: The command reports `Promised payment date for debtor ID ID is already 2026-11-05; no change made.`
+1. Run `promise --id ID --date 2026-02-30`, `promise --id ID`, and `promise --id ID --date 2026-11-06 --clear`.<br>
+   Expected: Each is rejected with an error and the promised payment date is unchanged.
+1. Run `edit INDEX n/Updated Name`, then exit and relaunch the app and run `show --id ID`.<br>
+   Expected: The promised payment date survives both the edit and the restart.
+1. Run `promise --id ID --clear`, then `promise --id ID --clear` again.<br>
+   Expected: The first reports that the date was cleared. The second reports
+   `No promised payment date is set for debtor ID ID; no change made.`
 
 ### Undo, redo, clear, help and exit
 

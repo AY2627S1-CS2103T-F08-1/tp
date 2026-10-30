@@ -79,6 +79,10 @@ public class HelpWindow extends UiPart<Stage> {
             due [YYYY-MM-DD] | --from YYYY-MM-DD --to YYYY-MM-DD
             Example: due 2026-11-10
 
+            Record or clear the date a debtor promised to pay
+            promise --id DEBTOR_ID --date YYYY-MM-DD | --clear
+            Example: promise --id 1 --date 2026-11-05
+
             Change a debtor's recovery stage
             stage --id DEBTOR_ID --value STAGE
             Example: stage --id 3 --value contacted

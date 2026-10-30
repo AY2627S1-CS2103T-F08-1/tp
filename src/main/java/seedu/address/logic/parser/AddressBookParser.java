@@ -29,6 +29,7 @@ import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.ListStageCommand;
 import seedu.address.logic.commands.NoteCommand;
 import seedu.address.logic.commands.PreviewCommand;
+import seedu.address.logic.commands.PromiseCommand;
 import seedu.address.logic.commands.RedoCommand;
 import seedu.address.logic.commands.ShowCommand;
 import seedu.address.logic.commands.SortCommand;
@@ -70,6 +71,7 @@ public class AddressBookParser {
             Map.entry(ListStageCommand.COMMAND_WORD, arguments -> new ListStageCommandParser().parse(arguments)),
             Map.entry(NoteCommand.COMMAND_WORD, arguments -> new NoteCommandParser().parse(arguments)),
             Map.entry(PreviewCommand.COMMAND_WORD, arguments -> new PreviewCommandParser().parse(arguments)),
+            Map.entry(PromiseCommand.COMMAND_WORD, arguments -> new PromiseCommandParser().parse(arguments)),
             Map.entry(RedoCommand.COMMAND_WORD, arguments -> {
                 if (!arguments.trim().isEmpty()) {
                     throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT,

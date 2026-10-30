@@ -88,6 +88,12 @@ public class JsonAddressBookStorageTest {
     }
 
     @Test
+    public void readAddressBook_invalidPromisedPaymentDate_throwsDataLoadingException() {
+        assertThrows(DataLoadingException.class, () ->
+                readAddressBook("invalidPromisedPaymentDateAddressBook.json"));
+    }
+
+    @Test
     public void readAddressBook_negativeDebtorId_throwsDataLoadingException() {
         assertThrows(DataLoadingException.class, () -> readAddressBook("negativeDebtorIdAddressBook.json"));
     }
