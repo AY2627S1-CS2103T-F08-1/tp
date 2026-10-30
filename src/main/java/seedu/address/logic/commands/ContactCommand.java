@@ -37,8 +37,7 @@ public class ContactCommand extends Command {
     @Override
     public CommandResult execute(Model model) throws CommandException {
         changed = false;
-        Optional<Person> match = model.getAddressBook().getPersonList().stream()
-                .filter(person -> person.getDebtorId() == id).findFirst();
+        Optional<Person> match = model.findPersonById(id);
         if (match.isEmpty()) {
             throw new CommandException(String.format("No debtor with ID %d exists.", id));
         }

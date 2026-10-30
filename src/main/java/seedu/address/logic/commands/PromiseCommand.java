@@ -43,9 +43,7 @@ public class PromiseCommand extends Command {
     @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
-        Person target = model.getAddressBook().getPersonList().stream()
-                .filter(person -> person.getDebtorId() == debtorId)
-                .findFirst()
+        Person target = model.findPersonById(debtorId)
                 .orElseThrow(() -> new CommandException(String.format(MESSAGE_DEBTOR_NOT_FOUND, debtorId)));
         if (target.getPromisedPaymentDate().equals(date)) {
             hasChanges = false;
