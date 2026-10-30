@@ -123,73 +123,119 @@ class JsonAdaptedPerson {
      * @throws IllegalValueException if there were any data constraints violated in the adapted person.
      */
     public Person toModelType() throws IllegalValueException {
-        final List<Tag> personTags = new ArrayList<>();
+        Set<Tag> modelTags = convertTags();
+        Name modelName = convertName();
+        Phone modelPhone = convertPhone();
+        Email modelEmail = convertEmail();
+        Address modelAddress = convertAddress();
+        List<InteractionNote> modelInteractionNotes = convertInteractionNotes();
+        OutstandingAmount modelOutstandingAmount = convertOutstandingAmount();
+        RecoveryStage modelRecoveryStage = convertRecoveryStage();
+        Optional<LocalDate> modelFollowUpDate = parseOptionalDate(followUpDate, FollowUpEvent.MESSAGE_INVALID_DATE);
+        List<FollowUpEvent> modelFollowUpHistory = convertFollowUpHistory(modelFollowUpDate);
+        Optional<LocalDate> modelPromisedPaymentDate = parseOptionalDate(promisedPaymentDate,
+                "Promised payment date must be a valid ISO date from year 0001 to 9999.");
+        int modelDebtorId = convertDebtorId();
+        ContactPreferences modelContactPreferences = convertContactPreferences();
+        return new Person(modelName, modelPhone, modelEmail, modelAddress, modelDebtorId, modelOutstandingAmount,
+                modelInteractionNotes, modelRecoveryStage, modelFollowUpDate, modelFollowUpHistory,
+                modelPromisedPaymentDate, modelTags, modelContactPreferences);
+    }
+
+    private Set<Tag> convertTags() throws IllegalValueException {
+        Set<Tag> personTags = new HashSet<>();
         for (JsonAdaptedTag tag : tags) {
             if (tag == null) {
                 throw new IllegalValueException(NULL_TAG_MESSAGE);
             }
             personTags.add(tag.toModelType());
         }
+        return personTags;
+    }
 
+    private Name convertName() throws IllegalValueException {
         if (name == null) {
             throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT, Name.class.getSimpleName()));
         }
         if (!Name.isValidName(name)) {
             throw new IllegalValueException(Name.MESSAGE_CONSTRAINTS);
         }
-        final Name modelName = new Name(name);
+        return new Name(name);
+    }
 
+    private Phone convertPhone() throws IllegalValueException {
         if (phone == null) {
             throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT, Phone.class.getSimpleName()));
         }
         if (!Phone.isValidPhone(phone)) {
             throw new IllegalValueException(Phone.MESSAGE_CONSTRAINTS);
         }
-        final Phone modelPhone = new Phone(phone);
+        return new Phone(phone);
+    }
 
+    private Email convertEmail() throws IllegalValueException {
         if (email == null) {
             throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT, Email.class.getSimpleName()));
         }
         if (!Email.isValidEmail(email)) {
             throw new IllegalValueException(Email.MESSAGE_CONSTRAINTS);
         }
-        final Email modelEmail = new Email(email);
+        return new Email(email);
+    }
 
+    private Address convertAddress() throws IllegalValueException {
         if (address == null) {
             throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT, Address.class.getSimpleName()));
         }
         if (!Address.isValidAddress(address)) {
             throw new IllegalValueException(Address.MESSAGE_CONSTRAINTS);
         }
-        final Address modelAddress = new Address(address);
+        return new Address(address);
+    }
 
-        final Set<Tag> modelTags = new HashSet<>(personTags);
-        final List<InteractionNote> modelInteractionNotes = new ArrayList<>();
+    private List<InteractionNote> convertInteractionNotes() throws IllegalValueException {
+        List<InteractionNote> modelInteractionNotes = new ArrayList<>();
         for (JsonAdaptedInteractionNote note : interactionNotes) {
             if (note == null) {
                 throw new IllegalValueException(NULL_INTERACTION_NOTE_MESSAGE);
             }
             modelInteractionNotes.add(note.toModelType());
         }
-        final OutstandingAmount modelOutstandingAmount;
+        return modelInteractionNotes;
+    }
+
+    private OutstandingAmount convertOutstandingAmount() throws IllegalValueException {
         try {
-            modelOutstandingAmount = outstandingAmount == null || outstandingAmount.equals("0.00")
+            return outstandingAmount == null || outstandingAmount.equals("0.00")
                     ? new OutstandingAmount() : new OutstandingAmount(outstandingAmount);
         } catch (IllegalArgumentException exception) {
             throw new IllegalValueException(OutstandingAmount.MESSAGE_CONSTRAINTS);
         }
-        final RecoveryStage modelRecoveryStage;
+    }
+
+    private RecoveryStage convertRecoveryStage() throws IllegalValueException {
         try {
-            modelRecoveryStage = recoveryStage == null ? RecoveryStage.NEW : RecoveryStage.parse(recoveryStage);
+            return recoveryStage == null ? RecoveryStage.NEW : RecoveryStage.parse(recoveryStage);
         } catch (IllegalArgumentException exception) {
             throw new IllegalValueException(RecoveryStage.MESSAGE_CONSTRAINTS);
         }
-        final Optional<LocalDate> modelFollowUpDate = followUpDate == null
-                ? Optional.empty() : FollowUpEvent.tryParseDate(followUpDate);
-        if (followUpDate != null && modelFollowUpDate.isEmpty()) {
-            throw new IllegalValueException(FollowUpEvent.MESSAGE_INVALID_DATE);
+    }
+
+    private static Optional<LocalDate> parseOptionalDate(String storedDate, String errorMessage)
+            throws IllegalValueException {
+        if (storedDate == null) {
+            return Optional.empty();
         }
-        final List<FollowUpEvent> modelFollowUpHistory = new ArrayList<>();
+        Optional<LocalDate> parsedDate = FollowUpEvent.tryParseDate(storedDate);
+        if (parsedDate.isEmpty()) {
+            throw new IllegalValueException(errorMessage);
+        }
+        return parsedDate;
+    }
+
+    private List<FollowUpEvent> convertFollowUpHistory(Optional<LocalDate> modelFollowUpDate)
+            throws IllegalValueException {
+        List<FollowUpEvent> modelFollowUpHistory = new ArrayList<>();
         Optional<LocalDate> eventCurrentDate = Optional.empty();
         for (JsonAdaptedFollowUpEvent event : followUpHistory) {
             if (event == null) {
@@ -208,21 +254,20 @@ class JsonAdaptedPerson {
         if (!modelFollowUpHistory.isEmpty() && !eventCurrentDate.equals(modelFollowUpDate)) {
             throw new IllegalValueException("Follow-up history does not match the current follow-up date.");
         }
-        final Optional<LocalDate> modelPromisedPaymentDate = promisedPaymentDate == null
-                ? Optional.empty() : FollowUpEvent.tryParseDate(promisedPaymentDate);
-        if (promisedPaymentDate != null && modelPromisedPaymentDate.isEmpty()) {
-            throw new IllegalValueException("Promised payment date must be a valid ISO date from year 0001 to 9999.");
-        }
+        return modelFollowUpHistory;
+    }
+
+    private int convertDebtorId() throws IllegalValueException {
         if (debtorId != null && debtorId < 0) {
             throw new IllegalValueException(Person.MESSAGE_INVALID_DEBTOR_ID);
         }
         if (debtorId != null && debtorId == Integer.MAX_VALUE) {
             throw new IllegalValueException(DEBTOR_ID_OUT_OF_RANGE_MESSAGE);
         }
-        return new Person(modelName, modelPhone, modelEmail, modelAddress,
-                debtorId == null ? 0 : debtorId, modelOutstandingAmount, modelInteractionNotes,
-                modelRecoveryStage, modelFollowUpDate, modelFollowUpHistory, modelPromisedPaymentDate, modelTags,
-                contactPreferences == null ? new ContactPreferences(null, null) : contactPreferences.toModelType());
+        return debtorId == null ? 0 : debtorId;
     }
 
+    private ContactPreferences convertContactPreferences() throws IllegalValueException {
+        return contactPreferences == null ? new ContactPreferences(null, null) : contactPreferences.toModelType();
+    }
 }
