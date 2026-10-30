@@ -67,8 +67,10 @@ public final class InteractionNote {
         }
     }
 
+    /** Rejects whitespace-only text, including Unicode non-breaking spaces, without altering valid note content. */
     public static boolean isValidText(String text) {
-        return text != null && !text.isBlank();
+        return text != null && text.codePoints()
+                .anyMatch(character -> !Character.isWhitespace(character) && !Character.isSpaceChar(character));
     }
 
     public LocalDateTime getTimestamp() {
