@@ -125,8 +125,10 @@ public class JsonAddressBookStorageTest {
     }
 
     @Test
-    public void readAddressBook_maximumNextDebtorId_throwsDataLoadingException() {
-        assertThrows(DataLoadingException.class, () -> readAddressBook("maximumNextDebtorIdAddressBook.json"));
+    public void readAddressBook_maximumNextDebtorId_acceptedAsExhaustedCounter() throws Exception {
+        ReadOnlyAddressBook addressBook = readAddressBook("maximumNextDebtorIdAddressBook.json").get();
+        assertEquals(1, addressBook.getPersonList().size());
+        assertEquals(Integer.MAX_VALUE, addressBook.getNextDebtorId());
     }
 
     @Test
