@@ -926,7 +926,7 @@ Use sample data in a fresh folder. In the steps below, `ID` is a persistent debt
    Expected: `summary` counts only the displayed debtor. `summary --all` counts every active debtor. Neither command
    changes the displayed list.
 
-### Due-date worklist
+### Follow-ups due by date
 
 Use a disposable data folder and run `clear` first, because the sample debtors may carry other follow-ups. Add two
 debtors with distinct phone numbers and email addresses, and note their persistent IDs as `ID1` and `ID2`.
