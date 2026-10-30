@@ -48,7 +48,7 @@ public class AddressBook implements ReadOnlyAddressBook {
         for (Person person : persons) {
             Person assignedPerson = person.getDebtorId() == 0 ? person.withDebtorId(candidateNextId) : person;
             if (assignedPerson.getDebtorId() == Integer.MAX_VALUE) {
-                throw new IllegalArgumentException("Debtor ID exceeds the supported range.");
+                throw new IllegalArgumentException(MESSAGE_DEBTOR_ID_OUT_OF_RANGE);
             }
             if (!usedDebtorIds.add(assignedPerson.getDebtorId())) {
                 throw new IllegalArgumentException(MESSAGE_DUPLICATE_DEBTOR_ID);
@@ -133,13 +133,13 @@ public class AddressBook implements ReadOnlyAddressBook {
         return nextDebtorId;
     }
 
-    /** Restores the next persistent debtor ID after loading saved data. */
+    /**
+     * Restores the next persistent debtor ID after loading saved data.
+     * {@code Integer.MAX_VALUE} is accepted as the exhausted counter, since the last legal allocation produces it.
+     */
     public void setNextDebtorId(int nextDebtorId) {
         if (nextDebtorId < this.nextDebtorId) {
             throw new IllegalArgumentException("Next debtor ID cannot be reused.");
-        }
-        if (nextDebtorId == Integer.MAX_VALUE) {
-            throw new IllegalArgumentException(MESSAGE_DEBTOR_ID_OUT_OF_RANGE);
         }
         this.nextDebtorId = nextDebtorId;
     }
@@ -147,7 +147,7 @@ public class AddressBook implements ReadOnlyAddressBook {
     private Person assignDebtorId(Person person) {
         if (person.getDebtorId() == Integer.MAX_VALUE
                 || (person.getDebtorId() == 0 && nextDebtorId == Integer.MAX_VALUE)) {
-            throw new IllegalArgumentException("Debtor ID exceeds the supported range.");
+            throw new IllegalArgumentException(MESSAGE_DEBTOR_ID_OUT_OF_RANGE);
         }
         if (person.getDebtorId() == 0) {
             Person assignedPerson = person.withDebtorId(nextDebtorId);
