@@ -971,9 +971,13 @@ For the detailed release-JAR deletion matrix and evidence format, see the
 1. Exit OSPS, back up `data/addressbook.json`, and delete the original file. Restart OSPS.<br>
    Expected: OSPS starts with sample data. The data file is recreated after a successful data-changing command.
 1. Exit OSPS, replace `data/addressbook.json` with text that is not valid JSON, and restart OSPS.<br>
-   Expected: OSPS starts with no debtor records and logs a data-loading warning. The corrupted file remains untouched
-   until a successful data-changing command writes a valid replacement.
-1. Restore the backup after completing the test.
+   Expected: OSPS starts with no debtor records and logs a data-loading warning. The corrupted file remains untouched.
+1. Attempt to add a debtor using otherwise valid input.<br>
+   Expected: The command fails with a message asking you to preserve the file, restore valid JSON, and restart before
+   saving changes. No debtor is added and the corrupted file is unchanged; a command cannot overwrite it to recover.
+1. Exit OSPS, keep a copy of the corrupted file for diagnosis, and restore the valid backup as `data/addressbook.json`.
+1. Restart OSPS and run `show --id ID` for the debtor recorded before the test.<br>
+   Expected: The restored profile matches the backup. A valid data-changing command can now save successfully.
 
 ### Follow-ups, recovery stages and the workload summary
 
