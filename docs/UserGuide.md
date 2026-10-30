@@ -126,8 +126,9 @@ currently displayed Alex card. Before an index-based edit or deletion, confirm t
 that card. You can run `preview edit INDEX ...` or `preview delete INDEX` first when you want an additional check.
 
 Filtering and sorting can change displayed indexes without changing persistent IDs. Commands such as `find`, `sort`,
-`list-amount`, `list-stage`, `due`, and `contactable` replace or reorder the visible worklist. After using one of them,
-read the displayed list again before running `edit INDEX` or `delete INDEX`.
+`list-amount`, `list-stage`, `due`, and `contactable` replace or reorder the visible worklist. `list`, `add`, `edit`,
+`delete`, `undo`, and `redo` can also change displayed indexes. After using any of these commands, read the displayed
+list again before running `edit INDEX` or `delete INDEX`.
 
 ### Viewing help: `help`
 
@@ -319,10 +320,11 @@ Examples:
 
 ### Setting contact preferences: `contact`
 
-Use `contact --id ID [--method METHOD | --clear-method] [--hours HH:mm-HH:mm | --clear-hours]` to update a debtor by
-persistent ID. Provide at least one change. Methods are `call`, `sms`, `email`, and `letter`. Hours are local,
-same-day, start-inclusive and end-exclusive, and the start must be before the end. The command records preferences;
-it does not contact the debtor.
+Format: `contact --id DEBTOR_ID [--method METHOD | --clear-method] [--hours HH:mm-HH:mm | --clear-hours]`
+
+Updates a debtor by persistent ID. Provide at least one change. Methods are `call`, `sms`, `email`, and `letter`.
+Hours are local, same-day, start-inclusive and end-exclusive, and the start must be before the end. The command
+records preferences; it does not contact the debtor.
 
 Examples:
 
@@ -334,8 +336,10 @@ Unchanged fields retain their previous values. Use `show --id 3` to see the pref
 
 ### Finding contactable debtors: `contactable`
 
-Use `contactable [--at HH:mm] [--method call|sms|email|letter]` to find debtors with a configured contact window that
-includes the given local time. Omit `--at` to use the current local time. The start is included and the end is
+Format: `contactable [--at HH:mm] [--method call|sms|email|letter]`
+
+Finds debtors with a configured contact window that includes the given local time. Omit `--at` to use the current
+local time. The start is included and the end is
 excluded. Debtors without hours are excluded; when a method is specified, only debtors with that explicit preference
 match. This is a scheduling aid, not a permission check, and does not contact anyone.
 
@@ -381,7 +385,9 @@ Example:
 
 ### Exporting a debtor profile: `export`
 
-Use `export --id ID` to write the profile and interaction history as UTF-8 text to `exports/debtor-ID.txt` inside the
+Format: `export --id DEBTOR_ID`
+
+Writes the profile and interaction history as UTF-8 text to `exports/debtor-ID.txt` inside the
 OSPS home folder (the folder containing `osps.jar`). An existing export is never overwritten; move or rename it before
 exporting the same ID again. The file contains sensitive debtor information, so share and store it carefully.
 
@@ -389,8 +395,10 @@ Example: `export --id 3` exports the active debtor with persistent ID 3.
 
 ### Previewing an edit or deletion: `preview`
 
-Use `preview edit INDEX [FIELDS]` or `preview delete INDEX` to see the result without changing or saving data. `INDEX`
-refers to the current displayed list, including filtering and sorting. Check the previewed name and persistent ID, then
+Format: `preview edit INDEX [FIELDS]` or `preview delete INDEX`
+
+Shows the result without changing or saving data. `INDEX` refers to the current displayed list, including filtering
+and sorting. Check the previewed name and persistent ID, then
 run the original `edit` or `delete` command to apply the change.
 
 Examples:
@@ -599,25 +607,25 @@ Action | Format, Examples
 --------|------------------
 **Add** | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [o/OUTSTANDING_AMOUNT] [t/TAG]…​` <br> e.g., `add n/Olaf Go p/91234567 e/olaf.letnonego@example.com a/H4M8+3J3, Kunlun Station, Antarctica o/S$1,250.00`
 **Clear** | `clear`
-**Contact preferences** | `contact --id DEBTOR_ID [--method METHOD \| --clear-method] [--hours HH:mm-HH:mm \| --clear-hours]`
+**Contact preferences** | `contact --id DEBTOR_ID [--method METHOD \| --clear-method] [--hours HH:mm-HH:mm \| --clear-hours]`<br> e.g., `contact --id 3 --method sms --hours 09:00-17:30`
 **Contactable** | `contactable [--at HH:mm] [--method call\|sms\|email\|letter]`<br> e.g., `contactable --at 09:30 --method sms`
-**Export** | `export --id DEBTOR_ID`<br> e.g., `export --id 3`
-**Preview** | `preview edit INDEX [FIELDS]` or `preview delete INDEX`<br> e.g., `preview delete 2`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
+**Due** | `due [YYYY-MM-DD]` or `due --from YYYY-MM-DD --to YYYY-MM-DD`<br> e.g., `due 2026-11-10`
 **Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [o/OUTSTANDING_AMOUNT] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
-**Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find Alice 98765432`
+**Exit** | `exit`
+**Export** | `export --id DEBTOR_ID`<br> e.g., `export --id 3`
 **Filter by amount** | `list-amount [min/AMOUNT] [max/AMOUNT]`<br> e.g., `list-amount min/500 max/2,000`
 **Filter by stage** | `list-stage STAGE`<br> e.g., `list-stage contacted`
+**Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find Alice 98765432`
+**Follow-up** | `followup --id DEBTOR_ID --date YYYY-MM-DD` or `--clear` or `--done`<br> e.g., `followup --id 1 --date 2026-11-03`
+**Help** | `help`
 **List** | `list`
 **Note** | `note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT`<br> e.g., `note --id 1 --outcome reached --text Called debtor.`
-**Follow-up** | `followup --id DEBTOR_ID --date YYYY-MM-DD` or `--clear` or `--done`<br> e.g., `followup --id 1 --date 2026-11-03`
-**Due** | `due [YYYY-MM-DD]` or `due --from YYYY-MM-DD --to YYYY-MM-DD`<br> e.g., `due 2026-11-10`
+**Preview** | `preview edit INDEX [FIELDS]` or `preview delete INDEX`<br> e.g., `preview delete 2`
 **Promise** | `promise --id DEBTOR_ID (--date YYYY-MM-DD \| --clear)`<br> e.g., `promise --id 1 --date 2026-11-05`
-**Undo** | `undo`
 **Redo** | `redo`
 **Show** | `show --id DEBTOR_ID`<br> e.g., `show --id 3`
+**Sort** | `sort --by id\|name\|amount [--order asc\|desc]`<br> e.g., `sort --by amount --order desc`
 **Stage** | `stage --id DEBTOR_ID --value STAGE`<br> e.g., `stage --id 3 --value contacted`
 **Summary** | `summary` or `summary --all`
-**Sort** | `sort --by id\|name\|amount [--order asc\|desc]`<br> e.g., `sort --by amount --order desc`
-**Help** | `help`
-**Exit** | `exit`
+**Undo** | `undo`

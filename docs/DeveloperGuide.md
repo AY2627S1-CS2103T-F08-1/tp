@@ -284,9 +284,7 @@ Workflow | Commands | Main design coverage
 **Recovery record** | `note`, `followup`, `promise`, `stage`, `contact` | [Storage component](#storage-component), [Follow-up command and history](#follow-up-command-and-history), [Promised payment date](#promised-payment-date), and [Contact preferences](#contact-preferences)
 **Safety and recovery** | `preview`, `undo`, `redo` | [Preview commands](#preview-commands), [Undo/redo feature](#undoredo-feature), and the transaction boundary described in the [Logic component](#logic-component)
 
-This grouping mirrors the User Guide workflow: capture a case, prioritise the worklist, record recovery work, then
-review or report progress. Read-only views reuse one observable model list; data-changing commands reuse one
-transactional save boundary. This keeps the product cohesive while letting each command validate its own syntax.
+Read-only views reuse one observable model list; data-changing commands reuse one transactional save boundary.
 
 ### Command target resolution
 
@@ -582,9 +580,9 @@ The following activity diagram summarizes what happens when a user executes a ne
 
 ### Deferred data archiving
 
-Data archiving is not implemented in v1.5. Deleting a debtor currently removes that debtor and their interaction
-history from the active address book, while the monotonically increasing debtor-ID counter prevents a deleted ID from
-being reused.
+Data archiving is not implemented as of v1.6 development. Deleting a debtor currently removes that debtor and their
+interaction history from the active address book, while the monotonically increasing debtor-ID counter prevents a
+deleted ID from being reused.
 
 A future archive could move settled debtors into a separate read-only collection instead of deleting them. Keeping the
 archive separate from the active list would preserve historical records without slowing the primary list and search
