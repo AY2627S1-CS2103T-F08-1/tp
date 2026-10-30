@@ -2,6 +2,10 @@
 layout: page
 title: Developer Guide
 ---
+> **Development documentation for the upcoming v1.6.** This guide describes the current source branch.
+> For the implementation shipped in the published v1.5 JAR, refer to the
+> [versioned v1.5 Developer Guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/DeveloperGuide.md).
+
 * Table of Contents
 {:toc}
 

@@ -5,11 +5,16 @@
 
 ![OSPS interface showing debtor profiles and outstanding amounts](docs/images/Ui.png)
 
-OSPS v1.5 is a desktop application for debt recovery agents to manage debtor contact details, outstanding balances,
+OSPS is a desktop application for debt recovery agents to manage debtor contact details, outstanding balances,
 interaction histories, follow-ups, and recovery stages. It combines a graphical interface with keyboard-driven
 commands for fast case management.
 
-The v1.5 release supports these connected workflows:
+**Version notice:** the [published v1.5 JAR](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5)
+has its own [v1.5 User Guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/UserGuide.md).
+This branch and the website guides describe development towards v1.6. Several commands below are not in the
+published v1.5 JAR; use the versioned guide for that download until a matching new release is published.
+
+The development version supports these connected workflows:
 
 * Capture and maintain debtor profiles, contact preferences, and non-negative outstanding amounts.
 * Find, filter, and sort the current worklist by name, phone, balance, recovery stage, follow-up date, or contact window.

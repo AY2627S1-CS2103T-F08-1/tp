@@ -3,9 +3,16 @@ layout: page
 title: User Guide
 ---
 
-Orchestration and Scheduling of Payment Scheme (OSPS) v1.5 is a **desktop application for debt recovery agents**.
+Orchestration and Scheduling of Payment Scheme (OSPS) is a **desktop application for debt recovery agents**.
 It manages debtor contact details, outstanding balances, and interaction histories through keyboard-driven commands
 while retaining the benefits of a graphical user interface (GUI).
+
+> **Development guide for the upcoming v1.6:** this page describes the current source branch, not the published
+> v1.5 JAR. If you downloaded v1.5, follow the
+> [versioned v1.5 User Guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/UserGuide.md).
+> That release supports `add`, `edit`, `delete`, `clear`, `find`, `list`, `contact`, `note`, `show`, `sort`,
+> `help`, and `exit`. Other commands below require a development build or a later matching release.
+> Development builds may still display v1.5 in their window title; check the source commit or release asset instead.
 
 * Table of Contents
 {:toc}
@@ -17,8 +24,10 @@ while retaining the benefits of a graphical user interface (GUI).
 1. Ensure that Java `25` or later is installed on your computer.<br>
    **Mac users:** Ensure you have the precise JDK version prescribed [here](https://se-education.org/guides/tutorials/javaInstallationMac.html).
 
-1. Download `osps.jar` from the latest
-   [OSPS release](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases).
+1. For this development version, follow [the setup guide](SettingUp.md) and build the checked-out source with
+   `gradlew.bat shadowJar` on Windows or `./gradlew shadowJar` on macOS/Linux. The output is `build/libs/osps.jar`.
+   The currently published v1.5 download does not implement all commands in this development guide.
+   Use a fresh folder and disposable records when testing a development build.
 
 1. Copy the file to the folder you want to use as the _home folder_ for OSPS.
 
@@ -123,7 +132,7 @@ read the displayed list again before running `edit INDEX` or `delete INDEX`.
 ### Viewing help: `help`
 
 Opens a scrollable, keyboard-accessible in-app command reference. It includes the syntax and a short example for
-each released command. The window also retains a button to copy the link to this online User Guide.
+each supported command in that build. The window also retains a button to copy the link to this online User Guide.
 
 ![help message](images/helpMessage.png)
 
