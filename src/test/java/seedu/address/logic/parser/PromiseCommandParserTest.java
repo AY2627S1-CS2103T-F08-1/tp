@@ -45,6 +45,28 @@ class PromiseCommandParserTest {
         assertThrows(ParseException.class, () -> parser.parse(" --id 7 --done"));
     }
 
+    @Test
+    void parse_duplicateDanglingOrMissingOptions_rejectsCommand() {
+        assertThrows(ParseException.class, () -> parser.parse(" --id 7 --date 2026-11-03 --date 2026-11-04"));
+        assertThrows(ParseException.class, () -> parser.parse(" --id"));
+        assertThrows(ParseException.class, () -> parser.parse(" --id 7 --date"));
+        assertThrows(ParseException.class, () -> parser.parse(" --date 2026-11-03"));
+        assertThrows(ParseException.class, () -> parser.parse(" "));
+    }
+
+    @Test
+    void parse_unknownOptionOrStrayToken_rejectsCommand() {
+        String unknownOptionMessage = String.format(PromiseCommandParser.MESSAGE_UNKNOWN_OPTION, "--nope");
+        assertThrows(ParseException.class, unknownOptionMessage, () -> parser.parse(" --id 7 --nope"));
+        assertThrows(ParseException.class, () -> parser.parse(" --id 7 stray"));
+    }
+
+    @Test
+    void parse_idBeyondIntegerRange_rejectsCommand() {
+        assertThrows(ParseException.class, PromiseCommandParser.MESSAGE_INVALID_ID, () ->
+                parser.parse(" --id 99999999999 --clear"));
+    }
+
     private void assertInvalidDate(String date) {
         assertThrows(ParseException.class, PromiseCommandParser.MESSAGE_INVALID_DATE, () ->
                 parser.parse(" --id 7 --date " + date));

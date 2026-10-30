@@ -57,6 +57,22 @@ class PromiseWorkflowTest {
     }
 
     @Test
+    void execute_undoAndRedo_restoreAndReapplyPromisedDate() throws Exception {
+        LocalDate date = LocalDate.of(2026, 11, 3);
+        Model model = new ModelManager();
+        Logic logic = createLogic(model, new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json")));
+        logic.execute("add n/Alice p/91111111 e/alice@example.com a/Main Street");
+        int debtorId = model.getAddressBook().getPersonList().getFirst().getDebtorId();
+
+        logic.execute("promise --id " + debtorId + " --date " + date);
+        assertEquals(Optional.of(date), model.getAddressBook().getPersonList().getFirst().getPromisedPaymentDate());
+        logic.execute("undo");
+        assertTrue(model.getAddressBook().getPersonList().getFirst().getPromisedPaymentDate().isEmpty());
+        logic.execute("redo");
+        assertEquals(Optional.of(date), model.getAddressBook().getPersonList().getFirst().getPromisedPaymentDate());
+    }
+
+    @Test
     void execute_noChange_doesNotWriteAddressBook() throws Exception {
         LocalDate date = LocalDate.of(2026, 11, 3);
         Model model = new ModelManager();

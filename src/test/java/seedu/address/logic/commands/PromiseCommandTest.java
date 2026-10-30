@@ -88,6 +88,44 @@ class PromiseCommandTest {
     }
 
     @Test
+    void execute_secondDebtor_updatesOnlyThatDebtor() throws Exception {
+        Model model = new ModelManager();
+        Person first = model.addPerson(new PersonBuilder().build());
+        Person second = model.addPerson(new PersonBuilder().withName("Second Debtor")
+                .withPhone("92222222").withEmail("second@example.com").build());
+
+        new PromiseCommand(second.getDebtorId(), DATE).execute(model);
+
+        assertEquals(Optional.empty(), model.getAddressBook().getPersonList().stream()
+                .filter(person -> person.getDebtorId() == first.getDebtorId()).findFirst().orElseThrow()
+                .getPromisedPaymentDate());
+        assertEquals(Optional.of(DATE), model.getAddressBook().getPersonList().stream()
+                .filter(person -> person.getDebtorId() == second.getDebtorId()).findFirst().orElseThrow()
+                .getPromisedPaymentDate());
+    }
+
+    @Test
+    void equals_comparesIdAndDate() {
+        PromiseCommand command = new PromiseCommand(1, DATE);
+
+        assertEquals(command, command);
+        assertEquals(command, new PromiseCommand(1, DATE));
+        assertFalse(command.equals(new PromiseCommand(2, DATE)));
+        assertFalse(command.equals(new PromiseCommand(1, Optional.empty())));
+        assertFalse(command.equals(new PromiseCommand(1, DATE.plusDays(1))));
+        assertFalse(command.equals(null));
+        assertFalse(command.equals("promise"));
+    }
+
+    @Test
+    void toString_containsDebtorIdAndDate() {
+        String text = new PromiseCommand(5, DATE).toString();
+
+        assertTrue(text.contains("debtorId=5"));
+        assertTrue(text.contains(DATE.toString()));
+    }
+
+    @Test
     void execute_nullModel_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> new PromiseCommand(1, DATE).execute(null));
     }

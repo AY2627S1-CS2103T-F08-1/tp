@@ -64,11 +64,7 @@ public class PromiseCommandParser implements Parser<PromiseCommand> {
         if (!StringUtil.isNonZeroUnsignedInteger(idText)) {
             throw new ParseException(MESSAGE_INVALID_ID);
         }
-        try {
-            return Integer.parseInt(idText);
-        } catch (NumberFormatException exception) {
-            throw new ParseException(MESSAGE_INVALID_ID);
-        }
+        return Integer.parseInt(idText);
     }
 
     private LocalDate parseDate(String dateText) throws ParseException {
