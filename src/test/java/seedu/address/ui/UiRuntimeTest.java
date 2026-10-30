@@ -85,13 +85,31 @@ public class UiRuntimeTest {
 
     @Test
     public void helpWindow_focusRestoresMinimizedWindow() throws InterruptedException {
+        CountDownLatch restored = new CountDownLatch(1);
         runOnJavaFxThread(() -> {
             helpWindow = new HelpWindow();
             helpWindow.show();
             assertTrue(helpWindow.isShowing());
+        });
+        runOnJavaFxThread(() -> {
             helpWindow.getRoot().setIconified(true);
             assertTrue(helpWindow.getRoot().isIconified());
+            helpWindow.getRoot().iconifiedProperty().addListener((observable, wasIconified, isIconified) -> {
+                if (!isIconified) {
+                    restored.countDown();
+                }
+            });
+        });
+        runOnJavaFxThread(() -> {
             helpWindow.focus();
+            if (!helpWindow.getRoot().isIconified()) {
+                restored.countDown();
+            }
+        });
+        assertTrue(restored.await(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS),
+                "The shown Help window must report restoration through the native window event");
+        runOnJavaFxThread(() -> {
+            assertTrue(helpWindow.isShowing());
             assertFalse(helpWindow.getRoot().isIconified());
         });
     }
