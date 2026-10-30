@@ -4,7 +4,6 @@ import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_DEBTOR_ID;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_STAGE_VALUE;
 
-import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.commands.StageCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.RecoveryStage;
@@ -19,11 +18,7 @@ public class StageCommandParser implements Parser<StageCommand> {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, StageCommand.MESSAGE_USAGE));
         }
         values.verifyNoDuplicatePrefixesFor(PREFIX_DEBTOR_ID, PREFIX_STAGE_VALUE);
-        String idText = values.getValue(PREFIX_DEBTOR_ID).get();
-        if (!StringUtil.isNonZeroUnsignedInteger(idText)) {
-            throw new ParseException(ParserUtil.MESSAGE_INVALID_DEBTOR_ID);
-        }
-        int debtorId = Integer.parseInt(idText);
+        int debtorId = ParserUtil.parseDebtorId(values.getValue(PREFIX_DEBTOR_ID).get());
         try {
             RecoveryStage stage = RecoveryStage.parse(values.getValue(PREFIX_STAGE_VALUE).get());
             return new StageCommand(debtorId, stage);

@@ -3,7 +3,6 @@ package seedu.address.logic.parser;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.FollowUpCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -28,11 +27,7 @@ public class FollowUpCommandParser implements Parser<FollowUpCommand> {
                     if (id != null || i + 1 >= tokens.length) {
                         throw invalidFormat();
                     }
-                    String value = tokens[++i];
-                    if (!StringUtil.isNonZeroUnsignedInteger(value)) {
-                        throw new ParseException(ParserUtil.MESSAGE_INVALID_DEBTOR_ID);
-                    }
-                    id = Integer.parseInt(value);
+                    id = ParserUtil.parseDebtorId(tokens[++i]);
                 }
                 case "--date" -> {
                     if (dateText != null || i + 1 >= tokens.length) {
