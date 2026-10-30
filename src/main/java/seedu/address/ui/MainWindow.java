@@ -1,15 +1,18 @@
 package seedu.address.ui;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import seedu.address.MainApp;
 import seedu.address.commons.core.GuiSettings;
@@ -132,14 +135,19 @@ public class MainWindow extends UiPart<Stage> {
     }
 
     /**
-     * Sets the default size based on {@code guiSettings}.
+     * Sets the default size and position based on {@code guiSettings}, adjusted to the screens currently available.
+     * The window's minimum size is lowered if needed so that it can fit on a small screen.
      */
     private void setWindowDefaultSize(GuiSettings guiSettings) {
-        primaryStage.setHeight(guiSettings.getWindowHeight());
-        primaryStage.setWidth(guiSettings.getWindowWidth());
-        if (guiSettings.getWindowCoordinates() != null) {
-            primaryStage.setX(guiSettings.getWindowCoordinates().getX());
-            primaryStage.setY(guiSettings.getWindowCoordinates().getY());
+        List<Rectangle2D> screens = Screen.getScreens().stream().map(Screen::getVisualBounds).toList();
+        GuiSettings fitted = WindowBounds.fit(guiSettings, screens);
+        primaryStage.setMinWidth(Math.min(primaryStage.getMinWidth(), fitted.getWindowWidth()));
+        primaryStage.setMinHeight(Math.min(primaryStage.getMinHeight(), fitted.getWindowHeight()));
+        primaryStage.setHeight(fitted.getWindowHeight());
+        primaryStage.setWidth(fitted.getWindowWidth());
+        if (fitted.getWindowCoordinates() != null) {
+            primaryStage.setX(fitted.getWindowCoordinates().getX());
+            primaryStage.setY(fitted.getWindowCoordinates().getY());
         }
     }
 

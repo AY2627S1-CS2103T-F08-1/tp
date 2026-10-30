@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
+import java.nio.file.Path;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -20,6 +23,7 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.event.Event;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
@@ -29,6 +33,10 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
+import seedu.address.commons.core.GuiSettings;
+import seedu.address.logic.Logic;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
 
@@ -186,6 +194,21 @@ public class UiRuntimeTest {
                     false, false, false, false);
             Event.fireEvent(reference, escape);
             assertTrue(recordingHelpWindow.hideCalled);
+        });
+    }
+
+    @Test
+    public void mainWindow_offScreenSavedPosition_opensOnAScreen() throws InterruptedException {
+        runOnJavaFxThread(() -> {
+            Class<?>[] interfaces = {Logic.class};
+            InvocationHandler savedSettings = (proxy, method, args) -> new GuiSettings(740, 600, 5000, 5000);
+            Logic logic = (Logic) Proxy.newProxyInstance(Logic.class.getClassLoader(), interfaces, savedSettings);
+            Stage stage = new Stage();
+            new MainWindow(stage, logic, Path.of("data", "addressbook.json"));
+
+            Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
+            assertTrue(bounds.contains(stage.getX(), stage.getY()));
+            assertTrue(stage.getWidth() <= bounds.getWidth() && stage.getHeight() <= bounds.getHeight());
         });
     }
 
