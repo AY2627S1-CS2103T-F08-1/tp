@@ -117,9 +117,9 @@ How the `Logic` component works:
 
 `DeleteCommandParser` accepts a positive decimal integer and strips leading zeroes. Empty input, non-digits, zero, and negative values produce an invalid-command-format error with the command usage. The parser keeps the normalized index as decimal text, so very large inputs do not overflow an integer during parsing. `DeleteCommand` checks it against the current displayed-list size using decimal length and lexical comparison before converting an in-range value to an integer. An index outside the list produces an actionable range error; when the list is empty, the error suggests running `list` or adjusting the `find` query. For an index longer than 100 digits, feedback shows its first 20 digits and total digit count. These parse and range failures do not change the model or trigger a save.
 
-For an in-range index, `DeleteCommand` removes the selected `Person` through `Model#deletePerson`. The model removes that person from the address book, which updates the observable displayed list. The success message includes the deleted debtor's ID, name, phone, email, address, outstanding amount, and tags. `LogicManager` then saves the updated address book; a storage failure is reported as a command error, but the in-memory removal is not rolled back.
+For an in-range index, `DeleteCommand` removes the selected `Person` through `Model#deletePerson`. For persistence-bound commands, `LogicManager` executes against an isolated copy of the model that retains the active filter, saves the candidate, and only then publishes it to the live observable model. The success message includes the deleted debtor's ID, name, phone, email, address, outstanding amount, and tags. A storage failure leaves the live model and displayed list unchanged.
 
-Interaction notes and follow-up state/history are part of the `Person` record. Deleting a debtor therefore removes the profile and its complete histories from the active address book and, after a successful save, from persisted data. `show --id ID` can display profiles only for active debtors, so it reports that the debtor may have been deleted after removal. The current model does not maintain undo/redo history for deletion; the next debtor ID is not reused.
+Interaction notes, follow-up state/history, and contact preferences are part of the `Person` record. Deleting a debtor therefore removes the profile and all related state from the active address book and, after a successful save, from persisted data. `show --id ID` can display profiles only for active debtors, so it reports that the debtor may have been deleted after removal. The model keeps up to 100 in-session address-book snapshots for undo/redo; snapshots include `nextDebtorId`, while restore preserves the allocator's high-water mark so IDs are never reused.
 
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
 
@@ -140,8 +140,11 @@ interaction notes. The following diagram shows the stored debtor data:
 does not cause ID reuse after restart. `clear` deliberately resets allocation. Missing IDs in legacy records
 are allocated on load.
 
-`EditCommand` creates a replacement immutable `Person`, preserving its ID, outstanding amount, notes, pending follow-up
-date and follow-up history.
+`EditCommand` creates a replacement immutable `Person`, preserving its ID, outstanding amount, notes, contact
+preferences, pending follow-up date, follow-up history, and recovery
+stage. A recovery stage is one of `new`, `contacted`, `negotiating`, `disputed`, `broken-promise`, or `settled`.
+`stage --id ID --value STAGE` selects a debtor by persistent ID, so it still targets the correct debtor while the list
+is filtered. Old JSON omits the optional stage and loads as `new`.
 Duplicate checks compare exact phone/email values against all other active debtors, including filtered-out
 records. Email matching is currently case-sensitive; phone country codes are not normalised.
 
@@ -175,19 +178,31 @@ The `Storage` component,
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 * stores each debtor's ordered interaction history through `JsonAdaptedInteractionNote`; invalid entries, including
-  JSON `null` notes, are reported as data-loading errors.
+  JSON `null` notes and unrecognised contact outcomes, are reported as data-loading errors.
 
 Interaction notes retain their insertion order in JSON, including identical text and timestamps. Profile formatting
 reverses a copy of the insertion-ordered list before applying the ordered stream's stable sort by descending
 timestamp. Stability preserves reverse insertion order for equal timestamps. Editing a debtor preserves the full
 history. `NoteHistoryWorkflowTest` verifies these behaviours together across editing, JSON reload and `show`.
 
-`LogicManager` applies a valid `note` command to the in-memory model before saving. If saving fails, it reports a
-command error but does not roll back the in-memory note. A failure before writing leaves the prior file unchanged;
-the file-writing path is not atomic, so a failure during writing does not guarantee an intact prior file.
-Pending changes are retried by the next successful data-changing command or the `exit` command, after storage access
-is restored. Read-only commands do not retry the write. The workflow tests simulate both an I/O failure and denied
-access before writing, then check that an exit retry saves the existing note exactly once.
+Each interaction note can also store a `ContactOutcome`: `reached`, `callback-requested`, `unreachable`, or
+`payment-promised`. The JSON `outcome` field is nullable so files created before this feature remain loadable; a
+missing value becomes an `unspecified` outcome when displayed. New non-null values outside the supported set fail
+loading instead of silently losing information. The note parser accepts `--outcome` only before `--text`, which keeps
+option-like words in the note body as literal text. Contact outcomes are metadata and do not alter outstanding amounts.
+
+`LogicManager` runs each persistence-bound command against a candidate model that copies the current filter. It saves
+the candidate before publishing its records and view to the live model. If saving fails, the live records, next-ID
+state, and displayed view are unchanged; the user must re-enter the command after resolving the problem. `exit` does
+not retry a failed command.
+
+`JsonAddressBookStorage` serializes the complete JSON before writing, writes it to a temporary sibling file, forces
+the file channel, then replaces the destination with `ATOMIC_MOVE` and `REPLACE_EXISTING`. If the file system does
+not support an atomic move, saving fails closed and the temporary file is removed best-effort. No non-atomic
+overwrite fallback is attempted. This protects the previous file from ordinary write and replacement failures; it
+does not promise crash durability or recovery from power loss. The storage test injects unsupported atomic move, and
+logic tests inject save exceptions to check that memory, the active filtered view, next-ID state, and existing disk
+bytes remain unchanged.
 
 ### Follow-up command and history
 
@@ -199,17 +214,19 @@ event containing the date that was removed. Scheduling after either operation st
 options, dates, IDs, and operations without a pending date are rejected before the model changes.
 
 `Person` stores the pending date as `Optional<LocalDate>` and an immutable insertion-ordered list of
-`FollowUpEvent` values. Each event records an ISO local date-time timestamp, its action, and the affected ISO date.
+`FollowUpEvent` values. Each event records an ISO local date-time timestamp, its action, and the previous and resulting
+ISO dates.
 JSON stores the pending date in optional `followUpDate` and the event list in `followUpHistory`, with each entry shaped
-as `{ "timestamp": "YYYY-MM-DDTHH:mm:ss", "action": "SCHEDULED|RESCHEDULED|CLEARED|COMPLETED", "date": "YYYY-MM-DD" }`.
+as `{ "timestamp": "YYYY-MM-DDTHH:mm:ss", "action": "SCHEDULED|RESCHEDULED|CLEARED|COMPLETED", "previousDate": null|"YYYY-MM-DD", "newDate": null|"YYYY-MM-DD" }`.
+The loader also accepts the earlier single `date` field and migrates it according to the preceding follow-up state.
 The timestamp comes from the system-default clock and has no stored zone or offset. Events remain in insertion order
 in JSON. `show` sorts by timestamp ascending with a stable sort, so equal timestamps retain insertion order.
 
 Older address-book JSON files that omit `followUpDate` and `followUpHistory` load with no pending date and an empty
 history. Invalid dates, timestamps, actions, or event entries are reported as data-loading errors. A valid follow-up
-command changes the model before `LogicManager` saves it. A save failure is reported without rolling back the in-memory
-change; the next successful data-changing command or `exit` retries the save, while read-only commands do not. As with
-other address-book writes, a failure during the file write itself does not guarantee that the previous file is intact.
+command runs inside the same isolated save transaction as other persistence-bound commands. A save failure leaves the
+live model, its undo/redo history, and the previous file bytes unchanged; the user can correct the storage problem and
+run the command again.
 
 ### Contact validation and preference recovery
 
@@ -326,9 +343,76 @@ preserve the current predicate and comparator.
   financial information when the window is narrow or a value is long. The persistent ID is kept at its preferred
   width so that wrapping the adjacent name does not obscure which debtor the card represents.
 
-### \[Proposed\] Undo/redo feature
+### Filtering by outstanding amount
 
-#### Proposed Implementation
+`list-amount` is a read-only view command. `ListAmountCommandParser` tokenizes the optional `min/` and `max/` bounds,
+reuses `ParserUtil#parseOutstandingAmount`, rejects duplicate or missing bounds, and constructs an
+`OutstandingAmountRange`. The range owns the invariant that at least one bound exists and that the minimum does not
+exceed the maximum. It compares the underlying `BigDecimal` values, avoiding rounding and string-comparison errors.
+
+`ListAmountCommand` wraps the range in an `OutstandingAmountInRangePredicate` and supplies it to the same
+`ModelManager#updatePersonView` path used by `find`, together with `PersonSort.DEFAULT_COMPARATOR`. This resets any
+previous sort to persistent-ID order. The observable `FilteredList` and `SortedList` update the cards without
+reordering persistent data. A later `list` command restores the
+show-all predicate. Because the command overrides `shouldSaveAddressBook` with `false`, changing the view does not
+write JSON or retry a previously failed write.
+
+#### Design considerations
+
+* **Inclusive instead of exclusive bounds:** Collection bands normally include the exact threshold stated by a user.
+  Inclusive comparison also makes a single-value range such as `min/500 max/500` useful and unsurprising.
+* **Reuse the amount value object instead of parsing raw decimals in the command:** This keeps accepted currency syntax
+  consistent with `add` and `edit`, prevents negative amounts, and centralises precision validation.
+* **Keep filtering session-only instead of persisting it:** The command represents a temporary work view rather than
+  debtor data. Restarts and `list` therefore return to the complete ID-ordered list.
+
+### Filtering by recovery stage
+
+`ListStageCommandParser` passes the complete argument to `RecoveryStage.parse`, which accepts one case-insensitive
+canonical stage. Missing, unknown, or extra values produce a `ParseException` before the model changes. The parser
+reuses the existing enum validation rather than maintaining a separate set of accepted stage names.
+
+`ListStageCommand` supplies a `RecoveryStagePredicate` and `PersonSort.DEFAULT_COMPARATOR` to
+`Model#updatePersonView`. The predicate compares the person's stored stage, independently of their outstanding
+amount. This replaces any earlier filter and sort order; the existing observable lists refresh when a saved stage
+change moves a person into or out of the selected group. Displayed-index commands continue to use the resulting view,
+while persistent-ID commands can target a hidden debtor.
+
+The command returns separate empty, singular, and plural messages and overrides `shouldSaveAddressBook` with `false`.
+Filtering therefore neither writes the JSON file nor creates an undo entry or retries a failed save. The filter is
+session-only: `list`, undo/redo, or a restart restores the default view. `ListStageWorkflowTest` covers stage changes,
+filtered edit/delete, summary scopes, failed saves, undo/redo, and preservation of profile fields through storage.
+
+### Undo/redo feature
+
+`ModelManager` keeps a bounded list of up to 100 `AddressBook` snapshots and a pointer to the current snapshot. It starts
+with the loaded address book, including `nextDebtorId`. A snapshot is a copy of the whole `AddressBook`, so any field
+`Person` gains is captured without changes to the history code. A new snapshot discards any redo branch; repeated
+identical states are ignored. `undo` and `redo` move the pointer, restore address-book data, and save the restored state.
+After either one, `ModelManager` resets the filtered-list predicate and the sorted-list comparator, so every debtor is
+shown in persistent-ID order.
+
+The allocator is monotonic across restores: `AddressBook.resetData` preserves the greater of its previous high-water mark,
+the restored state's next ID, and the restored records' IDs. Undoing an add removes the debtor without making its ID
+available again. History is held only in memory and starts fresh from persisted data when the application restarts.
+
+History takes part in the save transaction described under persistence. `LogicManager` runs a persistence-bound command,
+including `undo` and `redo`, on a candidate model created by `Model#createTransactionCopy`. The copy carries the data,
+the history list and pointer, the filter and the comparator. A new snapshot is committed on the candidate before the
+save. The candidate replaces the live model, history included, only after `JsonAddressBookStorage` has replaced the file.
+If saving fails, the live data, history pointer, view and previous file bytes are all unchanged. Snapshots are never
+mutated after they are recorded, so the live model and candidate can share them. The save is atomic against ordinary write
+failures but is not a promise of crash durability.
+
+`find` and `list` do not add history states. Add, edit, delete, note, and clear changes are undoable after they save
+successfully.
+
+#### Reference design diagrams
+
+The following diagrams and scenario are retained from the original design proposal. The current implementation details
+and save-failure behavior are described above.
+
+#### Original proposal (not the current implementation)
 
 The proposed undo/redo mechanism is facilitated by `VersionedAddressBook`. It extends `AddressBook` with an undo/redo history, stored internally as an `addressBookStateList` and `currentStatePointer`. Additionally, it implements the following operations:
 
@@ -411,7 +495,7 @@ The following activity diagram summarizes what happens when a user executes a ne
 
 ### Deferred data archiving
 
-Data archiving is not implemented in v1.4. Deleting a debtor currently removes that debtor and their interaction
+Data archiving is not implemented in v1.5. Deleting a debtor currently removes that debtor and their interaction
 history from the active address book, while the monotonically increasing debtor-ID counter prevents a deleted ID from
 being reused.
 
@@ -659,6 +743,10 @@ regression checks, but they do not replace exploratory testing on each supported
 1. Resize and move the main window, then close OSPS using the **File → Exit** menu.
 1. Run `java -jar osps.jar` again.<br>
    Expected: The last window size and position are restored, subject to the available screen bounds.
+1. Create an empty sibling folder, open a terminal there and run `java -jar ../path/to/osps.jar` (the folder containing the JAR).
+   Add a debtor, then exit.<br>
+   Expected: The new folder contains no OSPS files. `preferences.json`, `osps.log.0` and `data/addressbook.json` are in the
+   folder containing the JAR, and the debtor is present when OSPS is launched from the JAR folder again.
 
 ### Adding and editing a debtor
 
@@ -702,6 +790,44 @@ regression checks, but they do not replace exploratory testing on each supported
    stored data remain unchanged.
 1. Run `list` after any valid sort.<br>
    Expected: Every active debtor is restored in ascending persistent-ID order.
+
+### Filtering by outstanding amount
+
+1. Add three debtors with outstanding amounts `o/0`, `o/500`, and `o/1000`, then run `list` and note their IDs.<br>
+   Expected: All three debtors are displayed in ascending persistent-ID order.
+1. Run `list-amount min/500 max/1000`.<br>
+   Expected: The `S$500.00` and `S$1,000.00` debtors are displayed; both boundaries are included.
+1. Run `list-amount max/500`, then use `edit 1` on the first displayed debtor with a harmless name change.<br>
+   Expected: The edited debtor is the first visible result, not the first debtor hidden outside the filter.
+1. Run `list`.<br>
+   Expected: The complete active-debtor list is restored in persistent-ID order.
+1. Run `list-amount`, `list-amount min/501 max/500`, `list-amount min/-1`, and
+   `list-amount min/1 min/2`.<br>
+   Expected: Each command gives a precise error and leaves both the records and current view unchanged.
+
+### Filtering by recovery stage
+
+Use a disposable data folder and run `clear` to remove the sample data. Add three debtors with distinct phone numbers
+and email addresses, and note their
+persistent IDs as A, B, and C. Substitute those numeric IDs in the commands below; they are not displayed indexes.
+
+1. Set A and C to `contacted` using `stage --id A --value contacted` and `stage --id C --value contacted`.
+   Leave B as `new`.<br>
+   Expected: `show --id A`, `show --id B`, and `show --id C` report the corresponding stages.
+1. Run `sort --by id --order desc`, then `list-stage CONTACTED`.<br>
+   Expected: Only A and C are visible, in ascending persistent-ID order. The feedback reports two matching debtors.
+1. Run `summary`, then `summary --all`.<br>
+   Expected: The first summary counts the two visible debtors; the second counts all three. Neither changes the view.
+1. Run `list-stage`, `list-stage unknown`, and `list-stage contacted new`.<br>
+   Expected: Each is rejected; the same two debtors remain visible and no data changes.
+1. Run `stage --id A --value disputed`.<br>
+   Expected: A disappears from the contacted worklist. C remains visible at displayed index 1.
+1. Run `edit 1 n/Updated Contact`, then `show --id C`.<br>
+   Expected: Only C's name changes. Its stage, balance, contact preferences, notes and follow-up history are preserved.
+1. Run `list-stage negotiating`.<br>
+   Expected: The list is empty and feedback explains that no debtors match, with a suggestion to use `list`.
+1. Run `list`, then exit and relaunch the app.<br>
+   Expected: All three debtors are visible in persistent-ID order; their updated names and stages survive the restart.
 
 ### Showing profiles and recording interaction history
 
@@ -755,6 +881,74 @@ For the detailed release-JAR deletion matrix and evidence format, see the
    Expected: OSPS starts with no debtor records and logs a data-loading warning. The corrupted file remains untouched
    until a successful data-changing command writes a valid replacement.
 1. Restore the backup after completing the test.
+
+### Follow-ups, recovery stages and the workload summary
+
+Use sample data in a fresh folder. In the steps below, `ID` is a persistent debtor ID shown in the list.
+
+1. Run `followup --id ID --date 2026-11-03`, then `show --id ID`.<br>
+   Expected: The profile shows the pending follow-up date `2026-11-03` and a `SCHEDULED` history event.
+1. Run `followup --id ID --done`, then `followup --id ID --done` again.<br>
+   Expected: The first command clears the pending date and records it in history. The second is rejected with
+   `No pending follow-up exists for debtor ID ID.`
+1. Run `followup --id ID --date 2026-02-30`.<br>
+   Expected: The command is rejected because the date is not a real calendar date, and the debtor is unchanged.
+1. Run `stage --id ID --value contacted`, then `stage --id ID --value contacted` again.<br>
+   Expected: The first command reports the stage was set. The second reports it is already `contacted`.
+1. Run `stage --id ID --value unknown`.<br>
+   Expected: The command is rejected and lists the accepted stages.
+1. Run `find` with a keyword that matches one debtor, then `summary`, then `summary --all`.<br>
+   Expected: `summary` counts only the displayed debtor. `summary --all` counts every active debtor. Neither command
+   changes the displayed list.
+
+### Due-date worklist
+
+Use sample data in a fresh folder. In the steps below, `ID1` and `ID2` are persistent debtor IDs shown in the list.
+
+1. Run `followup --id ID1 --date 2026-11-03` and `followup --id ID2 --date 2026-10-30`, then `due 2026-11-03`.<br>
+   Expected: Both debtors are shown, earliest follow-up first, each with its date, debtor ID and an overdue, due-today
+   or upcoming marker, and the list is ordered by date then persistent debtor ID.
+1. Run `due 2026-10-31`.<br>
+   Expected: Only the debtor with the `2026-10-30` follow-up is shown. Debtors without a pending follow-up are never shown.
+1. Run `due --from 2026-11-01 --to 2026-11-07`.<br>
+   Expected: Only the debtor with the `2026-11-03` follow-up is shown; both range bounds are inclusive.
+1. Run `due --from 2026-11-04 --to 2026-11-03` and `due 2026-02-30`.<br>
+   Expected: Each is rejected with an error and the current list is unchanged.
+1. Run `list`.<br>
+   Expected: All debtors are shown again in persistent-ID order. `due` never changes or saves debtor data.
+
+### Undo, redo, clear, help and exit
+
+1. Run `list`, note the persistent ID of the debtor at displayed index 1, then run `delete 1` and `undo`.<br>
+   Expected: `Undid the most recent change.` The debtor is back with the same persistent ID.
+1. Run `redo`.<br>
+   Expected: `Redid the most recently undone change.` The debtor is deleted again.
+1. Relaunch with fresh sample data and run `undo`, then `redo`.<br>
+   Expected: They report `There is no change to undo.` and `There is no change to redo.` and change nothing.
+1. Run `clear now`.<br>
+   Expected: The command is rejected because extra arguments are not allowed, and no debtor is removed.
+1. Run `clear`, then `undo`.<br>
+   Expected: `clear` removes every debtor. `undo` restores them all.
+1. Run `help`, scroll the window with the keyboard, then close it.<br>
+   Expected: The command reference lists every released command and closes without affecting the main window.
+1. Run `exit`, then launch the JAR again.<br>
+   Expected: OSPS closes all windows. After relaunch the data from before `exit` is present.
+
+### Contact preferences
+
+The `contact` command selects a debtor by persistent ID and replaces only the requested preference fields. `ContactPreferences` validates a canonical method and a strict same-day window. The immutable value is carried through person copies, edits and notes, and stored with the debtor in JSON. Older records without the object load with both fields unset; malformed present values follow the normal data-loading error path.
+
+### Preview commands
+
+`preview` parses an edit or delete using the normal parser and executes it on an isolated transaction copy, retaining the current view. It does not publish the copy or save data.
+
+### Profile export
+
+`export --id ID` finds the debtor by persistent ID and writes the profile to a new UTF-8 file in the working-directory `exports` folder. Create-only file access prevents overwriting an existing record. The command does not modify or save the address book.
+
+### Contactability worklist
+
+The read-only `contactable` command fixes a local reference time once, then filters the existing observable debtor view by the configured window and optional method. Start times are inclusive and end times exclusive. Records without configured windows never match. The command does not persist changes; `list` restores the full view.
 
 ### Due-date worklist
 

@@ -123,4 +123,28 @@ class JsonFollowUpStorageTest {
         assertRejected("\"followUpDate\":\"2026-11-09\",\"followUpHistory\":["
                 + event("SCHEDULED", "null", "\"2026-11-03\"") + "],");
     }
+
+    @Test
+    void read_historyStartingFromStoredDate_isAccepted() throws Exception {
+        Person cleared = read("\"followUpHistory\":["
+                + event("COMPLETED", "\"2026-11-03\"", "null") + "],");
+        assertTrue(cleared.getFollowUpDate().isEmpty());
+        assertEquals(Optional.of(LocalDate.of(2026, 11, 3)),
+                cleared.getFollowUpHistory().getFirst().getPreviousDate());
+
+        Person rescheduled = read("\"followUpDate\":\"2026-11-09\",\"followUpHistory\":["
+                + event("RESCHEDULED", "\"2026-11-03\"", "\"2026-11-09\"") + ","
+                + event("CLEARED", "\"2026-11-09\"", "null") + ","
+                + event("SCHEDULED", "null", "\"2026-11-09\"") + "],");
+        assertEquals(3, rescheduled.getFollowUpHistory().size());
+    }
+
+    @Test
+    void read_historyAfterStoredDate_stillRequiresContinuity() {
+        assertRejected("\"followUpHistory\":["
+                + event("COMPLETED", "\"2026-11-03\"", "null") + ","
+                + event("CLEARED", "\"2026-11-09\"", "null") + "],");
+        assertRejected("\"followUpDate\":\"2026-11-05\",\"followUpHistory\":["
+                + event("RESCHEDULED", "\"2026-11-03\"", "\"2026-11-09\"") + "],");
+    }
 }

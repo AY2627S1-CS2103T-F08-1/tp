@@ -20,12 +20,17 @@ import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
 import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
+import seedu.address.logic.commands.ListAmountCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.NoteCommand;
+import seedu.address.logic.commands.RedoCommand;
 import seedu.address.logic.commands.ShowCommand;
 import seedu.address.logic.commands.SortCommand;
+import seedu.address.logic.commands.UndoCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
+import seedu.address.model.person.OutstandingAmount;
+import seedu.address.model.person.OutstandingAmountRange;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.PersonSort.Direction;
 import seedu.address.model.person.PersonSort.Field;
@@ -105,6 +110,16 @@ public class AddressBookParserTest {
     }
 
     @Test
+    public void parseCommand_listAmount() throws Exception {
+        ListAmountCommand command = (ListAmountCommand) parser.parseCommand(
+                ListAmountCommand.COMMAND_WORD + " min/100 max/500");
+        OutstandingAmountRange expectedRange = new OutstandingAmountRange(
+                java.util.Optional.of(new OutstandingAmount("100")),
+                java.util.Optional.of(new OutstandingAmount("500")));
+        assertEquals(new ListAmountCommand(expectedRange), command);
+    }
+
+    @Test
     public void parseCommand_note() throws Exception {
         NoteCommand command = (NoteCommand) parser.parseCommand(
                 NoteCommand.COMMAND_WORD + " --id 1 --text Called debtor.");
@@ -115,6 +130,18 @@ public class AddressBookParserTest {
     public void parseCommand_show() throws Exception {
         ShowCommand command = (ShowCommand) parser.parseCommand(ShowCommand.COMMAND_WORD + " --id 3");
         assertEquals(new ShowCommand(3), command);
+    }
+
+    @Test
+    public void parseCommand_undoRedo() throws Exception {
+        assertTrue(parser.parseCommand("undo") instanceof UndoCommand);
+        assertTrue(parser.parseCommand("redo") instanceof RedoCommand);
+    }
+
+    @Test
+    public void parseCommand_undoRedoWithArguments_throwsParseException() {
+        assertThrows(ParseException.class, () -> parser.parseCommand("undo 1"));
+        assertThrows(ParseException.class, () -> parser.parseCommand("redo 1"));
     }
 
     @Test

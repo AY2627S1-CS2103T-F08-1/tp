@@ -71,6 +71,31 @@ public interface Model {
      */
     void updateFilteredPersonList(Predicate<Person> predicate);
 
+    /** Records the current address-book state when it differs from the latest history entry. */
+    default void commitAddressBook() {
+    }
+
+    /** Returns whether an earlier address-book state can be restored. */
+    default boolean canUndoAddressBook() {
+        return false;
+    }
+
+    /** Restores the preceding address-book state and shows all debtors in persistent-ID order. */
+    default void undoAddressBook() {
+        throw new IllegalStateException("Undo is not supported.");
+    }
+
+    /** Returns whether a later address-book state can be restored. */
+    default boolean canRedoAddressBook() {
+        return false;
+    }
+
+    /** Restores the next address-book state and shows all debtors in persistent-ID order. */
+    default void redoAddressBook() {
+        throw new IllegalStateException("Redo is not supported.");
+    }
+
+
     /**
      * Updates the comparator of the displayed person list without changing its active filter.
      * @throws NullPointerException if {@code comparator} is null.
@@ -82,4 +107,14 @@ public interface Model {
      * @throws NullPointerException if {@code predicate} or {@code comparator} is null.
      */
     void updatePersonView(Predicate<Person> predicate, Comparator<Person> comparator);
+
+    /** Returns an isolated model with the same address-book data, history and active view for a save transaction. */
+    default Model createTransactionCopy() {
+        throw new UnsupportedOperationException("This model does not support save transactions.");
+    }
+
+    /** Publishes data, history and view state from a successfully persisted transaction candidate. */
+    default void publishTransaction(Model candidate) {
+        throw new UnsupportedOperationException("This model does not support save transactions.");
+    }
 }

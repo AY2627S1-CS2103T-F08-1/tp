@@ -61,7 +61,8 @@ public class DueWorkflowTest {
         assertEquals(1, storage.saves);
         assertTrue(model.getFilteredPersonList().isEmpty());
         logic.execute("exit");
-        assertEquals(2, storage.saves);
+        // Neither due nor exit retries the failed add.
+        assertEquals(1, storage.saves);
     }
 
     private static class CountingStorage extends JsonAddressBookStorage {

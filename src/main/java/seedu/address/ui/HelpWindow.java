@@ -5,8 +5,10 @@ import java.util.logging.Logger;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import seedu.address.commons.core.LogsCenter;
 
@@ -19,6 +21,94 @@ public class HelpWindow extends UiPart<Stage> {
             "https://ay2627s1-cs2103t-f08-1.github.io/tp/UserGuide.html";
     public static final String HELP_MESSAGE = "Refer to the user guide: " + USERGUIDE_URL;
 
+    public static final String COMMAND_REFERENCE = """
+            COMMAND REFERENCE
+
+            Add a debtor
+            add n/NAME p/PHONE e/EMAIL a/ADDRESS [o/AMOUNT] [t/TAG]...
+            Example: add n/Olaf Go p/91234567 e/olaf@example.com a/Antarctica o/S$1250.00
+
+            List all debtors
+            list
+
+            Find debtors by name or full phone number
+            find KEYWORD [MORE_KEYWORDS]...
+            Example: find Alice 91234567
+
+            Sort the displayed worklist
+            sort --by id|name|amount [--order asc|desc]
+            Example: sort --by amount --order desc
+
+            Show a debtor profile by persistent ID
+            show --id DEBTOR_ID
+            Example: show --id 3
+
+            Add an interaction note by persistent ID
+            note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT
+            Example: note --id 3 --outcome reached --text Called debtor.
+
+            Set contact preferences by persistent ID
+            contact --id DEBTOR_ID [--method METHOD | --clear-method] [--hours HH:mm-HH:mm | --clear-hours]
+            Example: contact --id 3 --method sms --hours 09:00-17:30
+
+            Filter debtors by outstanding amount
+            list-amount [min/AMOUNT] [max/AMOUNT]
+            Example: list-amount min/1000
+
+            Filter debtors by recovery stage in persistent-ID order
+            list-stage STAGE
+            Example: list-stage contacted
+
+            Find debtors whose contact window includes a time
+            contactable [--at HH:mm] [--method call|sms|email|letter]
+            Example: contactable --at 09:30 --method sms
+
+            Preview an edit or deletion without saving
+            preview edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/AMOUNT] [t/TAG]... | delete INDEX
+            Example: preview delete 2
+
+            Export a debtor profile by persistent ID
+            export --id DEBTOR_ID
+            Example: export --id 3
+
+            Schedule, clear or complete a debtor follow-up
+            followup --id DEBTOR_ID --date YYYY-MM-DD | --clear | --done
+            Example: followup --id 1 --date 2026-11-03
+
+            List debtors with a follow-up due on or before a date, or within a range
+            due [YYYY-MM-DD] | --from YYYY-MM-DD --to YYYY-MM-DD
+            Example: due 2026-11-10
+
+            Change a debtor's recovery stage
+            stage --id DEBTOR_ID --value STAGE
+            Example: stage --id 3 --value contacted
+
+            Summarise the displayed debtors, or every active debtor
+            summary [--all]
+            Example: summary --all
+
+            Edit a debtor by displayed index
+            edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/AMOUNT] [t/TAG]...
+            Example: edit 2 o/S$500.00
+
+            Delete a debtor by displayed index
+            delete INDEX
+            Example: delete 2
+
+            Clear all debtors
+            clear
+
+            Undo or redo the most recent saved change in this session
+            undo
+            redo
+
+            Open this command reference
+            help
+
+            Exit OSPS
+            exit
+            """;
+
     private static final Logger logger = LogsCenter.getLogger(HelpWindow.class);
     private static final String FXML = "HelpWindow.fxml";
 
@@ -28,6 +118,12 @@ public class HelpWindow extends UiPart<Stage> {
     @FXML
     private Label helpMessage;
 
+    @FXML
+    private Label commandReference;
+
+    @FXML
+    private ScrollPane commandReferenceScroll;
+
     /**
      * Creates a new HelpWindow.
      *
@@ -36,6 +132,8 @@ public class HelpWindow extends UiPart<Stage> {
     public HelpWindow(Stage root) {
         super(FXML, root);
         helpMessage.setText(HELP_MESSAGE);
+        commandReference.setText(COMMAND_REFERENCE);
+        getRoot().getScene().addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPress);
     }
 
     /**
@@ -43,6 +141,38 @@ public class HelpWindow extends UiPart<Stage> {
      */
     public HelpWindow() {
         this(new Stage());
+    }
+
+    /** Handles closing and page-wise keyboard scrolling for the command reference. */
+    void handleKeyPress(KeyEvent event) {
+        switch (event.getCode()) {
+            case ESCAPE -> {
+                hide();
+                event.consume();
+            }
+            case PAGE_DOWN -> {
+                scrollByViewport(1);
+                event.consume();
+            }
+            case PAGE_UP -> {
+                scrollByViewport(-1);
+                event.consume();
+            }
+            default -> { }
+        }
+    }
+
+    private void scrollByViewport(int direction) {
+        double viewportHeight = commandReferenceScroll.getViewportBounds().getHeight();
+        double contentHeight = commandReferenceScroll.getContent().getBoundsInLocal().getHeight();
+        double scrollableHeight = contentHeight - viewportHeight;
+        if (scrollableHeight <= 0) {
+            return;
+        }
+        double normalizedPage = viewportHeight / scrollableHeight;
+        double nextValue = Math.clamp(commandReferenceScroll.getVvalue() + direction * normalizedPage,
+                commandReferenceScroll.getVmin(), commandReferenceScroll.getVmax());
+        commandReferenceScroll.setVvalue(nextValue);
     }
 
     /**

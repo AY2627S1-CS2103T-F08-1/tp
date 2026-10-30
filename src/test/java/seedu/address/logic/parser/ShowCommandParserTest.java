@@ -31,17 +31,17 @@ public class ShowCommandParserTest {
 
     @Test
     public void parse_blankId_throwsParseException() {
-        assertParseFailure(parser, " --id   ", ShowCommandParser.MESSAGE_INVALID_DEBTOR_ID);
+        assertParseFailure(parser, " --id   ", ParserUtil.MESSAGE_INVALID_DEBTOR_ID);
     }
 
     @Test
     public void parse_invalidId_throwsParseException() {
-        assertParseFailure(parser, " --id zero", ShowCommandParser.MESSAGE_INVALID_DEBTOR_ID);
-        assertParseFailure(parser, " --id 0", ShowCommandParser.MESSAGE_INVALID_DEBTOR_ID);
-        assertParseFailure(parser, " --id -1", ShowCommandParser.MESSAGE_INVALID_DEBTOR_ID);
-        assertParseFailure(parser, " --id +1", ShowCommandParser.MESSAGE_INVALID_DEBTOR_ID);
-        assertParseFailure(parser, " --id 1.5", ShowCommandParser.MESSAGE_INVALID_DEBTOR_ID);
-        assertParseFailure(parser, " --id 2147483648", ShowCommandParser.MESSAGE_INVALID_DEBTOR_ID);
+        assertParseFailure(parser, " --id zero", ParserUtil.MESSAGE_INVALID_DEBTOR_ID);
+        assertParseFailure(parser, " --id 0", ParserUtil.MESSAGE_INVALID_DEBTOR_ID);
+        assertParseFailure(parser, " --id -1", ParserUtil.MESSAGE_INVALID_DEBTOR_ID);
+        assertParseFailure(parser, " --id +1", ParserUtil.MESSAGE_INVALID_DEBTOR_ID);
+        assertParseFailure(parser, " --id 1.5", ParserUtil.MESSAGE_INVALID_DEBTOR_ID);
+        assertParseFailure(parser, " --id 2147483648", ParserUtil.MESSAGE_INVALID_DEBTOR_ID);
     }
 
     @Test

@@ -1,5 +1,8 @@
 package seedu.address.storage;
 
+import java.time.LocalDate;
+import java.util.Optional;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -8,6 +11,9 @@ import seedu.address.model.person.FollowUpEvent;
 
 /** Jackson-friendly version of a follow-up history event. */
 class JsonAdaptedFollowUpEvent {
+    static final String MESSAGE_MISSING_REQUIRED_FIELDS =
+            "Follow-up event timestamp and action are required.";
+
     private final String timestamp;
     private final String action;
     private final String previousDate;
@@ -34,12 +40,13 @@ class JsonAdaptedFollowUpEvent {
         legacyDate = null;
     }
 
-    public FollowUpEvent toModelType(java.util.Optional<java.time.LocalDate> currentDate)
-            throws IllegalValueException {
+    public FollowUpEvent toModelType(Optional<LocalDate> currentDate) throws IllegalValueException {
         if (timestamp == null || action == null) {
-            throw new IllegalValueException("Follow-up event timestamp and action are required.");
+            throw new IllegalValueException(MESSAGE_MISSING_REQUIRED_FIELDS);
         }
         try {
+            // Prefer the current date pair whenever it is present. This lets a partially migrated
+            // file retain a legacy date without overriding its explicit transition history.
             if (legacyDate != null && previousDate == null && newDate == null) {
                 return FollowUpEvent.fromLegacyStorage(timestamp, action, legacyDate, currentDate);
             }

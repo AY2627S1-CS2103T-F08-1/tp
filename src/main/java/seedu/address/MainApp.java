@@ -2,12 +2,12 @@ package seedu.address;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
+import seedu.address.commons.core.AppHome;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.commons.util.StringUtil;
@@ -33,11 +33,12 @@ import seedu.address.ui.UiManager;
 public class MainApp extends Application {
 
     public static final String APP_NAME = "OSPS";
-    public static final String VERSION = "v1.4";
+    public static final String VERSION = "v1.5";
+
+    static final Path USER_PREFS_FILE_PATH = AppHome.resolve("preferences.json");
+    static final Path ADDRESS_BOOK_FILE_PATH = AppHome.resolve("data", "addressbook.json");
 
     private static final Logger logger = LogsCenter.getLogger(MainApp.class);
-    private static final Path USER_PREFS_FILE_PATH = Paths.get("preferences.json");
-    private static final Path ADDRESS_BOOK_FILE_PATH = Paths.get("data", "addressbook.json");
 
     protected Ui ui;
     protected Logic logic;

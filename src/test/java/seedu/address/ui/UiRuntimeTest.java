@@ -1,8 +1,8 @@
 package seedu.address.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.CountDownLatch;
@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
@@ -18,9 +19,14 @@ import org.junit.jupiter.api.condition.OS;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
+import javafx.event.Event;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import seedu.address.model.person.Person;
@@ -32,7 +38,19 @@ import seedu.address.testutil.PersonBuilder;
 @EnabledOnOs(OS.LINUX)
 public class UiRuntimeTest {
 
-    private static final long TEST_TIMEOUT_SECONDS = 5;
+    // Shared Linux runners can spend several seconds loading JavaFX fonts and CSS on a cold cache.
+    private static final long TEST_TIMEOUT_SECONDS = 30;
+    private HelpWindow helpWindow;
+
+    private static class RecordingHelpWindow extends HelpWindow {
+        private boolean hideCalled;
+
+        @Override
+        public void hide() {
+            hideCalled = true;
+            super.hide();
+        }
+    }
 
     @BeforeAll
     public static void startJavaFxToolkit() throws InterruptedException {
@@ -44,6 +62,14 @@ public class UiRuntimeTest {
     @AfterAll
     public static void stopJavaFxToolkit() {
         Platform.exit();
+    }
+
+    @AfterEach
+    public void closeHelpWindow() throws InterruptedException {
+        if (helpWindow != null) {
+            runOnJavaFxThread(helpWindow::hide);
+            helpWindow = null;
+        }
     }
 
     @Test
@@ -79,6 +105,25 @@ public class UiRuntimeTest {
     }
 
     @Test
+    public void personCard_longTagWrapsWithinViewport() throws InterruptedException {
+        runOnJavaFxThread(() -> {
+            String longTag = "A".repeat(120);
+            Person person = new PersonBuilder().withTags(longTag).build();
+            PersonCard card = new PersonCard(person, 1);
+            card.bindContentWidth(new SimpleDoubleProperty(413));
+            Region root = card.getRoot();
+            FlowPane tags = (FlowPane) root.lookup("#tags");
+            Label tag = (Label) tags.getChildren().getFirst();
+            // The app-owned wrapping contract is the label flag plus the viewport width binding.
+            // Running a native CSS/layout pulse here made headless Linux CI deadlock in JavaFX itself.
+            assertEquals(longTag, tag.getText());
+            assertTrue(tag.isWrapText());
+            assertEquals(0.0, tag.getMinWidth());
+            assertEquals(363.0, tag.getMaxWidth());
+        });
+    }
+
+    @Test
     public void personListPanel_cellWidthTracksListViewport() throws InterruptedException {
         runOnJavaFxThread(() -> {
             Person person = new PersonBuilder().build();
@@ -105,6 +150,45 @@ public class UiRuntimeTest {
         });
     }
 
+    @Test
+    public void helpWindow_commandReferenceIsScrollableAndUsable() throws InterruptedException {
+        runOnJavaFxThread(() -> {
+            RecordingHelpWindow recordingHelpWindow = new RecordingHelpWindow();
+            helpWindow = recordingHelpWindow;
+            ScrollPane reference = (ScrollPane) helpWindow.getRoot().getScene().lookup(".scroll-pane");
+
+            assertNotNull(reference);
+            assertTrue(reference.isFitToWidth());
+            assertTrue(reference.isFocusTraversable());
+            helpWindow.getRoot().getScene().getRoot().applyCss();
+            helpWindow.getRoot().getScene().getRoot().layout();
+            assertTrue(reference.getVmax() > reference.getVmin());
+            reference.setVvalue(reference.getVmin());
+            KeyEvent enter = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER,
+                    false, false, false, false);
+            Event.fireEvent(reference, enter);
+            assertFalse(recordingHelpWindow.hideCalled);
+            KeyEvent pageDown = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.PAGE_DOWN,
+                    false, false, false, false);
+            double viewportHeight = reference.getViewportBounds().getHeight();
+            double contentHeight = reference.getContent().getBoundsInLocal().getHeight();
+            double expectedPage = Math.clamp(viewportHeight / (contentHeight - viewportHeight),
+                    reference.getVmin(), reference.getVmax());
+            Event.fireEvent(reference, pageDown);
+            assertEquals(expectedPage, reference.getVvalue(), 0.001);
+            assertFalse(recordingHelpWindow.hideCalled);
+            KeyEvent pageUp = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.PAGE_UP,
+                    false, false, false, false);
+            Event.fireEvent(reference, pageUp);
+            assertEquals(reference.getVmin(), reference.getVvalue());
+            assertFalse(recordingHelpWindow.hideCalled);
+            KeyEvent escape = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ESCAPE,
+                    false, false, false, false);
+            Event.fireEvent(reference, escape);
+            assertTrue(recordingHelpWindow.hideCalled);
+        });
+    }
+
     private void runOnJavaFxThread(Runnable action) throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<Throwable> failure = new AtomicReference<>();
@@ -120,6 +204,8 @@ public class UiRuntimeTest {
         });
 
         assertTrue(latch.await(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS));
-        assertNull(failure.get());
+        if (failure.get() != null) {
+            throw new AssertionError("JavaFX action failed", failure.get());
+        }
     }
 }

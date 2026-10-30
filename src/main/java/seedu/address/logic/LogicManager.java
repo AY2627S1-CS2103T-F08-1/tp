@@ -13,6 +13,7 @@ import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.Model;
+import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.person.Person;
 import seedu.address.storage.Storage;
 
@@ -30,7 +31,6 @@ public class LogicManager implements Logic {
     private final Model model;
     private final Storage storage;
     private final AddressBookParser addressBookParser;
-    private boolean hasUnsavedAddressBookChanges;
 
     /**
      * Constructs a {@code LogicManager} with the given {@code Model} and {@code Storage}.
@@ -45,26 +45,34 @@ public class LogicManager implements Logic {
     public CommandResult execute(String commandText) throws CommandException, ParseException {
         logger.info("----------------[USER COMMAND][" + CommandLogFormatter.getCommandWord(commandText) + "]");
 
-        CommandResult commandResult;
         Command command = addressBookParser.parseCommand(commandText);
-        commandResult = command.execute(model);
-
-        if (command.shouldSaveAddressBook()) {
-            hasUnsavedAddressBookChanges = true;
+        // Every command runs on a copy. Some commands only know whether they changed data after they execute,
+        // so whether to save is decided after execution.
+        Model candidate = model.createTransactionCopy();
+        CommandResult commandResult = command.execute(candidate);
+        if (!command.shouldSaveAddressBook()
+                || !hasAddressBookChanges(model.getAddressBook(), candidate.getAddressBook())) {
+            model.publishTransaction(candidate);
+            return commandResult;
         }
-
-        if (hasUnsavedAddressBookChanges && (command.shouldSaveAddressBook() || commandResult.isExit())) {
-            try {
-                storage.saveAddressBook(model.getAddressBook());
-                hasUnsavedAddressBookChanges = false;
-            } catch (AccessDeniedException e) {
-                throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
-            } catch (IOException ioe) {
-                throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
-            }
+        if (command.shouldCommitAddressBook()) {
+            // History lives on the candidate, so a failed save below discards the new entry with it.
+            candidate.commitAddressBook();
+        }
+        try {
+            storage.saveAddressBook(candidate.getAddressBook());
+            model.publishTransaction(candidate);
+        } catch (AccessDeniedException e) {
+            throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
+        } catch (IOException ioe) {
+            throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
         }
 
         return commandResult;
+    }
+
+    private boolean hasAddressBookChanges(ReadOnlyAddressBook original, ReadOnlyAddressBook candidate) {
+        return !original.equals(candidate) || original.getNextDebtorId() != candidate.getNextDebtorId();
     }
 
     @Override

@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +19,7 @@ public class InteractionNoteTest {
     public void constructor_nullArguments_throwNullPointerException() {
         assertThrows(NullPointerException.class, () -> new InteractionNote(null, "Called debtor."));
         assertThrows(NullPointerException.class, () -> new InteractionNote(TIMESTAMP, null));
+        assertThrows(NullPointerException.class, () -> new InteractionNote(TIMESTAMP, "Called debtor.", null));
     }
 
     @Test
@@ -48,6 +50,20 @@ public class InteractionNoteTest {
     }
 
     @Test
+    public void fromStorage_validOutcome_returnsInteractionNoteWithOutcome() {
+        InteractionNote note = InteractionNote.fromStorage("2026-10-09T14:30:00", "Asked for callback.",
+                "CALLBACK-REQUESTED");
+
+        assertEquals(Optional.of(ContactOutcome.CALLBACK_REQUESTED), note.getOutcome());
+    }
+
+    @Test
+    public void fromStorage_invalidOutcome_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () ->
+            InteractionNote.fromStorage("2026-10-09T14:30:00", "Called debtor.", "answered"));
+    }
+
+    @Test
     public void fromStorage_invalidTimestamp_throwsIllegalArgumentException() {
         assertThrows(IllegalArgumentException.class, () ->
             InteractionNote.fromStorage("2026-13-40T14:30:00", "Called debtor."));
@@ -59,12 +75,15 @@ public class InteractionNoteTest {
         InteractionNote sameNote = new InteractionNote(TIMESTAMP, "Sent payment reminder.");
         InteractionNote differentTimestamp = new InteractionNote(TIMESTAMP.plusMinutes(1), "Sent payment reminder.");
         InteractionNote differentText = new InteractionNote(TIMESTAMP, "Called debtor.");
+        InteractionNote differentOutcome = new InteractionNote(TIMESTAMP, "Sent payment reminder.",
+                Optional.of(ContactOutcome.REACHED));
 
         assertEquals("2026-10-09T14:30:00", note.getStorageTimestamp());
         assertTrue(note.equals(note));
         assertEquals(note, sameNote);
         assertNotEquals(note, differentTimestamp);
         assertNotEquals(note, differentText);
+        assertNotEquals(note, differentOutcome);
         assertNotEquals(note, "not a note");
         assertEquals(note.hashCode(), sameNote.hashCode());
     }
@@ -73,6 +92,13 @@ public class InteractionNoteTest {
     public void toStringMethod() {
         InteractionNote note = new InteractionNote(TIMESTAMP, "Sent payment reminder.");
 
-        assertEquals("[2026-10-09 14:30] Sent payment reminder.", note.toString());
+        assertEquals("[2026-10-09 14:30] [unspecified] Sent payment reminder.", note.toString());
+    }
+
+    @Test
+    public void toString_withOutcome_displaysOutcome() {
+        InteractionNote note = new InteractionNote(TIMESTAMP, "Reached debtor.", Optional.of(ContactOutcome.REACHED));
+
+        assertEquals("[2026-10-09 14:30] [reached] Reached debtor.", note.toString());
     }
 }
