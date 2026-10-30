@@ -32,9 +32,15 @@ jobs:
         if: runner.os != 'Linux'
         run: ./gradlew check coverage
 
+      - name: Install Linux window manager for JavaFX tests
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install --no-install-recommends -y openbox
+
       - name: Build and check with Gradle on Linux
         if: runner.os == 'Linux'
-        run: xvfb-run --auto-servernum ./gradlew check coverage
+        run: xvfb-run --auto-servernum bash .github/run-javafx-tests.sh
 
       - name: Upload coverage reports to Codecov
         if: runner.os == 'Linux'
