@@ -66,7 +66,13 @@ class JsonSerializableAddressBook {
             if (person.getDebtorId() != 0 && usedDebtorIds.contains(person.getDebtorId())) {
                 throw new IllegalValueException(AddressBook.MESSAGE_DUPLICATE_DEBTOR_ID);
             }
-            Person addedPerson = addressBook.addPerson(person);
+            final Person addedPerson;
+            try {
+                addedPerson = addressBook.addPerson(person);
+            } catch (IllegalArgumentException exception) {
+                // Legacy records need an ID allocated; corrupt mixed data can exhaust that range.
+                throw new IllegalValueException(exception.getMessage());
+            }
             usedDebtorIds.add(addedPerson.getDebtorId());
         }
         if (nextDebtorId != null) {
