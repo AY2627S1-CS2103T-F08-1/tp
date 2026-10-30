@@ -55,6 +55,22 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parseDebtorId_validBoundaries_returnsPersistentId() throws Exception {
+        assertEquals(1, ParserUtil.parseDebtorId("1"));
+        assertEquals(7, ParserUtil.parseDebtorId("0007"));
+        assertEquals(Integer.MAX_VALUE, ParserUtil.parseDebtorId("2147483647"));
+    }
+
+    @Test
+    public void parseDebtorId_invalidToken_throwsConsistentParseException() {
+        for (String token : List.of("", "0", "-1", "+1", " 1", "1 ", "1 2", "1.0", "2147483648")) {
+            assertThrows(ParseException.class, ParserUtil.MESSAGE_INVALID_DEBTOR_ID, () ->
+                    ParserUtil.parseDebtorId(token));
+        }
+        assertThrows(NullPointerException.class, () -> ParserUtil.parseDebtorId(null));
+    }
+
+    @Test
     public void parseName_null_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> ParserUtil.parseName((String) null));
     }

@@ -11,7 +11,6 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.NoteCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -32,16 +31,8 @@ public class NoteCommandParser implements Parser<NoteCommand> {
     public NoteCommand parse(String args) throws ParseException {
         Matcher textPrefixMatcher = NOTE_TEXT_PREFIX.matcher(args);
         if (!textPrefixMatcher.find()) {
-            ArgumentMultimap incompleteMultimap = ArgumentTokenizer.tokenize(args,
-                    PREFIX_DEBTOR_ID, PREFIX_OUTCOME);
-            rejectUnknownOptions(incompleteMultimap.getPreamble());
-            for (String value : incompleteMultimap.getAllValues(PREFIX_DEBTOR_ID)) {
-                rejectUnknownOptions(value);
-            }
-            for (String value : incompleteMultimap.getAllValues(PREFIX_OUTCOME)) {
-                rejectUnknownOptions(value);
-            }
-            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, NoteCommand.MESSAGE_USAGE));
+            rejectUnknownOptionsWithoutText(args);
+            throw invalidFormat();
         }
 
         String optionArguments = args.substring(0, textPrefixMatcher.start());
@@ -51,16 +42,24 @@ public class NoteCommandParser implements Parser<NoteCommand> {
         ArgumentMultimap textMultimap = ArgumentTokenizer.tokenize(textArguments,
                 PREFIX_NOTE_TEXT, PREFIX_DEBTOR_ID);
 
+        String idText = validateOptions(optionMultimap, textMultimap);
+        int debtorId = ParserUtil.parseDebtorId(idText);
+        String noteText = textMultimap.getValue(PREFIX_NOTE_TEXT).orElseThrow();
+        if (!InteractionNote.isValidText(noteText)) {
+            throw new ParseException(InteractionNote.MESSAGE_CONSTRAINTS);
+        }
+        return createCommand(debtorId, noteText, optionMultimap.getValue(PREFIX_OUTCOME));
+    }
+
+    /** Validates option structure without interpreting literal words inside the note text. */
+    private String validateOptions(ArgumentMultimap optionMultimap, ArgumentMultimap textMultimap)
+            throws ParseException {
         rejectUnknownOptions(optionMultimap.getPreamble());
         rejectUnknownOptions(textMultimap.getPreamble());
         List<String> idValues = new ArrayList<>(optionMultimap.getAllValues(PREFIX_DEBTOR_ID));
         idValues.addAll(textMultimap.getAllValues(PREFIX_DEBTOR_ID));
-        for (String idValue : idValues) {
-            rejectUnknownOptions(idValue);
-        }
-        for (String outcomeValue : optionMultimap.getAllValues(PREFIX_OUTCOME)) {
-            rejectUnknownOptions(outcomeValue);
-        }
+        rejectUnknownOptionsInValues(idValues);
+        rejectUnknownOptionsInValues(optionMultimap.getAllValues(PREFIX_OUTCOME));
         optionMultimap.verifyNoDuplicatePrefixesFor(PREFIX_DEBTOR_ID, PREFIX_OUTCOME);
         textMultimap.verifyNoDuplicatePrefixesFor(PREFIX_DEBTOR_ID, PREFIX_NOTE_TEXT);
         if (idValues.size() > 1) {
@@ -68,16 +67,13 @@ public class NoteCommandParser implements Parser<NoteCommand> {
         }
         if (!optionMultimap.getPreamble().isEmpty() || !textMultimap.getPreamble().isEmpty()
                 || idValues.size() != 1 || textMultimap.getValue(PREFIX_NOTE_TEXT).isEmpty()) {
-            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, NoteCommand.MESSAGE_USAGE));
+            throw invalidFormat();
         }
+        return idValues.getFirst();
+    }
 
-        int debtorId = parseDebtorId(idValues.getFirst());
-        String noteText = textMultimap.getValue(PREFIX_NOTE_TEXT).get();
-        if (!InteractionNote.isValidText(noteText)) {
-            throw new ParseException(InteractionNote.MESSAGE_CONSTRAINTS);
-        }
-
-        Optional<String> outcomeText = optionMultimap.getValue(PREFIX_OUTCOME);
+    private NoteCommand createCommand(int debtorId, String noteText, Optional<String> outcomeText)
+            throws ParseException {
         if (outcomeText.isEmpty()) {
             return new NoteCommand(debtorId, noteText);
         }
@@ -86,17 +82,27 @@ public class NoteCommandParser implements Parser<NoteCommand> {
         return new NoteCommand(debtorId, noteText, outcome);
     }
 
+    private void rejectUnknownOptionsWithoutText(String args) throws ParseException {
+        ArgumentMultimap options = ArgumentTokenizer.tokenize(args, PREFIX_DEBTOR_ID, PREFIX_OUTCOME);
+        rejectUnknownOptions(options.getPreamble());
+        rejectUnknownOptionsInValues(options.getAllValues(PREFIX_DEBTOR_ID));
+        rejectUnknownOptionsInValues(options.getAllValues(PREFIX_OUTCOME));
+    }
+
+    private void rejectUnknownOptionsInValues(List<String> values) throws ParseException {
+        for (String value : values) {
+            rejectUnknownOptions(value);
+        }
+    }
+
     private void rejectUnknownOptions(String parameterText) throws ParseException {
         Matcher matcher = LONG_OPTION_TOKEN.matcher(parameterText);
-        while (matcher.find()) {
+        if (matcher.find()) {
             throw new ParseException(String.format(MESSAGE_UNKNOWN_OPTION, matcher.group()));
         }
     }
 
-    private int parseDebtorId(String idText) throws ParseException {
-        if (!StringUtil.isNonZeroUnsignedInteger(idText)) {
-            throw new ParseException(ParserUtil.MESSAGE_INVALID_DEBTOR_ID);
-        }
-        return Integer.parseInt(idText);
+    private ParseException invalidFormat() {
+        return new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, NoteCommand.MESSAGE_USAGE));
     }
 }
