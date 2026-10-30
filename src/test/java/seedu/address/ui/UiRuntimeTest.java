@@ -63,7 +63,10 @@ public class UiRuntimeTest {
     @BeforeAll
     public static void startJavaFxToolkit() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        Platform.startup(latch::countDown);
+        Platform.startup(() -> {
+            Platform.setImplicitExit(false);
+            latch.countDown();
+        });
         assertTrue(latch.await(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS));
     }
 
@@ -78,6 +81,19 @@ public class UiRuntimeTest {
             runOnJavaFxThread(helpWindow::hide);
             helpWindow = null;
         }
+    }
+
+    @Test
+    public void helpWindow_focusWhileMinimizedKeepsWindowShowing() throws InterruptedException {
+        runOnJavaFxThread(() -> {
+            helpWindow = new HelpWindow();
+            helpWindow.show();
+            helpWindow.getRoot().setIconified(true);
+            helpWindow.focus();
+            // Restoring from the minimised state is done by the window manager, which the CI display lacks,
+            // so that part is checked by hand on the JAR (see the Developer Guide manual tests).
+            assertTrue(helpWindow.isShowing());
+        });
     }
 
     @Test

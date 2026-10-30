@@ -88,6 +88,15 @@ public class Email {
         return value;
     }
 
+    /** Compares contact identity while preserving local-part case and the original display spelling. */
+    public boolean isSameAddress(Email other) {
+        requireNonNull(other);
+        int separator = value.indexOf('@');
+        int otherSeparator = other.value.indexOf('@');
+        return value.substring(0, separator).equals(other.value.substring(0, otherSeparator))
+                && value.substring(separator + 1).equalsIgnoreCase(other.value.substring(otherSeparator + 1));
+    }
+
     @Override
     public boolean equals(Object other) {
         if (other == this) {

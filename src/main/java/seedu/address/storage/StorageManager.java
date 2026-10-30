@@ -69,9 +69,9 @@ public class StorageManager implements Storage {
     public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
         logger.fine("Attempting to write to data file: " + addressBookStorage.getAddressBookFilePath());
         if (addressBookLoadFailed) {
-            throw new IOException("Address book could not be loaded from "
+            throw new IOException("Address book could not be loaded (invalid data or duplicate debtors) from "
                     + addressBookStorage.getAddressBookFilePath()
-                    + ". Preserve this file, restore valid JSON, and restart before saving changes.");
+                    + ". Preserve this file, correct or restore it, and restart before saving changes.");
         }
         addressBookStorage.saveAddressBook(addressBook);
     }
