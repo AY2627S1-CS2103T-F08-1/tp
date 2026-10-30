@@ -45,7 +45,17 @@ class JsonAdaptedPerson {
     private final List<JsonAdaptedInteractionNote> interactionNotes = new ArrayList<>();
     private final String followUpDate;
     private final List<JsonAdaptedFollowUpEvent> followUpHistory = new ArrayList<>();
+    private final String promisedPaymentDate;
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
+
+    /** Backwards-compatible constructor for callers specifying every field except a promised payment date. */
+    public JsonAdaptedPerson(String name, String phone, String email, String address, Integer debtorId,
+            String outstandingAmount, List<JsonAdaptedInteractionNote> interactionNotes, String recoveryStage,
+            String followUpDate, List<JsonAdaptedFollowUpEvent> followUpHistory, List<JsonAdaptedTag> tags,
+            JsonContactPreferences contactPreferences) {
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, recoveryStage,
+                followUpDate, followUpHistory, tags, contactPreferences, null);
+    }
 
     /**
      * Constructs a {@code JsonAdaptedPerson} with the given person details.
@@ -60,7 +70,8 @@ class JsonAdaptedPerson {
             @JsonProperty("followUpDate") String followUpDate,
             @JsonProperty("followUpHistory") List<JsonAdaptedFollowUpEvent> followUpHistory,
             @JsonProperty("tags") List<JsonAdaptedTag> tags,
-            @JsonProperty("contactPreferences") JsonContactPreferences contactPreferences) {
+            @JsonProperty("contactPreferences") JsonContactPreferences contactPreferences,
+            @JsonProperty("promisedPaymentDate") String promisedPaymentDate) {
         this.name = name;
         this.phone = phone;
         this.email = email;
@@ -69,6 +80,7 @@ class JsonAdaptedPerson {
         this.outstandingAmount = outstandingAmount;
         this.recoveryStage = recoveryStage;
         this.followUpDate = followUpDate;
+        this.promisedPaymentDate = promisedPaymentDate;
         this.contactPreferences = contactPreferences;
         if (interactionNotes != null) {
             this.interactionNotes.addAll(interactionNotes);
@@ -93,6 +105,7 @@ class JsonAdaptedPerson {
         outstandingAmount = source.getOutstandingAmount().toString();
         recoveryStage = source.getRecoveryStage().toString();
         followUpDate = source.getFollowUpDate().map(Object::toString).orElse(null);
+        promisedPaymentDate = source.getPromisedPaymentDate().map(Object::toString).orElse(null);
         contactPreferences = new JsonContactPreferences(source.getContactPreferences());
         interactionNotes.addAll(source.getInteractionNotes().stream()
                 .map(JsonAdaptedInteractionNote::new)
@@ -195,6 +208,11 @@ class JsonAdaptedPerson {
         if (!modelFollowUpHistory.isEmpty() && !eventCurrentDate.equals(modelFollowUpDate)) {
             throw new IllegalValueException("Follow-up history does not match the current follow-up date.");
         }
+        final Optional<LocalDate> modelPromisedPaymentDate = promisedPaymentDate == null
+                ? Optional.empty() : FollowUpEvent.tryParseDate(promisedPaymentDate);
+        if (promisedPaymentDate != null && modelPromisedPaymentDate.isEmpty()) {
+            throw new IllegalValueException("Promised payment date must be a valid ISO date from year 0001 to 9999.");
+        }
         if (debtorId != null && debtorId < 0) {
             throw new IllegalValueException(Person.MESSAGE_INVALID_DEBTOR_ID);
         }
@@ -203,7 +221,7 @@ class JsonAdaptedPerson {
         }
         return new Person(modelName, modelPhone, modelEmail, modelAddress,
                 debtorId == null ? 0 : debtorId, modelOutstandingAmount, modelInteractionNotes,
-                modelRecoveryStage, modelFollowUpDate, modelFollowUpHistory, modelTags,
+                modelRecoveryStage, modelFollowUpDate, modelFollowUpHistory, modelPromisedPaymentDate, modelTags,
                 contactPreferences == null ? new ContactPreferences(null, null) : contactPreferences.toModelType());
     }
 

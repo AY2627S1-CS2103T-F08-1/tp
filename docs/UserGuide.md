@@ -40,6 +40,8 @@ while retaining the benefits of a graphical user interface (GUI).
 
    * `followup --id 1 --date 2026-11-03` : Schedules a follow-up for debtor ID 1.
 
+   * `promise --id 1 --date 2026-11-05` : Records the date debtor ID 1 promised to pay.
+
    * `show --id 1` : Shows the complete profile and interaction history of debtor ID 1.
 
    * `delete 3` : Deletes the 3rd debtor shown in the current list.
@@ -238,6 +240,29 @@ Examples:
 * `followup --id 1 --date 2026-11-05` reschedules a pending date.
 * `followup --id 1 --done` marks the pending follow-up complete.
 
+### Tracking a promised payment date: `promise`
+
+Sets or clears the calendar date on which a debtor promised to pay. This date is separate from the follow-up date.
+
+Formats:
+* `promise --id DEBTOR_ID --date YYYY-MM-DD`
+* `promise --id DEBTOR_ID --clear`
+
+* `DEBTOR_ID` is the positive persistent ID shown in the debtor list. The command still finds a debtor hidden by a
+  `find` filter.
+* The date must be a real calendar date in exactly `YYYY-MM-DD` format, from `0001-01-01` to `9999-12-31`. Past dates
+  are accepted because OSPS may record an existing agreement.
+* Provide exactly one of `--date` or `--clear`. Unknown, missing, duplicate, and conflicting options are rejected
+  without changing debtor data.
+* Setting the existing date or clearing an unset date reports that no change was made and does not rewrite the data.
+* The promised payment date remains independent of follow-ups, notes, and the outstanding amount. It does not infer a
+  payment or change any other field.
+* The date is preserved through edits and restarts. Legacy data without the field loads with the date unset.
+
+Examples:
+* `promise --id 1 --date 2026-11-05`
+* `promise --id 1 --clear`
+
 ### Updating recovery stage: `stage`
 
 Sets the manual recovery stage of the debtor identified by persistent ID. Available stages are `new`, `contacted`,
@@ -259,9 +284,9 @@ Formats: `summary` or `summary --all`
 
 Shows the complete profile of the active debtor identified by persistent debtor ID. The profile includes the
 debtor's name, phone number, email address, address, outstanding amount, tags, contact preferences, pending follow-up
-date, interaction history, and follow-up history. Interaction notes are shown newest first, with each note's timestamp,
-outcome, and text. Follow-up events are shown oldest first. If the debtor has no notes, the profile states that no
-interaction notes are recorded.
+date, promised payment date, interaction history, and follow-up history. An unset date is shown as `None`.
+Interaction notes are shown newest first, with each note's timestamp, outcome, and text. Follow-up events are shown
+oldest first. If the debtor has no notes, the profile states that no interaction notes are recorded.
 If two notes have exactly the same timestamp, the later-added note is shown first; neither note is removed.
 Displayed times have minute precision, so two notes showing the same time may have different stored timestamps.
 
@@ -488,6 +513,7 @@ Action | Format, Examples
 **List** | `list`
 **Note** | `note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT`<br> e.g., `note --id 1 --outcome reached --text Called debtor.`
 **Follow-up** | `followup --id DEBTOR_ID --date YYYY-MM-DD` or `--clear` or `--done`<br> e.g., `followup --id 1 --date 2026-11-03`
+**Promise** | `promise --id DEBTOR_ID (--date YYYY-MM-DD \| --clear)`<br> e.g., `promise --id 1 --date 2026-11-05`
 **Undo** | `undo`
 **Redo** | `redo`
 **Show** | `show --id DEBTOR_ID`<br> e.g., `show --id 3`

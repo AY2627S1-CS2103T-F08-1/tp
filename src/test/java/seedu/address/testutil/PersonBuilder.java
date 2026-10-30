@@ -38,6 +38,7 @@ public class PersonBuilder {
     private RecoveryStage recoveryStage;
     private Optional<LocalDate> followUpDate;
     private List<FollowUpEvent> followUpHistory;
+    private Optional<LocalDate> promisedPaymentDate;
     private ContactPreferences contactPreferences;
     private int debtorId;
     private Set<Tag> tags;
@@ -55,6 +56,7 @@ public class PersonBuilder {
         recoveryStage = RecoveryStage.NEW;
         followUpDate = Optional.empty();
         followUpHistory = List.of();
+        promisedPaymentDate = Optional.empty();
         contactPreferences = new ContactPreferences(null, null);
         debtorId = 0;
         tags = new HashSet<>();
@@ -73,6 +75,7 @@ public class PersonBuilder {
         recoveryStage = personToCopy.getRecoveryStage();
         followUpDate = personToCopy.getFollowUpDate();
         followUpHistory = personToCopy.getFollowUpHistory();
+        promisedPaymentDate = personToCopy.getPromisedPaymentDate();
         contactPreferences = personToCopy.getContactPreferences();
         debtorId = personToCopy.getDebtorId();
         tags = new HashSet<>(personToCopy.getTags());
@@ -160,6 +163,12 @@ public class PersonBuilder {
         return this;
     }
 
+    /** Sets the promised payment date. */
+    public PersonBuilder withPromisedPaymentDate(Optional<LocalDate> promisedPaymentDate) {
+        this.promisedPaymentDate = promisedPaymentDate;
+        return this;
+    }
+
     /** Sets the contact preferences. */
     public PersonBuilder withContactPreferences(ContactPreferences contactPreferences) {
         this.contactPreferences = contactPreferences;
@@ -169,7 +178,7 @@ public class PersonBuilder {
     /** Builds a person using the configured field values. */
     public Person build() {
         return new Person(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
-                recoveryStage, followUpDate, followUpHistory, tags, contactPreferences);
+                recoveryStage, followUpDate, followUpHistory, promisedPaymentDate, tags, contactPreferences);
     }
 
 }

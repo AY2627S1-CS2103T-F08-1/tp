@@ -40,6 +40,7 @@ public class MessagesTest {
                 Preferred contact method: Not set
                 Contact hours: Not set
                 Follow-up: None
+                Promised payment: None
                 Interaction history (newest first):
                 - [2026-10-10 09:15] [reached] Sent follow-up email.
                 - [2026-10-09 14:30] [unspecified] Called debtor, promised payment.
