@@ -5,16 +5,21 @@
 
 ![OSPS interface showing debtor profiles and outstanding amounts](docs/images/Ui.png)
 
-OSPS v1.3 is a desktop application for debt recovery agents to manage debtor contact details, outstanding balances,
-and interaction histories. It combines a graphical interface with keyboard-driven commands for fast case management.
+OSPS v1.5 is a desktop application for debt recovery agents to manage debtor contact details, outstanding balances,
+interaction histories, follow-ups, and recovery stages. It combines a graphical interface with keyboard-driven
+commands for fast case management.
 
-The v1.3 MVP supports these core workflows:
+The v1.5 release supports these connected workflows:
 
-* Add a debtor with an optional non-negative outstanding amount.
-* List active debtors in ascending persistent debtor-ID order, including their outstanding amounts.
-* View a debtor's complete profile and newest-first interaction history using the persistent debtor ID.
-* Add a timestamped interaction note using the persistent debtor ID.
-* Delete a debtor using the one-based index in the currently displayed list.
+* Capture and maintain debtor profiles, contact preferences, and non-negative outstanding amounts.
+* Find, filter, and sort the current worklist by name, phone, balance, recovery stage, follow-up date, or contact window.
+* Record interaction outcomes, promised-payment dates, follow-ups, and recovery-stage changes with persistence.
+* Review complete profiles, workload summaries, and due follow-ups, or export one debtor's profile for authorised use.
+* Preview risky edits or deletions and recover saved changes with session undo and redo.
+
+OSPS deliberately distinguishes a debtor's stable persistent ID from the one-based index of the currently displayed
+worklist. Commands that contain `--id` use the persistent ID; `edit`, `delete`, and their previews use the visible
+displayed index. The User Guide explains this distinction with examples and a visual reference.
 
 For setup, exact command syntax, and the distinction between debtor IDs and displayed indexes, see the
 [User Guide](https://ay2627s1-cs2103t-f08-1.github.io/tp/UserGuide.html). Developers can refer to the

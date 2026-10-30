@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="330" viewBox="0 0 1000 330" role="img"
+     aria-labelledby="title description">
+  <title id="title">Displayed index and persistent debtor ID guide</title>
+  <desc id="description">A sample debtor card labelled 2 and ID 7. Index-based commands use 2 while ID-based
+    commands use 7.</desc>
+  <defs>
+    <marker id="blueArrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#2563eb"/>
+    </marker>
+    <marker id="orangeArrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#d97706"/>
+    </marker>
+    <style>
+      .card { fill: #f8fafc; stroke: #64748b; stroke-width: 2; rx: 12; }
+      .cardTitle { fill: #0f172a; font: 700 25px Arial, sans-serif; }
+      .body { fill: #334155; font: 17px Arial, sans-serif; }
+      .blueBox { fill: #eff6ff; stroke: #2563eb; stroke-width: 2; rx: 12; }
+      .orangeBox { fill: #fff7ed; stroke: #d97706; stroke-width: 2; rx: 12; }
+      .blueHeading { fill: #1d4ed8; font: 700 20px Arial, sans-serif; }
+      .orangeHeading { fill: #b45309; font: 700 20px Arial, sans-serif; }
+      .command { fill: #0f172a; font: 16px Consolas, monospace; }
+      .note { fill: #475569; font: 15px Arial, sans-serif; }
+    </style>
+  </defs>
+
+  <rect width="1000" height="330" fill="white"/>
+
+  <rect class="card" x="320" y="55" width="360" height="205"/>
+  <text class="cardTitle" x="350" y="100">2. [ID 7] Alex Tan</text>
+  <text class="body" x="350" y="140">91234567</text>
+  <text class="body" x="350" y="173">S$1,250.00 outstanding</text>
+  <text class="body" x="350" y="206">alex@example.com</text>
+  <text class="body" x="350" y="239">Recovery stage: contacted</text>
+
+  <rect class="blueBox" x="20" y="45" width="250" height="225"/>
+  <text class="blueHeading" x="45" y="82">Displayed index: 2</text>
+  <text class="command" x="45" y="125">edit 2 ...</text>
+  <text class="command" x="45" y="157">delete 2</text>
+  <text class="command" x="45" y="189">preview delete 2</text>
+  <text class="note" x="45" y="230">Can change after filtering,</text>
+  <text class="note" x="45" y="252">sorting or deletion.</text>
+
+  <rect class="orangeBox" x="730" y="45" width="250" height="225"/>
+  <text class="orangeHeading" x="755" y="82">Persistent ID: 7</text>
+  <text class="command" x="755" y="125">show --id 7</text>
+  <text class="command" x="755" y="157">note --id 7 ...</text>
+  <text class="command" x="755" y="189">followup --id 7 ...</text>
+  <text class="note" x="755" y="230">Stays with Alex until</text>
+  <text class="note" x="755" y="252">the debtor is deleted.</text>
+
+  <path d="M270 155 C300 155 305 110 337 100" stroke="#2563eb" stroke-width="3" fill="none"
+        marker-end="url(#blueArrow)"/>
+  <path d="M730 155 C700 155 695 110 460 100" stroke="#d97706" stroke-width="3" fill="none"
+        marker-end="url(#orangeArrow)"/>
+
+  <text class="note" x="500" y="305" text-anchor="middle">Read the command syntax first: INDEX uses the number before the name; --id uses the number inside [ID …].</text>
+</svg>
