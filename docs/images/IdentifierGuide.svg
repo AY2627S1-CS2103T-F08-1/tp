@@ -50,7 +50,7 @@
 
   <path d="M270 155 C300 155 305 110 337 100" stroke="#2563eb" stroke-width="3" fill="none"
         marker-end="url(#blueArrow)"/>
-  <path d="M730 155 C700 155 695 110 460 100" stroke="#d97706" stroke-width="3" fill="none"
+  <path d="M730 155 C700 155 695 72 410 72" stroke="#d97706" stroke-width="3" fill="none"
         marker-end="url(#orangeArrow)"/>
 
   <text class="note" x="500" y="305" text-anchor="middle">Read the command syntax first: INDEX uses the number before the name; --id uses the number inside [ID …].</text>
