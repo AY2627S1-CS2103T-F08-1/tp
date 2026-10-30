@@ -81,6 +81,17 @@ public class UiRuntimeTest {
     }
 
     @Test
+    public void helpWindow_focusRestoresMinimizedWindow() throws InterruptedException {
+        runOnJavaFxThread(() -> {
+            helpWindow = new HelpWindow();
+            helpWindow.getRoot().setIconified(true);
+            assertTrue(helpWindow.getRoot().isIconified());
+            helpWindow.focus();
+            assertFalse(helpWindow.getRoot().isIconified());
+        });
+    }
+
+    @Test
     public void resultDisplay_feedbackUpdatesTextAndVisibleRows() throws InterruptedException {
         String feedback = "Debtor profile:\nID: 7\nName: Alex\nPhone: 91234567\nEmail: alex@example.com\n"
                 + "Address: 123 Example Street";

@@ -139,9 +139,12 @@ A debtor can have any number of tags, including zero.
 * Email addresses accept ASCII Punycode domain labels such as `person@xn--bcher-kva.de`. Domain labels may
   contain consecutive internal hyphens but must start and end with letters or digits.
 * Addresses must not be blank, including addresses containing only Unicode spaces.
-* Email duplicate checks are case-sensitive: `Alice@example.com` and `alice@example.com` are treated as
-  different addresses. Aliases such as `alice+work@example.com` are not matched to `alice@example.com`.
+* Email duplicate checks ignore domain case: `alice@example.com` and `alice@EXAMPLE.COM` identify the same contact.
+  Local-part case remains significant: `Alice@example.com` and `alice@example.com` are different addresses.
+  Aliases such as `alice+work@example.com` are not matched to `alice@example.com`.
   Check existing records before adding a debtor under a different spelling of the same contact.
+  If an older data file contains domain-case duplicates, loading is rejected and saving is blocked to preserve it.
+  Keep a backup, correct the conflicting email addresses in the data file, and restart OSPS before saving changes.
 * Deleted IDs are not reused after saving and restarting, even when the last debtor is deleted.
 
 Examples:
@@ -320,8 +323,8 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/OUTSTANDING_AMOU
 * Use `o/OUTSTANDING_AMOUNT` to replace the outstanding amount. It accepts the same non-negative currency values as
   `add`, such as `o/S$1,250.00` and `o/0`.
 * Changing a phone number or email to one already used by another active debtor is rejected, including when
-  that other debtor is hidden by a search. Phone numbers and email addresses use exact matching for uniqueness;
-  country codes, leading zeroes, email case, and email aliases are not normalised.
+  that other debtor is hidden by a search. Phone numbers use exact matching; email domains ignore case.
+  Country codes, leading zeroes, email local-part case, and email aliases are not normalised.
 * The persistent debtor ID and interaction notes are preserved.
 * An active `find` filter remains applied after the edit. If an edited name no longer matches the active search,
   that debtor leaves the filtered results; run `list` to restore every active debtor.
@@ -497,7 +500,6 @@ from your previous OSPS home folder. Place it at `data/addressbook.json` inside 
 ## Known issues
 
 1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, OSPS detects that the saved window position is no longer on a connected screen and opens centred on a connected screen (the primary screen if none matches). A saved position is kept only if most of the window and its title bar are on a connected screen. A saved size that is too small is replaced with the default size, and one that is too large is reduced to fit your screens. You do not need to delete `preferences.json`; your new window size and position are saved when you next exit OSPS.
-2. **If you minimize the Help Window** and then run the `help` command (or use the `Help` menu, or the keyboard shortcut `F1`) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
 
 --------------------------------------------------------------------------------------------------------------------
 

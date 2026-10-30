@@ -257,7 +257,7 @@ public class Person {
         }
 
         return otherPerson != null
-                && (otherPerson.getPhone().equals(getPhone()) || otherPerson.getEmail().equals(getEmail()));
+                && (otherPerson.getPhone().equals(getPhone()) || otherPerson.getEmail().isSameAddress(getEmail()));
     }
 
     /**
