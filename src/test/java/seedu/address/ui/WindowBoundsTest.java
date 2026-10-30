@@ -97,7 +97,7 @@ public class WindowBoundsTest {
     }
 
     @Test
-    public void fit_onlyTitleBarVisibleAtBottomEdge_centred() {
+    public void fit_bodyUnderHalfVisibleAtBottomEdge_centred() {
         GuiSettings saved = new GuiSettings(740, 600, 100, 880);
         assertEquals(new GuiSettings(740, 600, 483, 156), WindowBounds.fit(saved, ONE_SCREEN));
     }

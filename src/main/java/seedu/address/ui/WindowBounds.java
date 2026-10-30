@@ -16,6 +16,7 @@ final class WindowBounds {
     private static final double DEFAULT_WIDTH = 740;
     private static final double DEFAULT_HEIGHT = 600;
     private static final double MIN_VISIBLE_FRACTION = 0.5;
+    // Approximate height of the operating system title bar, in device-independent pixels.
     private static final double TITLE_BAR_HEIGHT = 40;
 
     private WindowBounds() {}
