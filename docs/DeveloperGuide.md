@@ -1080,7 +1080,7 @@ Use a writable folder, run `list`, and choose one debtor. Record their displayed
 1. Run `preview delete 999999` and `preview clear`.<br>
    Expected: Each command is rejected and the debtor remains present.
 1. Run `export --id ID`.<br>
-   Expected: OSPS reports an absolute path ending in `exports/debtor-ID.txt`. The new UTF-8 file is inside the folder
+   Expected: OSPS reports an absolute path to `debtor-ID.txt` in the `exports` folder. The new UTF-8 file is inside the folder
    containing the JAR and includes the debtor's profile and interaction history.
 1. Record the file's contents and run `export --id ID` again.<br>
    Expected: OSPS refuses to overwrite the existing export and asks for it to be moved or renamed. Its contents remain
