@@ -75,6 +75,10 @@ public class HelpWindow extends UiPart<Stage> {
             followup --id DEBTOR_ID --date YYYY-MM-DD | --clear | --done
             Example: followup --id 1 --date 2026-11-03
 
+            List debtors with a follow-up due on or before a date, or within a range
+            due [YYYY-MM-DD] | --from YYYY-MM-DD --to YYYY-MM-DD
+            Example: due 2026-11-10
+
             Record or clear the date a debtor promised to pay
             promise --id DEBTOR_ID --date YYYY-MM-DD | --clear
             Example: promise --id 1 --date 2026-11-05

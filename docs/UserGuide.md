@@ -513,6 +513,7 @@ Action | Format, Examples
 **List** | `list`
 **Note** | `note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT`<br> e.g., `note --id 1 --outcome reached --text Called debtor.`
 **Follow-up** | `followup --id DEBTOR_ID --date YYYY-MM-DD` or `--clear` or `--done`<br> e.g., `followup --id 1 --date 2026-11-03`
+**Due** | `due [YYYY-MM-DD]` or `due --from YYYY-MM-DD --to YYYY-MM-DD`<br> e.g., `due 2026-11-10`
 **Promise** | `promise --id DEBTOR_ID (--date YYYY-MM-DD \| --clear)`<br> e.g., `promise --id 1 --date 2026-11-05`
 **Undo** | `undo`
 **Redo** | `redo`
@@ -522,6 +523,26 @@ Action | Format, Examples
 **Sort** | `sort --by id\|name\|amount [--order asc\|desc]`<br> e.g., `sort --by amount --order desc`
 **Help** | `help`
 **Exit** | `exit`
+
+### Listing follow-ups by date: `due`
+
+Use `due` for follow-ups on or before today, or `due YYYY-MM-DD` for an inclusive cutoff. Use `due --from YYYY-MM-DD --to YYYY-MM-DD` for an inclusive range. For the next seven days, enter today as the start and six days later as the end. Results are ordered by date then persistent debtor ID; overdue, due-today and upcoming labels compare with the computer's local today. `list` restores the complete list. The view does not modify or save records.
+
+Details:
+* `due` replaces any current `find`, `list-amount`, `list-stage` or `sort` view with its own list, in follow-up date
+  then persistent-ID order. Displayed indexes used by `edit` and `delete` then refer to that list.
+* Debtors without a pending follow-up are never listed. If nothing matches, OSPS reports `No matching follow-ups.`
+* Dates must be real calendar dates in `YYYY-MM-DD` format, with years from `0001` to `9999`, as for `followup`.
+  Missing, repeated or extra arguments and a start date after the end date are rejected, and the current list stays
+  unchanged.
+* `due` does not change or save debtor data and is not added to the undo history.
+
+Format: `due [YYYY-MM-DD]` or `due --from YYYY-MM-DD --to YYYY-MM-DD`
+
+Examples:
+* `due` lists follow-ups due today or overdue.
+* `due 2026-11-10` lists follow-ups on or before 10 November 2026.
+* `due --from 2026-11-01 --to 2026-11-07` lists follow-ups from 1 to 7 November 2026, both included.
 
 ### Setting contact preferences: `contact`
 

@@ -928,6 +928,24 @@ Use sample data in a fresh folder. In the steps below, `ID` is a persistent debt
    Expected: `summary` counts only the displayed debtor. `summary --all` counts every active debtor. Neither command
    changes the displayed list.
 
+### Follow-ups due by date
+
+Use a disposable data folder and run `clear` first, because the sample debtors may carry other follow-ups. Add two
+debtors with distinct phone numbers and email addresses, and note their persistent IDs as `ID1` and `ID2`.
+
+1. Run `followup --id ID1 --date 2026-11-03` and `followup --id ID2 --date 2026-10-30`, then `due 2026-11-03`.<br>
+   Expected: Both debtors are shown, earliest follow-up first, each with its date, debtor ID and a marker. The marker
+   compares each date with today's date on the computer, so it reads `overdue` for past dates, `due today` for today
+   and `upcoming` for later dates; use dates around today to see all three.
+1. Run `due 2026-10-31`.<br>
+   Expected: Only the debtor with the `2026-10-30` follow-up is shown. Debtors without a pending follow-up are never shown.
+1. Run `due --from 2026-11-01 --to 2026-11-07`.<br>
+   Expected: Only the debtor with the `2026-11-03` follow-up is shown; both range bounds are inclusive.
+1. Run `due --from 2026-11-04 --to 2026-11-03` and `due 2026-02-30`.<br>
+   Expected: Each is rejected with an error and the current list is unchanged.
+1. Run `list`.<br>
+   Expected: All debtors are shown again in persistent-ID order. `due` never changes or saves debtor data.
+
 ### Promised payment dates
 
 Use sample data in a fresh folder. In the steps below, `ID` is a persistent debtor ID shown in the list and `INDEX` is
@@ -978,3 +996,7 @@ The `contact` command selects a debtor by persistent ID and replaces only the re
 ### Contactability worklist
 
 The read-only `contactable` command fixes a local reference time once, then filters the existing observable debtor view by the configured window and optional method. Start times are inclusive and end times exclusive. Records without configured windows never match. The command does not persist changes; `list` restores the full view.
+
+### Due-date worklist
+
+The read-only `due` command applies an inclusive date predicate and a follow-up-date/ID comparator to the shared observable view. It captures the local date once per invocation for status labels. Displayed-index commands operate on the same view, while `list` restores the normal ordering.

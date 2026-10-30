@@ -23,6 +23,7 @@ import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.ContactCommand;
 import seedu.address.logic.commands.ContactableCommand;
 import seedu.address.logic.commands.DeleteCommand;
+import seedu.address.logic.commands.DueCommand;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.ExportCommand;
@@ -80,6 +81,8 @@ public class BrandingTest {
             Map.entry("followup --id DEBTOR_ID --date YYYY-MM-DD | --clear | --done",
                     List.of("followup --id 1 --date 2026-11-03", "followup --id 1 --clear",
                             "followup --id 1 --done")),
+            Map.entry("due [YYYY-MM-DD] | --from YYYY-MM-DD --to YYYY-MM-DD",
+                    List.of("due", "due 2026-11-10", "due --from 2026-11-01 --to 2026-11-07")),
             Map.entry("promise --id DEBTOR_ID --date YYYY-MM-DD | --clear",
                     List.of("promise --id 1 --date 2026-11-05", "promise --id 1 --clear")),
             Map.entry("stage --id DEBTOR_ID --value STAGE", List.of("stage --id 3 --value contacted")),
@@ -100,6 +103,7 @@ public class BrandingTest {
             Map.entry("contactable", ContactableCommand.class),
             Map.entry("export", ExportCommand.class),
             Map.entry("followup", FollowUpCommand.class),
+            Map.entry("due", DueCommand.class),
             Map.entry("stage", StageCommand.class),
             Map.entry("summary", SummaryCommand.class),
             Map.entry("list-amount", ListAmountCommand.class),
