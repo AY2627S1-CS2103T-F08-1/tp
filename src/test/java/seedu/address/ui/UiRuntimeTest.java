@@ -63,7 +63,10 @@ public class UiRuntimeTest {
     @BeforeAll
     public static void startJavaFxToolkit() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        Platform.startup(latch::countDown);
+        Platform.startup(() -> {
+            Platform.setImplicitExit(false);
+            latch.countDown();
+        });
         assertTrue(latch.await(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS));
     }
 
@@ -84,6 +87,8 @@ public class UiRuntimeTest {
     public void helpWindow_focusRestoresMinimizedWindow() throws InterruptedException {
         runOnJavaFxThread(() -> {
             helpWindow = new HelpWindow();
+            helpWindow.show();
+            assertTrue(helpWindow.isShowing());
             helpWindow.getRoot().setIconified(true);
             assertTrue(helpWindow.getRoot().isIconified());
             helpWindow.focus();

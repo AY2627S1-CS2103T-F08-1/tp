@@ -72,10 +72,12 @@ public class EmailDomainIdentityTest {
         Files.writeString(file(), legacy);
         StorageManager storage = storage();
 
-        assertThrows(DataLoadingException.class, storage::readAddressBook);
+        DataLoadingException loadError = assertThrows(DataLoadingException.class, storage::readAddressBook);
+        assertTrue(loadError.getMessage().contains("Two debtors share a phone number or email address"));
         IOException error = assertThrows(IOException.class, () -> storage.saveAddressBook(model.getAddressBook()));
 
-        assertTrue(error.getMessage().contains("restore valid JSON, and restart"));
+        assertTrue(error.getMessage().contains("invalid data or duplicate debtors"));
+        assertTrue(error.getMessage().contains("correct or restore it, and restart"));
         assertEquals(legacy, Files.readString(file()));
     }
 

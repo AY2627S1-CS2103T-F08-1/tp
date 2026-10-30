@@ -308,7 +308,7 @@ class FollowUpHistoryWorkflowTest {
         Logic logic = new LogicManager(model, storage);
         CommandException failure = org.junit.jupiter.api.Assertions.assertThrows(CommandException.class, () ->
                 logic.execute("add n/Beth Lee p/81234568 e/beth@example.com a/2 Main Street"));
-        assertTrue(failure.getMessage().contains("Preserve this file, restore valid JSON, and restart"));
+        assertTrue(failure.getMessage().contains("Preserve this file, correct or restore it, and restart"));
         assertEquals(0, model.getAddressBook().getPersonList().size());
         assertEquals(original, java.nio.file.Files.readString(file));
     }

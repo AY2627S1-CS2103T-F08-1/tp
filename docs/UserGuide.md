@@ -144,6 +144,7 @@ A debtor can have any number of tags, including zero.
   Aliases such as `alice+work@example.com` are not matched to `alice@example.com`.
   Check existing records before adding a debtor under a different spelling of the same contact.
   If an older data file contains domain-case duplicates, loading is rejected and saving is blocked to preserve it.
+  OSPS starts with no debtor records and shows a save error on the next data-changing command.
   Keep a backup, correct the conflicting email addresses in the data file, and restart OSPS before saving changes.
 * Deleted IDs are not reused after saving and restarting, even when the last debtor is deleted.
 
