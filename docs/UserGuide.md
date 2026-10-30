@@ -479,7 +479,8 @@ must be writable, otherwise OSPS cannot save your records or preferences. Advanc
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 If OSPS detects that the data file cannot be loaded, it starts with no debtor records. Some unsupported manual edits
 may prevent startup; restore a backup if this happens. When OSPS starts with no debtor records after a loading error,
-the invalid file remains on disk until you run a data-changing command. Back up the file before editing it.<br>
+OSPS will not save over the invalid file: data-changing commands fail until you restore valid JSON and restart OSPS.
+Back up the file before editing it.<br>
 Furthermore, certain edits can cause OSPS to behave unexpectedly (for example, if a value is outside the accepted
 range). Edit the data file only if you are confident that you can update it correctly.
 Malformed JSON can also cause OSPS to fail to start.
