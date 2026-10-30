@@ -14,6 +14,7 @@ public class WindowBoundsTest {
 
     private static final Rectangle2D PRIMARY = new Rectangle2D(0, 0, 1707, 912);
     private static final Rectangle2D LEFT = new Rectangle2D(-1920, 0, 1920, 1040);
+    private static final Rectangle2D ABOVE = new Rectangle2D(0, -1080, 1920, 1080);
     private static final List<Rectangle2D> ONE_SCREEN = List.of(PRIMARY);
 
     @Test
@@ -59,10 +60,28 @@ public class WindowBoundsTest {
     }
 
     @Test
-    public void fit_nearestScreenChosenWhenOffScreenOverlapsNone() {
+    public void fit_mostlyOffScreen_centredOnMostOverlappedScreen() {
         GuiSettings saved = new GuiSettings(740, 600, -1800, 900);
-        // window mostly below the left screen, which is the one it overlaps
+        // window mostly below the left screen, which is the one it overlaps most
         assertEquals(new GuiSettings(740, 600, -1330, 220), WindowBounds.fit(saved, List.of(PRIMARY, LEFT)));
+    }
+
+    @Test
+    public void fit_noOverlapWithAnyOfSeveralScreens_centredOnPrimary() {
+        GuiSettings saved = new GuiSettings(740, 600, 5000, 5000);
+        assertEquals(new GuiSettings(740, 600, 483, 156), WindowBounds.fit(saved, List.of(PRIMARY, LEFT)));
+    }
+
+    @Test
+    public void fit_exactlyHalfVisible_unchanged() {
+        GuiSettings saved = new GuiSettings(740, 600, 1337, 100);
+        assertEquals(saved, WindowBounds.fit(saved, ONE_SCREEN));
+    }
+
+    @Test
+    public void fit_validBoundsOnScreenAbovePrimary_unchanged() {
+        GuiSettings saved = new GuiSettings(740, 600, 100, -900);
+        assertEquals(saved, WindowBounds.fit(saved, List.of(PRIMARY, ABOVE)));
     }
 
     @Test
@@ -74,8 +93,8 @@ public class WindowBoundsTest {
     public void fit_unusableSizes_defaultSize() {
         double[] bad = {0, -5, 10, Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
         for (double size : bad) {
-            assertEquals(new GuiSettings(740, 600, 483, 156),
-                    WindowBounds.fit(new GuiSettings(size, size, 483, 156), ONE_SCREEN), "size " + size);
+            assertEquals(new GuiSettings(740, 600, 100, 100),
+                    WindowBounds.fit(new GuiSettings(size, size, 100, 100), ONE_SCREEN), "size " + size);
         }
     }
 

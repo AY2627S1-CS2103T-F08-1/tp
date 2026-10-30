@@ -745,8 +745,9 @@ regression checks, but they do not replace exploratory testing on each supported
    Expected: The last window size and position are restored, subject to the available screen bounds.
 1. Exit OSPS, then edit `preferences.json` so that `windowCoordinates` is `{"x":5000,"y":5000}` (or move the window to a
    second monitor, exit, and disconnect that monitor). Run `java -jar osps.jar` again.<br>
-   Expected: OSPS opens fully visible and centred on the primary screen. `preferences.json` is not rewritten until you
-   exit. A saved position that is still on a connected screen, including a second monitor, is kept as saved.
+   Expected: OSPS opens fully visible and centred on the primary screen. The stale coordinates stay in `preferences.json`
+   (it is saved again at startup) until you exit normally, which saves the real bounds. A saved position that is still on a
+   connected screen, including a second monitor, is kept as saved.
 1. Create an empty sibling folder, open a terminal there and run `java -jar ../path/to/osps.jar` (the folder containing the JAR).
    Add a debtor, then exit.<br>
    Expected: The new folder contains no OSPS files. `preferences.json`, `osps.log.0` and `data/addressbook.json` are in the

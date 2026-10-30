@@ -465,7 +465,7 @@ from your previous OSPS home folder. Place it at `data/addressbook.json` inside 
 
 ## Known issues
 
-1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, OSPS detects that the saved window position is no longer on a connected screen and opens centred on the primary screen instead. A window that is mostly visible on a connected screen keeps its saved size and position. You do not need to delete `preferences.json`; your new window size and position are saved when you next exit OSPS.
+1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, OSPS detects that the saved window position is no longer on a connected screen and opens centred on a connected screen (the primary screen if none matches). A window that is mostly visible on a connected screen keeps its saved position. A saved size that is too small is replaced with the default size, and one that is too large is reduced to fit your screens. You do not need to delete `preferences.json`; your new window size and position are saved when you next exit OSPS.
 2. **If you minimize the Help Window** and then run the `help` command (or use the `Help` menu, or the keyboard shortcut `F1`) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
 
 --------------------------------------------------------------------------------------------------------------------

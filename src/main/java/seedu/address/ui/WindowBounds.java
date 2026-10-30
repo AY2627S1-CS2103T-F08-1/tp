@@ -11,8 +11,8 @@ import seedu.address.commons.core.GuiSettings;
  */
 final class WindowBounds {
 
-    static final double MIN_WIDTH = 450;
-    static final double MIN_HEIGHT = 600;
+    private static final double MIN_WIDTH = 450;
+    private static final double MIN_HEIGHT = 600;
     private static final double DEFAULT_WIDTH = 740;
     private static final double DEFAULT_HEIGHT = 600;
     private static final double MIN_VISIBLE_FRACTION = 0.5;
