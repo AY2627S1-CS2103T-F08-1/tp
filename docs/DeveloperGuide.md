@@ -815,12 +815,16 @@ with a representative dataset of 1,000 debtor records.
 
 ## **Appendix: Instructions for manual testing**
 
-The following steps exercise the release JAR using only documented commands. Run each scenario in a separate writable
-folder when its initial data state matters.
+The following steps exercise a JAR built from the current branch, or a release JAR whose versioned guide documents the
+same commands. Run each scenario in a separate writable folder when its initial data state matters.
 
 <div markdown="span" class="alert alert-info">:information_source: **Note:** These instructions provide deterministic
 regression checks, but they do not replace exploratory testing on each supported operating system.
 </div>
+
+Before testing, record the release tag or source commit, the JAR's SHA-256 digest, the operating system, and the output
+of `java -version`. Keep each scenario's actual result and pass/fail status with any screenshots. This prevents results
+from one build being attributed to another and makes a failure reproducible by a different tester.
 
 ### Launch, shutdown, and window preferences
 
@@ -1037,6 +1041,52 @@ that debtor's displayed index.
 1. Run `promise --id ID --clear`, then `promise --id ID --clear` again.<br>
    Expected: The first reports that the date was cleared. The second reports
    `No promised payment date is set for debtor ID ID; no change made.`
+
+### Contact preferences and the contactable worklist
+
+Use a disposable data folder and run `list`. Choose one debtor and record both their persistent ID as `ID` and their
+displayed index as `INDEX`.
+
+1. Run `contact --id ID --method sms --hours 09:00-17:30`, then `show --id ID`.<br>
+   Expected: The profile shows `sms` as the preferred method and `09:00-17:30` as the contact hours. Other debtor
+   fields and histories are unchanged.
+1. Run `contactable --at 09:00 --method sms`.<br>
+   Expected: The chosen debtor is included because the start time is inclusive. Results are in ascending persistent-ID
+   order and the command does not save or change a debtor.
+1. Run `contactable --at 17:30 --method sms`.<br>
+   Expected: The chosen debtor is excluded because the end time is exclusive.
+1. Run `contactable --at 12:00 --method email`.<br>
+   Expected: The chosen debtor is excluded because their configured method is `sms`.
+1. Run `list`, then `contact --id ID --clear-method`, followed by `contactable --at 12:00`.<br>
+   Expected: The full list is first restored. The method is cleared but the hours remain, so the debtor appears in the
+   contactable results with `method not set`.
+1. Run `contact --id ID --hours 17:30-09:00`, `contactable --at 9:00`, and `contactable --method fax`.<br>
+   Expected: Each command is rejected with a relevant format or value error. The saved preferences and the current
+   worklist remain unchanged after each rejection.
+1. Exit and relaunch OSPS, then run `show --id ID`.<br>
+   Expected: The cleared method and retained contact hours survive the restart.
+
+### Previewing changes and exporting a profile
+
+Use a writable folder, run `list`, and choose one debtor. Record their displayed index as `INDEX` and persistent ID as
+`ID`. If `exports/debtor-ID.txt` already exists, move it outside the `exports` folder before starting.
+
+1. Run `preview edit INDEX n/Preview Candidate`.<br>
+   Expected: The result identifies the current debtor and the proposed name, begins with `Preview only; no changes were
+   saved.`, and the visible debtor card retains its original name.
+1. Run `show --id ID`, then `preview delete INDEX`, followed by `show --id ID` again.<br>
+   Expected: The preview identifies the same debtor, but both profile results are identical because preview never edits,
+   deletes, or saves data.
+1. Run `preview delete 999999` and `preview clear`.<br>
+   Expected: Each command is rejected and the debtor remains present.
+1. Run `export --id ID`.<br>
+   Expected: OSPS reports an absolute path ending in `exports/debtor-ID.txt`. The new UTF-8 file is inside the folder
+   containing the JAR and includes the debtor's profile and interaction history.
+1. Record the file's contents and run `export --id ID` again.<br>
+   Expected: OSPS refuses to overwrite the existing export and asks for it to be moved or renamed. Its contents remain
+   byte-for-byte unchanged.
+1. Move the exported file elsewhere and run `export --id ID` once more.<br>
+   Expected: A new `exports/debtor-ID.txt` is created with the current profile.
 
 ### Undo, redo, clear, help and exit
 
