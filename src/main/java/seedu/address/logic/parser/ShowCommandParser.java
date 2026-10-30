@@ -14,8 +14,6 @@ import seedu.address.logic.parser.exceptions.ParseException;
  */
 public class ShowCommandParser implements Parser<ShowCommand> {
 
-    public static final String MESSAGE_INVALID_DEBTOR_ID = "Debtor ID must be a positive integer.";
-
     private static final Pattern EXACT_ARGUMENT_FORMAT = Pattern.compile("--id\\s+\\S+");
 
     @Override
@@ -30,7 +28,7 @@ public class ShowCommandParser implements Parser<ShowCommand> {
         argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_DEBTOR_ID);
         String idText = argMultimap.getValue(PREFIX_DEBTOR_ID).get();
         if (idText.isBlank()) {
-            throw new ParseException(MESSAGE_INVALID_DEBTOR_ID);
+            throw new ParseException(ParserUtil.MESSAGE_INVALID_DEBTOR_ID);
         }
         if (!EXACT_ARGUMENT_FORMAT.matcher(args.trim()).matches()) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, ShowCommand.MESSAGE_USAGE));
@@ -41,7 +39,7 @@ public class ShowCommandParser implements Parser<ShowCommand> {
 
     private int parseDebtorId(String idText) throws ParseException {
         if (!StringUtil.isNonZeroUnsignedInteger(idText)) {
-            throw new ParseException(MESSAGE_INVALID_DEBTOR_ID);
+            throw new ParseException(ParserUtil.MESSAGE_INVALID_DEBTOR_ID);
         }
         return Integer.parseInt(idText);
     }

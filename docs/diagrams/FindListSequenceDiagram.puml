@@ -35,7 +35,7 @@ activate FilteredList
 loop for each debtor
     FilteredList -> Predicate : test(person)
     activate Predicate
-    Predicate --> FilteredList : whole-word name match\n(case-insensitive) OR exact phone match
+    Predicate --> FilteredList : literal substring name match\n(case-insensitive) OR exact phone match
     deactivate Predicate
 end
 FilteredList -> SortedList : change notification

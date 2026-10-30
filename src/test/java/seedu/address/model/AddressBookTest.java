@@ -155,6 +155,7 @@ public class AddressBookTest {
         assertEquals(1, addedFirstPerson.getDebtorId());
         assertEquals(2, addedSecondPerson.getDebtorId());
         assertEquals(3, addedThirdPerson.getDebtorId());
+        assertEquals(4, addressBook.getNextDebtorId());
     }
 
     @Test

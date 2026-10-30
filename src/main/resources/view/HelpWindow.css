@@ -1,4 +1,4 @@
-#copyButton, #helpMessage {
+#copyButton, #helpMessage, #commandReference {
     -fx-text-fill: white;
 }
 
@@ -16,4 +16,13 @@
 
 #helpMessageContainer {
     -fx-background-color: derive(#1d1d1d, 20%);
+}
+
+#commandReference {
+    -fx-font-family: "Consolas", "DejaVu Sans Mono", monospace;
+    -fx-font-size: 12px;
+}
+
+.scroll-pane, .scroll-pane > .viewport {
+    -fx-background-color: derive(#1d1d1d, 10%);
 }

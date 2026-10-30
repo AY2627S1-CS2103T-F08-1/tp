@@ -33,9 +33,11 @@ public class Person {
     private final int debtorId;
     private final OutstandingAmount outstandingAmount;
     private final List<InteractionNote> interactionNotes;
+    private final RecoveryStage recoveryStage;
     private final Optional<LocalDate> followUpDate;
     private final List<FollowUpEvent> followUpHistory;
     private final Optional<LocalDate> promisedPaymentDate;
+    private final ContactPreferences contactPreferences;
     private final Set<Tag> tags = new HashSet<>();
 
     /**
@@ -58,30 +60,57 @@ public class Person {
      */
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, Set<Tag> tags) {
-        this(name, phone, email, address, debtorId, outstandingAmount, List.of(), tags);
+        this(name, phone, email, address, debtorId, outstandingAmount, List.of(), RecoveryStage.NEW, tags);
     }
 
     /** Creates a person with all debtor fields, including interaction notes. */
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes, Set<Tag> tags) {
-        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
-                Optional.empty(), List.of(), tags);
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, RecoveryStage.NEW, tags);
+    }
+
+    /** Creates a person with all debtor fields including a recovery stage. */
+    public Person(Name name, Phone phone, Email email, Address address, int debtorId,
+            OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes,
+            RecoveryStage recoveryStage, Set<Tag> tags) {
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, recoveryStage,
+                Optional.empty(), List.of(), tags, new ContactPreferences(null, null));
     }
 
     /** Creates a person with every debtor field, including follow-up state and history. */
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes,
             Optional<LocalDate> followUpDate, List<FollowUpEvent> followUpHistory, Set<Tag> tags) {
-        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
-                followUpDate, followUpHistory, Optional.empty(), tags);
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, RecoveryStage.NEW,
+                followUpDate, followUpHistory, tags, new ContactPreferences(null, null));
+    }
+
+    /** Creates a person with contact preferences. */
+    public Person(Name name, Phone phone, Email email, Address address, int debtorId,
+            OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes, Set<Tag> tags,
+            ContactPreferences contactPreferences) {
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, RecoveryStage.NEW,
+                Optional.empty(), List.of(), tags, contactPreferences);
+    }
+
+    /** Creates a person with every debtor field and no promised payment date. */
+    public Person(Name name, Phone phone, Email email, Address address, int debtorId,
+            OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes,
+            RecoveryStage recoveryStage, Optional<LocalDate> followUpDate,
+            List<FollowUpEvent> followUpHistory, Set<Tag> tags,
+            ContactPreferences contactPreferences) {
+        this(name, phone, email, address, debtorId, outstandingAmount, interactionNotes, recoveryStage,
+                followUpDate, followUpHistory, Optional.empty(), tags, contactPreferences);
     }
 
     /** Creates a person with every debtor field, including independent follow-up and promised-payment dates. */
     public Person(Name name, Phone phone, Email email, Address address, int debtorId,
             OutstandingAmount outstandingAmount, List<InteractionNote> interactionNotes,
-            Optional<LocalDate> followUpDate, List<FollowUpEvent> followUpHistory,
-            Optional<LocalDate> promisedPaymentDate, Set<Tag> tags) {
-        requireAllNonNull(name, phone, email, address, outstandingAmount, interactionNotes, tags);
+            RecoveryStage recoveryStage, Optional<LocalDate> followUpDate,
+            List<FollowUpEvent> followUpHistory, Optional<LocalDate> promisedPaymentDate, Set<Tag> tags,
+            ContactPreferences contactPreferences) {
+        requireAllNonNull(name, phone, email, address, outstandingAmount, interactionNotes,
+                recoveryStage, tags, contactPreferences);
         requireAllNonNull(followUpDate, followUpHistory, promisedPaymentDate);
         if (debtorId < 0) {
             throw new IllegalArgumentException(MESSAGE_INVALID_DEBTOR_ID);
@@ -93,9 +122,11 @@ public class Person {
         this.debtorId = debtorId;
         this.outstandingAmount = outstandingAmount;
         this.interactionNotes = List.copyOf(interactionNotes);
+        this.recoveryStage = recoveryStage;
         this.followUpDate = followUpDate;
         this.followUpHistory = List.copyOf(followUpHistory);
         this.promisedPaymentDate = promisedPaymentDate;
+        this.contactPreferences = contactPreferences;
         this.tags.addAll(tags);
     }
 
@@ -126,8 +157,19 @@ public class Person {
      * Returns a copy of this person with the supplied persistent debtor ID.
      */
     public Person withDebtorId(int newDebtorId) {
-        return new Person(name, phone, email, address, newDebtorId, outstandingAmount, interactionNotes,
-                followUpDate, followUpHistory, promisedPaymentDate, tags);
+        return new Person(name, phone, email, address, newDebtorId, outstandingAmount,
+                interactionNotes, recoveryStage, followUpDate, followUpHistory,
+                promisedPaymentDate, tags, contactPreferences);
+    }
+
+    public ContactPreferences getContactPreferences() {
+        return contactPreferences;
+    }
+
+    /** Returns a copy with updated preferences. */
+    public Person withContactPreferences(ContactPreferences preferences) {
+        return new Person(name, phone, email, address, debtorId, outstandingAmount,
+                interactionNotes, recoveryStage, followUpDate, followUpHistory, promisedPaymentDate, tags, preferences);
     }
 
     public OutstandingAmount getOutstandingAmount() {
@@ -139,6 +181,19 @@ public class Person {
      */
     public List<InteractionNote> getInteractionNotes() {
         return interactionNotes;
+    }
+
+    /** Returns this debtor's manually selected recovery stage. */
+    public RecoveryStage getRecoveryStage() {
+        return recoveryStage;
+    }
+
+    /** Returns a copy with the given recovery stage. */
+    public Person withRecoveryStage(RecoveryStage updatedStage) {
+        requireNonNull(updatedStage);
+        return new Person(name, phone, email, address, debtorId, outstandingAmount,
+                interactionNotes, updatedStage, followUpDate, followUpHistory,
+                promisedPaymentDate, tags, contactPreferences);
     }
 
     /** Returns this debtor's pending follow-up date, if one is scheduled. */
@@ -160,7 +215,7 @@ public class Person {
     public Person withPromisedPaymentDate(Optional<LocalDate> date) {
         requireNonNull(date);
         return new Person(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
-                followUpDate, followUpHistory, date, tags);
+                recoveryStage, followUpDate, followUpHistory, date, tags, contactPreferences);
     }
 
     /** Returns a copy with the supplied pending date and one appended history event. */
@@ -170,7 +225,7 @@ public class Person {
         List<FollowUpEvent> updatedHistory = new ArrayList<>(followUpHistory);
         updatedHistory.add(event);
         return new Person(name, phone, email, address, debtorId, outstandingAmount, interactionNotes,
-                date, updatedHistory, promisedPaymentDate, tags);
+                recoveryStage, date, updatedHistory, promisedPaymentDate, tags, contactPreferences);
     }
 
     /**
@@ -181,7 +236,7 @@ public class Person {
         List<InteractionNote> updatedNotes = new ArrayList<>(interactionNotes);
         updatedNotes.add(note);
         return new Person(name, phone, email, address, debtorId, outstandingAmount, updatedNotes,
-                followUpDate, followUpHistory, promisedPaymentDate, tags);
+                recoveryStage, followUpDate, followUpHistory, promisedPaymentDate, tags, contactPreferences);
     }
 
     /**
@@ -226,9 +281,11 @@ public class Person {
                 && address.equals(otherPerson.address)
                 && outstandingAmount.equals(otherPerson.outstandingAmount)
                 && interactionNotes.equals(otherPerson.interactionNotes)
+                && recoveryStage.equals(otherPerson.recoveryStage)
                 && followUpDate.equals(otherPerson.followUpDate)
                 && followUpHistory.equals(otherPerson.followUpHistory)
                 && promisedPaymentDate.equals(otherPerson.promisedPaymentDate)
+                && contactPreferences.equals(otherPerson.contactPreferences)
                 && tags.equals(otherPerson.tags);
     }
 
@@ -236,7 +293,7 @@ public class Person {
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
         return Objects.hash(name, phone, email, address, outstandingAmount, interactionNotes,
-                followUpDate, followUpHistory, promisedPaymentDate, tags);
+                recoveryStage, followUpDate, followUpHistory, promisedPaymentDate, tags, contactPreferences);
     }
 
     @Override
@@ -248,6 +305,7 @@ public class Person {
                 .add("address", address)
                 .add("debtorId", debtorId)
                 .add("outstandingAmount", outstandingAmount)
+                .add("recoveryStage", recoveryStage)
                 .add("tags", tags)
                 .toString();
     }

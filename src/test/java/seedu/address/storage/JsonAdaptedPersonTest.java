@@ -23,6 +23,7 @@ import seedu.address.model.person.Name;
 import seedu.address.model.person.OutstandingAmount;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.model.person.RecoveryStage;
 import seedu.address.testutil.PersonBuilder;
 
 public class JsonAdaptedPersonTest {
@@ -51,8 +52,10 @@ public class JsonAdaptedPersonTest {
 
     @Test
     public void toModelType_validOutstandingAmount_returnsPerson() throws Exception {
-        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
-                VALID_OUTSTANDING_AMOUNT, VALID_TAGS);
+        JsonAdaptedPerson person = new JsonAdaptedPersonBuilder(
+                VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, VALID_TAGS)
+                .withOutstandingAmount(VALID_OUTSTANDING_AMOUNT)
+                .build();
 
         assertEquals(VALID_OUTSTANDING_AMOUNT, person.toModelType().getOutstandingAmount().toString());
     }
@@ -79,6 +82,36 @@ public class JsonAdaptedPersonTest {
     }
 
     @Test
+    public void toModelType_nonDefaultRecoveryStageRoundTrip_returnsPerson() throws Exception {
+        Person debtor = new Person(BENSON.getName(), BENSON.getPhone(), BENSON.getEmail(), BENSON.getAddress(),
+                BENSON.getDebtorId(), BENSON.getOutstandingAmount(), BENSON.getInteractionNotes(),
+                RecoveryStage.CONTACTED, BENSON.getTags());
+
+        assertEquals(debtor, new JsonAdaptedPerson(debtor).toModelType());
+    }
+
+    @Test
+    public void toModelType_missingOrNullRecoveryStage_defaultsToNew() throws Exception {
+        JsonAdaptedPerson missingStage = new JsonAdaptedPersonBuilder(
+                VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, VALID_TAGS)
+                .withOutstandingAmount(VALID_OUTSTANDING_AMOUNT)
+                .build();
+
+        assertEquals(RecoveryStage.NEW, missingStage.toModelType().getRecoveryStage());
+    }
+
+    @Test
+    public void toModelType_invalidRecoveryStage_throwsIllegalValueException() {
+        JsonAdaptedPerson invalidStage = new JsonAdaptedPersonBuilder(
+                VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, VALID_TAGS)
+                .withOutstandingAmount(VALID_OUTSTANDING_AMOUNT)
+                .withRecoveryStage("unknown")
+                .build();
+
+        assertThrows(IllegalValueException.class, RecoveryStage.MESSAGE_CONSTRAINTS, invalidStage::toModelType);
+    }
+
+    @Test
     public void toModelType_promisedPaymentDateRoundTrip_returnsPerson() throws Exception {
         Person debtor = new PersonBuilder(BENSON)
                 .withPromisedPaymentDate(Optional.of(LocalDate.of(2026, 11, 3))).build();
@@ -94,7 +127,7 @@ public class JsonAdaptedPersonTest {
     @Test
     public void toModelType_invalidPromisedPaymentDate_throwsIllegalValueException() {
         JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
-                1, VALID_OUTSTANDING_AMOUNT, List.of(), null, List.of(), "2026-02-30", VALID_TAGS);
+                1, VALID_OUTSTANDING_AMOUNT, List.of(), null, null, List.of(), VALID_TAGS, null, "2026-02-30");
 
         assertThrows(IllegalValueException.class, person::toModelType);
     }
@@ -103,8 +136,11 @@ public class JsonAdaptedPersonTest {
     public void toModelType_nullInteractionNote_throwsIllegalValueException() {
         List<JsonAdaptedInteractionNote> notes = new ArrayList<>();
         notes.add(null);
-        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
-                null, VALID_OUTSTANDING_AMOUNT, notes, VALID_TAGS);
+        JsonAdaptedPerson person = new JsonAdaptedPersonBuilder(
+                VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, VALID_TAGS)
+                .withOutstandingAmount(VALID_OUTSTANDING_AMOUNT)
+                .withInteractionNotes(notes)
+                .build();
 
         assertThrows(IllegalValueException.class, JsonAdaptedPerson.NULL_INTERACTION_NOTE_MESSAGE,
                 person::toModelType);
@@ -114,92 +150,106 @@ public class JsonAdaptedPersonTest {
     public void toModelType_nullTag_throwsIllegalValueException() {
         List<JsonAdaptedTag> tags = new ArrayList<>(VALID_TAGS);
         tags.add(null);
-        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
-                null, VALID_OUTSTANDING_AMOUNT, List.of(), tags);
+        JsonAdaptedPerson person = new JsonAdaptedPersonBuilder(
+                VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, tags)
+                .withOutstandingAmount(VALID_OUTSTANDING_AMOUNT)
+                .build();
 
         assertThrows(IllegalValueException.class, NULL_TAG_MESSAGE, person::toModelType);
     }
 
     @Test
     public void toModelType_invalidOutstandingAmount_throwsIllegalValueException() {
-        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
-                INVALID_OUTSTANDING_AMOUNT, VALID_TAGS);
+        JsonAdaptedPerson person = new JsonAdaptedPersonBuilder(
+                VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, VALID_TAGS)
+                .withOutstandingAmount(INVALID_OUTSTANDING_AMOUNT)
+                .build();
 
         assertThrows(IllegalValueException.class, OutstandingAmount.MESSAGE_CONSTRAINTS, person::toModelType);
     }
 
     @Test
     public void toModelType_negativeDebtorId_throwsIllegalValueException() {
-        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
-                INVALID_DEBTOR_ID, VALID_OUTSTANDING_AMOUNT, List.of(), VALID_TAGS);
+        JsonAdaptedPerson person = new JsonAdaptedPersonBuilder(
+                VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, VALID_TAGS)
+                .withDebtorId(INVALID_DEBTOR_ID)
+                .withOutstandingAmount(VALID_OUTSTANDING_AMOUNT)
+                .build();
 
         assertThrows(IllegalValueException.class, Person.MESSAGE_INVALID_DEBTOR_ID, person::toModelType);
     }
 
     @Test
     public void toModelType_maximumDebtorId_throwsIllegalValueException() {
-        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
-                Integer.MAX_VALUE, VALID_OUTSTANDING_AMOUNT, List.of(), VALID_TAGS);
+        JsonAdaptedPerson person = new JsonAdaptedPersonBuilder(
+                VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, VALID_TAGS)
+                .withDebtorId(Integer.MAX_VALUE)
+                .withOutstandingAmount(VALID_OUTSTANDING_AMOUNT)
+                .build();
 
         assertThrows(IllegalValueException.class, DEBTOR_ID_OUT_OF_RANGE_MESSAGE, person::toModelType);
     }
 
     @Test
     public void toModelType_invalidName_throwsIllegalValueException() {
-        JsonAdaptedPerson person =
-                new JsonAdaptedPerson(INVALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, VALID_TAGS);
+        JsonAdaptedPerson person = new JsonAdaptedPersonBuilder(
+                INVALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, VALID_TAGS).build();
         String expectedMessage = Name.MESSAGE_CONSTRAINTS;
         assertThrows(IllegalValueException.class, expectedMessage, person::toModelType);
     }
 
     @Test
     public void toModelType_nullName_throwsIllegalValueException() {
-        JsonAdaptedPerson person = new JsonAdaptedPerson(null, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, VALID_TAGS);
+        JsonAdaptedPerson person = new JsonAdaptedPersonBuilder(
+                null, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, VALID_TAGS).build();
         String expectedMessage = String.format(MISSING_FIELD_MESSAGE_FORMAT, Name.class.getSimpleName());
         assertThrows(IllegalValueException.class, expectedMessage, person::toModelType);
     }
 
     @Test
     public void toModelType_invalidPhone_throwsIllegalValueException() {
-        JsonAdaptedPerson person =
-                new JsonAdaptedPerson(VALID_NAME, INVALID_PHONE, VALID_EMAIL, VALID_ADDRESS, VALID_TAGS);
+        JsonAdaptedPerson person = new JsonAdaptedPersonBuilder(
+                VALID_NAME, INVALID_PHONE, VALID_EMAIL, VALID_ADDRESS, VALID_TAGS).build();
         String expectedMessage = Phone.MESSAGE_CONSTRAINTS;
         assertThrows(IllegalValueException.class, expectedMessage, person::toModelType);
     }
 
     @Test
     public void toModelType_nullPhone_throwsIllegalValueException() {
-        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, null, VALID_EMAIL, VALID_ADDRESS, VALID_TAGS);
+        JsonAdaptedPerson person = new JsonAdaptedPersonBuilder(
+                VALID_NAME, null, VALID_EMAIL, VALID_ADDRESS, VALID_TAGS).build();
         String expectedMessage = String.format(MISSING_FIELD_MESSAGE_FORMAT, Phone.class.getSimpleName());
         assertThrows(IllegalValueException.class, expectedMessage, person::toModelType);
     }
 
     @Test
     public void toModelType_invalidEmail_throwsIllegalValueException() {
-        JsonAdaptedPerson person =
-                new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, INVALID_EMAIL, VALID_ADDRESS, VALID_TAGS);
+        JsonAdaptedPerson person = new JsonAdaptedPersonBuilder(
+                VALID_NAME, VALID_PHONE, INVALID_EMAIL, VALID_ADDRESS, VALID_TAGS).build();
         String expectedMessage = Email.MESSAGE_CONSTRAINTS;
         assertThrows(IllegalValueException.class, expectedMessage, person::toModelType);
     }
 
     @Test
     public void toModelType_nullEmail_throwsIllegalValueException() {
-        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, null, VALID_ADDRESS, VALID_TAGS);
+        JsonAdaptedPerson person = new JsonAdaptedPersonBuilder(
+                VALID_NAME, VALID_PHONE, null, VALID_ADDRESS, VALID_TAGS).build();
         String expectedMessage = String.format(MISSING_FIELD_MESSAGE_FORMAT, Email.class.getSimpleName());
         assertThrows(IllegalValueException.class, expectedMessage, person::toModelType);
     }
 
     @Test
     public void toModelType_invalidAddress_throwsIllegalValueException() {
-        JsonAdaptedPerson person =
-                new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, INVALID_ADDRESS, VALID_TAGS);
+        JsonAdaptedPerson person = new JsonAdaptedPersonBuilder(
+                VALID_NAME, VALID_PHONE, VALID_EMAIL, INVALID_ADDRESS, VALID_TAGS).build();
         String expectedMessage = Address.MESSAGE_CONSTRAINTS;
         assertThrows(IllegalValueException.class, expectedMessage, person::toModelType);
     }
 
     @Test
     public void toModelType_nullAddress_throwsIllegalValueException() {
-        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, null, VALID_TAGS);
+        JsonAdaptedPerson person = new JsonAdaptedPersonBuilder(
+                VALID_NAME, VALID_PHONE, VALID_EMAIL, null, VALID_TAGS).build();
         String expectedMessage = String.format(MISSING_FIELD_MESSAGE_FORMAT, Address.class.getSimpleName());
         assertThrows(IllegalValueException.class, expectedMessage, person::toModelType);
     }
@@ -208,8 +258,8 @@ public class JsonAdaptedPersonTest {
     public void toModelType_invalidTags_throwsIllegalValueException() {
         List<JsonAdaptedTag> invalidTags = new ArrayList<>(VALID_TAGS);
         invalidTags.add(new JsonAdaptedTag(INVALID_TAG));
-        JsonAdaptedPerson person =
-                new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, invalidTags);
+        JsonAdaptedPerson person = new JsonAdaptedPersonBuilder(
+                VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, invalidTags).build();
         assertThrows(IllegalValueException.class, person::toModelType);
     }
 

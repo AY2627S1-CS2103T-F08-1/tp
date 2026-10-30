@@ -1,19 +1,17 @@
 package seedu.address.logic.parser;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
 import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.FollowUpCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.person.FollowUpEvent;
 
 /** Parses the followup command's mutually exclusive date, clear, and done operations. */
 public class FollowUpCommandParser implements Parser<FollowUpCommand> {
 
-    public static final String MESSAGE_INVALID_ID = "Debtor ID must be a positive integer.";
-    public static final String MESSAGE_INVALID_DATE = "Follow-up date must use the valid YYYY-MM-DD format.";
     public static final String MESSAGE_UNKNOWN_OPTION = "Unknown followup option: %s.";
 
     @Override
@@ -32,13 +30,9 @@ public class FollowUpCommandParser implements Parser<FollowUpCommand> {
                     }
                     String value = tokens[++i];
                     if (!StringUtil.isNonZeroUnsignedInteger(value)) {
-                        throw new ParseException(MESSAGE_INVALID_ID);
+                        throw new ParseException(ParserUtil.MESSAGE_INVALID_DEBTOR_ID);
                     }
-                    try {
-                        id = Integer.parseInt(value);
-                    } catch (NumberFormatException exception) {
-                        throw new ParseException(MESSAGE_INVALID_ID);
-                    }
+                    id = Integer.parseInt(value);
                 }
                 case "--date" -> {
                     if (dateText != null || i + 1 >= tokens.length) {
@@ -75,14 +69,11 @@ public class FollowUpCommandParser implements Parser<FollowUpCommand> {
         if (done) {
             return new FollowUpCommand(id, FollowUpCommand.Operation.DONE, Optional.empty());
         }
-        if (!dateText.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            throw new ParseException(MESSAGE_INVALID_DATE);
+        Optional<LocalDate> parsedDate = FollowUpEvent.tryParseDate(dateText);
+        if (parsedDate.isEmpty()) {
+            throw new ParseException(FollowUpEvent.MESSAGE_INVALID_DATE);
         }
-        try {
-            return new FollowUpCommand(id, FollowUpCommand.Operation.SCHEDULE, Optional.of(LocalDate.parse(dateText)));
-        } catch (DateTimeParseException exception) {
-            throw new ParseException(MESSAGE_INVALID_DATE);
-        }
+        return new FollowUpCommand(id, FollowUpCommand.Operation.SCHEDULE, parsedDate);
     }
 
     private ParseException invalidFormat() {
