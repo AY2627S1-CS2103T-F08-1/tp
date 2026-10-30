@@ -16,6 +16,8 @@ final class WindowBounds {
     private static final double DEFAULT_WIDTH = 740;
     private static final double DEFAULT_HEIGHT = 600;
     private static final double MIN_VISIBLE_FRACTION = 0.5;
+    // Approximate height of the operating system title bar, in device-independent pixels.
+    private static final double TITLE_BAR_HEIGHT = 40;
 
     private WindowBounds() {}
 
@@ -39,7 +41,7 @@ final class WindowBounds {
 
         if (position != null) {
             Rectangle2D window = new Rectangle2D(position.x, position.y, width, height);
-            if (visibleArea(window, screens) >= MIN_VISIBLE_FRACTION * width * height) {
+            if (isMostlyVisible(window, screens) && isMostlyVisible(titleBar(window), screens)) {
                 return new GuiSettings(width, height, position.x, position.y);
             }
         }
@@ -68,6 +70,15 @@ final class WindowBounds {
             maxY = Math.max(maxY, screen.getMaxY());
         }
         return new Rectangle2D(minX, minY, maxX - minX, maxY - minY);
+    }
+
+    private static Rectangle2D titleBar(Rectangle2D window) {
+        return new Rectangle2D(window.getMinX(), window.getMinY(), window.getWidth(),
+                Math.min(TITLE_BAR_HEIGHT, window.getHeight()));
+    }
+
+    private static boolean isMostlyVisible(Rectangle2D area, List<Rectangle2D> screens) {
+        return visibleArea(area, screens) >= MIN_VISIBLE_FRACTION * area.getWidth() * area.getHeight();
     }
 
     private static double visibleArea(Rectangle2D window, List<Rectangle2D> screens) {

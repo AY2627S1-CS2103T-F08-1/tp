@@ -85,6 +85,30 @@ public class WindowBoundsTest {
     }
 
     @Test
+    public void fit_titleBarAboveScreen_centred() {
+        GuiSettings saved = new GuiSettings(740, 600, 100, -100);
+        assertEquals(new GuiSettings(740, 600, 483, 156), WindowBounds.fit(saved, ONE_SCREEN));
+    }
+
+    @Test
+    public void fit_titleBarHalfVisible_unchanged() {
+        GuiSettings saved = new GuiSettings(740, 600, 100, -20);
+        assertEquals(saved, WindowBounds.fit(saved, ONE_SCREEN));
+    }
+
+    @Test
+    public void fit_bodyUnderHalfVisibleAtBottomEdge_centred() {
+        GuiSettings saved = new GuiSettings(740, 600, 100, 880);
+        assertEquals(new GuiSettings(740, 600, 483, 156), WindowBounds.fit(saved, ONE_SCREEN));
+    }
+
+    @Test
+    public void fit_windowAcrossScreenAbovePrimary_unchanged() {
+        GuiSettings saved = new GuiSettings(740, 600, 100, -100);
+        assertEquals(saved, WindowBounds.fit(saved, List.of(PRIMARY, ABOVE)));
+    }
+
+    @Test
     public void fit_absentPosition_centredOnPrimary() {
         assertEquals(new GuiSettings(740, 600, 483, 156), WindowBounds.fit(new GuiSettings(), ONE_SCREEN));
     }
