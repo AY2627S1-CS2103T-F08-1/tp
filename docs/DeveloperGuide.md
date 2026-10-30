@@ -2,9 +2,10 @@
 layout: page
 title: Developer Guide
 ---
-> **Development documentation for the upcoming v1.6.** This guide describes the current source branch.
-> For the implementation shipped in the published v1.5 JAR, refer to the
-> [versioned v1.5 Developer Guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/DeveloperGuide.md).
+> **Documentation for the refreshed v1.5 build.** The
+> [release notes](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5) identify its actual source commit
+> and JAR SHA-256. The original v1.5 tag remains unchanged and predates the refreshed download.
+> For the original JAR, refer to the [original Developer Guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/DeveloperGuide.md).
 
 * Table of Contents
 {:toc}
@@ -582,7 +583,7 @@ The following activity diagram summarizes what happens when a user executes a ne
 
 ### Deferred data archiving
 
-Data archiving is not implemented in v1.5. Deleting a debtor currently removes that debtor and their interaction
+Data archiving is not implemented in the refreshed v1.5 build. Deleting a debtor currently removes that debtor and their interaction
 history from the active address book, while the monotonically increasing debtor-ID counter prevents a deleted ID from
 being reused.
 

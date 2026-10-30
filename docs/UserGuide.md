@@ -7,12 +7,12 @@ Orchestration and Scheduling of Payment Scheme (OSPS) is a **desktop application
 It manages debtor contact details, outstanding balances, and interaction histories through keyboard-driven commands
 while retaining the benefits of a graphical user interface (GUI).
 
-> **Development guide for the upcoming v1.6:** this page describes the current source branch, not the published
-> v1.5 JAR. If you downloaded v1.5, follow the
-> [versioned v1.5 User Guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/UserGuide.md).
-> That release supports `add`, `edit`, `delete`, `clear`, `find`, `list`, `contact`, `note`, `show`, `sort`,
-> `help`, and `exit`. Other commands below require a development build or a later matching release.
-> Development builds may still display v1.5 in their window title; check the source commit or release asset instead.
+> **Guide for the refreshed v1.5 build.** Check the source commit and JAR SHA-256 in the
+> [v1.5 release notes](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5) before using this guide.
+> The refreshed JAR replaces the download asset; the original v1.5 source tag remains unchanged.
+> Older saved v1.5 JARs support fewer commands. Until you download the refreshed artifact identified in the release
+> notes, use the [original v1.5 guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/UserGuide.md).
+> The window title alone does not distinguish the two builds.
 
 * Table of Contents
 {:toc}
@@ -24,10 +24,12 @@ while retaining the benefits of a graphical user interface (GUI).
 1. Ensure that Java `25` or later is installed on your computer.<br>
    **Mac users:** Ensure you have the precise JDK version prescribed [here](https://se-education.org/guides/tutorials/javaInstallationMac.html).
 
-1. For this development version, follow [the setup guide](SettingUp.md) and build the checked-out source with
-   `gradlew.bat shadowJar` on Windows or `./gradlew shadowJar` on macOS/Linux. The output is `build/libs/osps.jar`.
-   The currently published v1.5 download does not implement all commands in this development guide.
-   Use a fresh folder and disposable records when testing a development build.
+1. Download `osps.jar` from the [v1.5 release](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5).
+   Use the refreshed build identified in the release notes, and compare its SHA-256 with the recorded value.
+   Keep a backup of your existing data before replacing an older JAR. To try the app without existing records,
+   put the JAR in a new, writable folder.
+   Developers can instead follow [the setup guide](SettingUp.md) and run `gradlew.bat shadowJar` on Windows or
+   `./gradlew shadowJar` on macOS/Linux; the output is `build/libs/osps.jar`.
 
 1. Copy the file to the folder you want to use as the _home folder_ for OSPS.
 
