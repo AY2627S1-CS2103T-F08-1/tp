@@ -29,9 +29,7 @@ public class StageCommand extends Command {
     @Override
     public CommandResult execute(Model model) throws CommandException {
         changed = false;
-        Person target = model.getAddressBook().getPersonList().stream()
-                .filter(person -> person.getDebtorId() == debtorId)
-                .findFirst()
+        Person target = model.findPersonById(debtorId)
                 .orElseThrow(() -> new CommandException(String.format(Messages.MESSAGE_DEBTOR_NOT_FOUND, debtorId)));
         if (target.getRecoveryStage() == stage) {
             return new CommandResult(String.format(MESSAGE_UNCHANGED, debtorId, stage));

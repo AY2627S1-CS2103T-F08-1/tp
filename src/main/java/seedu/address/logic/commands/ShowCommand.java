@@ -42,9 +42,7 @@ public class ShowCommand extends Command {
     @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
-        Optional<Person> debtor = model.getAddressBook().getPersonList().stream()
-                .filter(person -> person.getDebtorId() == debtorId)
-                .findFirst();
+        Optional<Person> debtor = model.findPersonById(debtorId);
         if (debtor.isEmpty()) {
             throw new CommandException(String.format(MESSAGE_DEBTOR_NOT_FOUND, debtorId));
         }

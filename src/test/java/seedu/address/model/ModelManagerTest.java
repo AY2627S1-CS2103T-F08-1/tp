@@ -30,6 +30,33 @@ public class ModelManagerTest {
     private ModelManager modelManager = new ModelManager();
 
     @Test
+    public void findPersonById_filteredAndSortedView_usesPersistentIdWithoutChangingView() {
+        Person alice = modelManager.addPerson(ALICE.withDebtorId(17));
+        Person benson = modelManager.addPerson(BENSON.withDebtorId(9));
+        modelManager.updatePersonView(person -> person.getDebtorId() == 9,
+                Comparator.comparingInt(Person::getDebtorId).reversed());
+
+        assertEquals(alice, modelManager.findPersonById(17).orElseThrow());
+        assertEquals(benson, modelManager.findPersonById(9).orElseThrow());
+        assertTrue(modelManager.findPersonById(1).isEmpty());
+        assertEquals(List.of(benson), modelManager.getFilteredPersonList());
+        assertEquals(18, modelManager.getAddressBook().getNextDebtorId());
+        assertFalse(modelManager.canUndoAddressBook());
+    }
+
+    @Test
+    public void findPersonById_deletedFromTransaction_returnsCurrentRecordsInEachModel() {
+        Person alice = modelManager.addPerson(ALICE.withDebtorId(17));
+        Model candidate = modelManager.createTransactionCopy();
+        candidate.deletePerson(alice);
+
+        assertTrue(candidate.findPersonById(17).isEmpty());
+        assertEquals(alice, modelManager.findPersonById(17).orElseThrow());
+        modelManager.deletePerson(alice);
+        assertTrue(modelManager.findPersonById(17).isEmpty());
+    }
+
+    @Test
     public void constructor() {
         assertEquals(new UserPrefs(), modelManager.getUserPrefs());
         assertEquals(new GuiSettings(), modelManager.getGuiSettings());

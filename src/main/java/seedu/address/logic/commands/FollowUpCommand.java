@@ -61,8 +61,7 @@ public class FollowUpCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
         hasChanges = false;
-        Person target = model.getAddressBook().getPersonList().stream()
-                .filter(person -> person.getDebtorId() == debtorId).findFirst()
+        Person target = model.findPersonById(debtorId)
                 .orElseThrow(() -> new CommandException(String.format(Messages.MESSAGE_DEBTOR_NOT_FOUND, debtorId)));
         if (operation != Operation.SCHEDULE && target.getFollowUpDate().isEmpty()) {
             throw new CommandException(String.format(MESSAGE_NO_PENDING_FOLLOW_UP, debtorId));

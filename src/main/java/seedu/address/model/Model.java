@@ -1,6 +1,7 @@
 package seedu.address.model;
 
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import javafx.collections.ObservableList;
@@ -36,6 +37,16 @@ public interface Model {
 
     /** Returns the AddressBook */
     ReadOnlyAddressBook getAddressBook();
+
+    /**
+     * Finds an active debtor by persistent ID across all records, regardless of the displayed filter or order.
+     * Returns empty when that ID is absent, including after deletion. This query does not change the view or data.
+     */
+    default Optional<Person> findPersonById(int debtorId) {
+        return getAddressBook().getPersonList().stream()
+                .filter(person -> person.getDebtorId() == debtorId)
+                .findFirst();
+    }
 
     /**
      * Returns true if a person with the same phone number or email address as {@code person} exists in the
