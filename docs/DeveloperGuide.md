@@ -828,7 +828,7 @@ from one build being attributed to another and makes a failure reproducible by a
 
 ### Launch, shutdown, and window preferences
 
-1. Copy the release JAR into an empty writable folder.
+1. Copy the JAR under test into an empty writable folder.
 1. Open a terminal in that folder and run `java -jar osps.jar`.<br>
    Expected: OSPS opens with sample debtor records. A `data` folder is created after the first data-changing command.
 1. Resize and move the main window, then close OSPS using the **File → Exit** menu.
@@ -1101,6 +1101,7 @@ Use a writable folder, run `list`, and choose one debtor. Record their displayed
 1. Run `clear`, then `undo`.<br>
    Expected: `clear` removes every debtor. `undo` restores them all.
 1. Run `help`, scroll the window with the keyboard, then close it.<br>
-   Expected: The command reference lists every released command and closes without affecting the main window.
+   Expected: The command reference lists every command supported by that build and closes without affecting the main
+   window.
 1. Run `exit`, then launch the JAR again.<br>
    Expected: OSPS closes all windows. After relaunch the data from before `exit` is present.
