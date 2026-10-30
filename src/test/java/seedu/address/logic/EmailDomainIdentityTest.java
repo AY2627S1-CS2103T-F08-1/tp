@@ -53,12 +53,13 @@ public class EmailDomainIdentityTest {
         logic.execute("edit 1 e/alice@EXAMPLE.COM");
         logic.execute("add n/Bob p/82222222 e/Alice@example.com a/Second Street");
         logic.execute("add n/Carol p/83333333 e/alice+work@example.com a/Third Street");
+        logic.execute("add n/David p/84444444 e/alice@another.example a/Fourth Street");
 
         var loaded = new JsonAddressBookStorage(file()).readAddressBook().orElseThrow();
 
         assertEquals(model.getAddressBook(), loaded);
         assertEquals("alice@EXAMPLE.COM", loaded.getPersonList().getFirst().getEmail().value);
-        assertEquals(3, loaded.getPersonList().size());
+        assertEquals(4, loaded.getPersonList().size());
     }
 
     @Test
