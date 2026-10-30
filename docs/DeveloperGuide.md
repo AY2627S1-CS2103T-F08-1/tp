@@ -928,11 +928,13 @@ Use sample data in a fresh folder. In the steps below, `ID` is a persistent debt
 
 ### Due-date worklist
 
-Use sample data in a fresh folder. In the steps below, `ID1` and `ID2` are persistent debtor IDs shown in the list.
+Use a disposable data folder and run `clear` first, because the sample debtors may carry other follow-ups. Add two
+debtors with distinct phone numbers and email addresses, and note their persistent IDs as `ID1` and `ID2`.
 
 1. Run `followup --id ID1 --date 2026-11-03` and `followup --id ID2 --date 2026-10-30`, then `due 2026-11-03`.<br>
-   Expected: Both debtors are shown, earliest follow-up first, each with its date, debtor ID and an overdue, due-today
-   or upcoming marker, and the list is ordered by date then persistent debtor ID.
+   Expected: Both debtors are shown, earliest follow-up first, each with its date, debtor ID and a marker. The marker
+   compares each date with today's date on the computer, so it reads `overdue` for past dates, `due today` for today
+   and `upcoming` for later dates; use dates around today to see all three.
 1. Run `due 2026-10-31`.<br>
    Expected: Only the debtor with the `2026-10-30` follow-up is shown. Debtors without a pending follow-up are never shown.
 1. Run `due --from 2026-11-01 --to 2026-11-07`.<br>

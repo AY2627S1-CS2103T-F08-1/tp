@@ -1,15 +1,16 @@
 package seedu.address.logic.parser;
 
 import java.time.Clock;
-import java.time.DateTimeException;
 import java.time.LocalDate;
 
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.DueCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.person.FollowUpEvent;
 
 /** Parses due-date cutoff and inclusive range forms. */
 public class DueCommandParser implements Parser<DueCommand> {
-    public static final String MESSAGE_DATE = "Date must be a valid YYYY-MM-DD from year 0001 to 9999.";
+    public static final String MESSAGE_DATE = FollowUpEvent.MESSAGE_INVALID_DATE;
 
     @Override
     public DueCommand parse(String args) throws ParseException {
@@ -22,7 +23,7 @@ public class DueCommandParser implements Parser<DueCommand> {
             return new DueCommand(null, parseDate(tokens[0]), Clock.systemDefaultZone());
         }
         if (tokens.length != 4) {
-            throw new ParseException(DueCommand.MESSAGE_USAGE);
+            throw invalidFormat();
         }
         LocalDate from = null;
         LocalDate to = null;
@@ -32,7 +33,7 @@ public class DueCommandParser implements Parser<DueCommand> {
             } else if (tokens[i].equals("--to") && to == null) {
                 to = parseDate(tokens[i + 1]);
             } else {
-                throw new ParseException(DueCommand.MESSAGE_USAGE);
+                throw invalidFormat();
             }
         }
         if (from.isAfter(to)) {
@@ -42,17 +43,10 @@ public class DueCommandParser implements Parser<DueCommand> {
     }
 
     private LocalDate parseDate(String input) throws ParseException {
-        if (!input.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")) {
-            throw new ParseException(MESSAGE_DATE);
-        }
-        try {
-            LocalDate date = LocalDate.parse(input);
-            if (date.getYear() == 0) {
-                throw new ParseException(MESSAGE_DATE);
-            }
-            return date;
-        } catch (DateTimeException exception) {
-            throw new ParseException(MESSAGE_DATE);
-        }
+        return FollowUpEvent.tryParseDate(input).orElseThrow(() -> new ParseException(MESSAGE_DATE));
+    }
+
+    private ParseException invalidFormat() {
+        return new ParseException(String.format(Messages.MESSAGE_INVALID_COMMAND_FORMAT, DueCommand.MESSAGE_USAGE));
     }
 }
