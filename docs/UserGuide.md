@@ -76,8 +76,8 @@ while retaining the benefits of a graphical user interface (GUI).
 * Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
-* A parameter prefix (`n/`, `p/`, `e/`, `a/`, `o/`, `t/`) starts a new parameter whenever it follows a space, tab or
-  line break, so a value cannot contain a space followed by a prefix.<br>
+* In `add` and `edit`, a parameter prefix (`n/`, `p/`, `e/`, `a/`, `o/`, `t/`) starts a new parameter whenever it
+  follows a space, tab or line break, so no value (name, address and so on) can contain a space followed by a prefix.<br>
   For example, `a/Unit 12 t/road` is read as the address `Unit 12` and the tag `road`. Write the address without the
   prefix-like text, such as `a/Unit 12 road`. This is a known limitation of the command format; text without a space
   before the slash, such as `a/Block 4/6`, is kept as written.
