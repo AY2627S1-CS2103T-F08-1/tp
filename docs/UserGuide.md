@@ -99,6 +99,10 @@ are saved automatically.
   prefix-like text, such as `a/Unit 12 road`. This is a known limitation of the command format; text without a space
   before the slash, such as `a/Block 4/6`, is kept as written.
 
+* OSPS warns after saving if an address contains some common mistyped prefixes, such as `0/500`, `O/500`, or
+  `o /500`. Check the saved values and use `undo` if they are incorrect. The warning can also appear for a legitimate
+  address; it does not prevent saving. Other typos may not be detected.
+
 * Extraneous parameters for `help` and `exit` are ignored. `clear` and `list` reject them with an error message.<br>
   For example, `help 123` is interpreted as `help`.
 
