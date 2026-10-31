@@ -20,6 +20,14 @@ import seedu.address.model.person.Person;
  * Container for user visible messages.
  */
 public class Messages {
+    public static final String SUSPICIOUS_ADDRESS_WARNING = "\nWarning: The address contains text resembling a "
+            + "mistyped field prefix. Check the address and other fields for unintended values.";
+
+    /** Warns about common prefix typos while allowing legitimate address text to be saved. */
+    public static String suspiciousAddressWarning(String address) {
+        return java.util.regex.Pattern.compile("(?:^|\\s)(?:0/|[NPEAOT]/|[npeaotNPEAOT]\\s+/)\\S+")
+                .matcher(address).find() ? SUSPICIOUS_ADDRESS_WARNING : "";
+    }
 
     public static final String MESSAGE_UNKNOWN_COMMAND = "Unknown command.";
     public static final String MESSAGE_INVALID_COMMAND_FORMAT = "Invalid command format!\n%1$s";
