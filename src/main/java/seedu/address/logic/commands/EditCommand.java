@@ -94,7 +94,9 @@ public class EditCommand extends Command {
 
         logger.fine("Applying validated debtor edit");
         model.setPerson(personToEdit, editedPerson);
-        return new CommandResult(String.format(MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson)));
+        return new CommandResult(String.format(MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson))
+                + editPersonDescriptor.getAddress().map(address -> Messages.suspiciousAddressWarning(address.value))
+                        .orElse(""));
     }
 
     /**
