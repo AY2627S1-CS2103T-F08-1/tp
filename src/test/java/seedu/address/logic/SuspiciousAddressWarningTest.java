@@ -12,8 +12,9 @@ import seedu.address.model.ModelManager;
 class SuspiciousAddressWarningTest {
     @Test
     void detectsCommonMistypedPrefixesWithoutRejectingOrdinarySlashes() {
-        for (String value : new String[] {"12 Road 0/500", "12 Road O/500", "12 Road o /250",
-                "12 Road p /93333333", "12 Road t /urgent"}) {
+        String[] addresses = {"12 Road 0/500", "12 Road O/500", "12 Road o /250",
+            "12 Road p /93333333", "12 Road t /urgent"};
+        for (String value : addresses) {
             assertEquals(Messages.SUSPICIOUS_ADDRESS_WARNING, Messages.suspiciousAddressWarning(value));
         }
         assertEquals("", Messages.suspiciousAddressWarning("Block 4/6 Unit 12"));
