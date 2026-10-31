@@ -14,6 +14,8 @@ title: Developer Guide
 
 ## **Acknowledgements**
 
+* Notable uses of AI:
+  * @BoonHow97 used OpenAI Codex to assist with implementation, debugging, testing, and documentation.
 * OSPS is based on [AddressBook-Level3](https://github.com/se-edu/addressbook-level3) by the
   [SE-EDU initiative](https://se-education.org). The original project structure, documentation layout, and selected
   diagrams were adapted for OSPS.
