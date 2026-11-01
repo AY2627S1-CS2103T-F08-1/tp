@@ -7,12 +7,13 @@ Orchestration and Scheduling of Payment Scheme (OSPS) is a **desktop application
 It manages debtor contact details, outstanding balances, and interaction histories through keyboard-driven commands
 while retaining the benefits of a graphical user interface (GUI).
 
-> **Guide for the refreshed v1.5 build.** Check the source commit and JAR SHA-256 in the
-> [v1.5 release notes](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5) before using this guide.
-> The refreshed JAR replaces the download asset; the original v1.5 source tag remains unchanged.
-> Older saved v1.5 JARs support fewer commands. Until you download the refreshed artifact identified in the release
-> notes, use the [original v1.5 guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/UserGuide.md).
-> The window title alone does not distinguish the two builds.
+> **v1.6 candidate/development guide.** This page describes the current source, including fixes that are not in the
+> published v1.5 JAR. It does not announce a v1.6 release. For the refreshed v1.5 download, use the
+> [guide pinned to its source commit](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/e5c7066959164fb720843a8b06c6d9f4080b6089/docs/UserGuide.md)
+> and verify the JAR SHA-256 in the [v1.5 release notes](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5).
+> For an older JAR saved before that refresh, use the
+> [original v1.5 guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/UserGuide.md).
+> The window title alone does not identify the source commit or distinguish these builds.
 
 * Table of Contents
 {:toc}
@@ -24,12 +25,13 @@ while retaining the benefits of a graphical user interface (GUI).
 1. Ensure that Java `25` or later is installed on your computer.<br>
    **Mac users:** Ensure you have the precise JDK version prescribed [here](https://se-education.org/guides/tutorials/javaInstallationMac.html).
 
-1. Download `osps.jar` from the [v1.5 release](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5).
-   Use the refreshed build identified in the release notes, and compare its SHA-256 with the recorded value.
+1. To follow this candidate guide, use a JAR built from its matching source revision. Follow
+   [the setup guide](SettingUp.md) and run `gradlew.bat shadowJar` on Windows or `./gradlew shadowJar` on macOS/Linux;
+   the output is `build/libs/osps.jar`. Record the source commit and the JAR's SHA-256 when sharing a candidate.
+   If you prefer the published [v1.5 download](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5), follow
+   its pinned guide linked above and verify its SHA-256 against the release notes instead.
    Keep a backup of your existing data before replacing an older JAR. To try the app without existing records,
    put the JAR in a new, writable folder.
-   Developers can instead follow [the setup guide](SettingUp.md) and run `gradlew.bat shadowJar` on Windows or
-   `./gradlew shadowJar` on macOS/Linux; the output is `build/libs/osps.jar`.
 
 1. Copy the file to the folder you want to use as the _home folder_ for OSPS.
 

@@ -2,10 +2,13 @@
 layout: page
 title: Developer Guide
 ---
-> **Documentation for the refreshed v1.5 build.** The
-> [release notes](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5) identify its actual source commit
-> and JAR SHA-256. The original v1.5 tag remains unchanged and predates the refreshed download.
-> For the original JAR, refer to the [original Developer Guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/DeveloperGuide.md).
+> **v1.6 candidate/development documentation.** This page describes the current source, including fixes not present
+> in the published v1.5 JAR; it does not announce a v1.6 release. For the refreshed v1.5 download, use the
+> [Developer Guide pinned to its source commit](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/e5c7066959164fb720843a8b06c6d9f4080b6089/docs/DeveloperGuide.md)
+> and verify the source commit and JAR SHA-256 in the
+> [release notes](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5).
+> For an older JAR saved before that refresh, use the
+> [original Developer Guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/DeveloperGuide.md).
 
 * Table of Contents
 {:toc}
@@ -598,7 +601,7 @@ The following activity diagram summarizes what happens when a user executes a ne
 
 ### Deferred data archiving
 
-Data archiving is not implemented in the refreshed v1.5 build. Deleting a debtor currently removes that debtor and their interaction
+Data archiving is not implemented. Deleting a debtor currently removes that debtor and their interaction
 history from the active address book, while the monotonically increasing debtor-ID counter prevents a deleted ID from
 being reused.
 
@@ -640,7 +643,7 @@ presenting deletion as archival.
 Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (could have) - `*`.
 
 This table records both implemented requirements and product-roadmap ideas. The
-[User Guide](UserGuide.md#features) is the authoritative description of commands available in the current release;
+[User Guide](UserGuide.md#features) is the authoritative description of commands in this development candidate;
 sections explicitly labelled “Proposed” or “Deferred” below are not implemented.
 
 | Priority | As a …​ | I want to …​ | So that I can …​ |
