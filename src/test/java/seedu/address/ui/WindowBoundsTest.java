@@ -18,6 +18,11 @@ public class WindowBoundsTest {
     private static final List<Rectangle2D> ONE_SCREEN = List.of(PRIMARY);
 
     @Test
+    public void capHeight_smallLogicalScreen() {
+        assertEquals(480, HelpWindow.capHeight(540, 480));
+    }
+
+    @Test
     public void fit_validBounds_unchanged() {
         GuiSettings saved = new GuiSettings(800, 650, 100, 50);
         assertEquals(saved, WindowBounds.fit(saved, ONE_SCREEN));

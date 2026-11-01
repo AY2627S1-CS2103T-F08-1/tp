@@ -201,6 +201,7 @@ public class UiRuntimeTest {
             RecordingHelpWindow recordingHelpWindow = new RecordingHelpWindow();
             helpWindow = recordingHelpWindow;
             helpWindow.show();
+            assertTrue(helpWindow.getRoot().getHeight() <= Screen.getPrimary().getVisualBounds().getHeight());
             helpWindow.getRoot().getScene().getRoot().applyCss();
             helpWindow.getRoot().getScene().getRoot().layout();
             ScrollPane reference = (ScrollPane) helpWindow.getRoot().getScene().lookup(".scroll-pane");

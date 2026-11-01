@@ -9,6 +9,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyEvent;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import seedu.address.commons.core.LogsCenter;
 
@@ -199,8 +200,16 @@ public class HelpWindow extends UiPart<Stage> {
      */
     public void show() {
         logger.fine("Showing help page about the application.");
+        double screenHeight = Screen.getPrimary().getVisualBounds().getHeight();
+        getRoot().setMinHeight(capHeight(getRoot().getMinHeight(), screenHeight));
+        getRoot().setMaxHeight(screenHeight);
+        getRoot().setHeight(capHeight(getRoot().getHeight(), screenHeight));
         getRoot().show();
         getRoot().centerOnScreen();
+    }
+
+    static double capHeight(double height, double screenHeight) {
+        return Math.min(height, screenHeight);
     }
 
     /**
