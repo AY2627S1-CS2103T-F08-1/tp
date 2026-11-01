@@ -5,7 +5,6 @@ import static java.util.Objects.requireNonNull;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -130,16 +129,13 @@ public class Messages {
         } else {
             List<InteractionNote> newestFirstNotes = new ArrayList<>(person.getInteractionNotes());
             Collections.reverse(newestFirstNotes);
-            newestFirstNotes.stream()
-                    .sorted(Comparator.comparing(InteractionNote::getTimestamp).reversed())
-                    .forEach(note -> builder.append("\n- ").append(note));
+            newestFirstNotes.forEach(note -> builder.append("\n- ").append(note));
         }
         builder.append("\nFollow-up history (chronological, oldest first):");
         if (person.getFollowUpHistory().isEmpty()) {
             builder.append("\nNo follow-up history recorded.");
         } else {
             List<FollowUpEvent> chronologicalEvents = new ArrayList<>(person.getFollowUpHistory());
-            chronologicalEvents.sort(Comparator.comparing(FollowUpEvent::getTimestamp));
             chronologicalEvents.forEach(event -> builder.append("\n- ").append(event));
         }
         return builder.toString();
