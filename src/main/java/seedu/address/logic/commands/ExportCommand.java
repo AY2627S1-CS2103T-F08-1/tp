@@ -36,7 +36,7 @@ public class ExportCommand extends Command {
     /** Creates an export command targeting the supplied directory. */
     public ExportCommand(int debtorId, Path directory) {
         this(debtorId, directory, (target, content) -> Files.writeString(target, content,
-                StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE));
+                StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE));
     }
 
     ExportCommand(int debtorId, Path directory, ProfileWriter writer) {
@@ -65,7 +65,14 @@ public class ExportCommand extends Command {
             throw new CommandException("Could not create export directory: " + exception.getMessage(), exception);
         }
         try {
-            writer.write(target, Messages.formatProfile(person) + System.lineSeparator());
+            // Stage in the same directory so a failed write cannot leave a report at the final path.
+            Path staged = Files.createTempFile(directory, ".osps-export-", ".tmp");
+            try {
+                writer.write(staged, Messages.formatProfile(person) + System.lineSeparator());
+                Files.move(staged, target);
+            } finally {
+                Files.deleteIfExists(staged);
+            }
         } catch (FileAlreadyExistsException exception) {
             throw new CommandException("Export already exists: " + target + ". Move or rename it first.", exception);
         } catch (IOException exception) {

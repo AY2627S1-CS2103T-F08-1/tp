@@ -56,6 +56,34 @@ public class ExportCommandTest {
     }
 
     @Test
+    public void execute_partialWriteFailure_preservesExistingExportAndAllowsRetry() throws Exception {
+        Model model = new ModelManager();
+        Person debtor = model.addPerson(new PersonBuilder().build());
+        Path target = directory.resolve("debtor-" + debtor.getDebtorId() + ".txt");
+        ExportCommand command = new ExportCommand(debtor.getDebtorId(), directory, (path, content) -> {
+            Files.writeString(path, "incomplete profile");
+            throw new IOException("disk full after partial write");
+        });
+
+        CommandException error = assertThrows(CommandException.class, () -> command.execute(model));
+        assertTrue(error.getMessage().contains("disk full after partial write"));
+        assertTrue(Files.notExists(target));
+        try (var files = Files.list(directory)) {
+            assertEquals(0, files.count());
+        }
+        assertEquals(debtor, model.findPersonById(debtor.getDebtorId()).orElseThrow());
+
+        new ExportCommand(debtor.getDebtorId(), directory).execute(model);
+        String complete = Files.readString(target);
+        assertTrue(complete.contains("Interaction history"));
+        assertThrows(CommandException.class, () -> command.execute(model));
+        assertEquals(complete, Files.readString(target));
+        try (var files = Files.list(directory)) {
+            assertEquals(1, files.count());
+        }
+    }
+
+    @Test
     public void execute_writeFailure_isReported() {
         Model model = new ModelManager();
         Person debtor = model.addPerson(new PersonBuilder().build());

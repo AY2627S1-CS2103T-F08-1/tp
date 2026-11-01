@@ -342,6 +342,8 @@ Examples:
 * `contact --id 3 --clear-hours`
 
 Unchanged fields retain their previous values. Use `show --id 3` to see the preferences.
+Changing preferences does not add an interaction note or send a message. Record an actual interaction separately
+using `note`. A change is saved and can be undone; supplying the same preferences makes no data change.
 
 ### Finding contactable debtors: `contactable`
 
@@ -353,7 +355,8 @@ match. This is a scheduling aid, not a permission check, and does not contact an
 Format: `contactable [--at HH:mm] [--method call|sms|email|letter]`
 
 Example: `contactable --at 09:30 --method sms`. The command replaces the displayed list; use `list` to restore all
-debtors.
+debtors. It searches all active debtors, rather than narrowing the previous filter, and orders matches by ascending
+persistent ID. It does not save data or add an undo step.
 
 ### Updating recovery stage: `stage`
 
@@ -398,6 +401,10 @@ Writes the profile and interaction history as UTF-8 text inside the `exports` fo
 folder containing `osps.jar`). The file is named `debtor-ID.txt`; for example, debtor ID 3 is exported as
 `debtor-3.txt`. An existing export is never overwritten; move or rename it before exporting the same ID again. The file
 contains sensitive debtor information, so share and store it carefully.
+Exporting does not change debtor data, record a contact, or add an undo step; `undo` does not remove exported files.
+The report is not a restorable JSON backup. A write is completed in a temporary file before the final filename is
+created. If export reports a failure, check the error and retry after resolving the cause. A process interruption may
+leave a hidden `.osps-export-*.tmp` file; close OSPS before removing such leftover temporary files.
 
 Format: `export --id DEBTOR_ID`
 
@@ -408,6 +415,8 @@ Example: `export --id 3` exports the active debtor with persistent ID 3.
 Shows the result of a proposed edit or deletion without changing or saving data. `INDEX`
 refers to the current displayed list, including filtering and sorting. Check the previewed name and persistent ID, then
 run the original `edit` or `delete` command to apply the change.
+Preview does not reserve that index or add an undo step. If the worklist changes before you apply the command,
+check the displayed index again and repeat the preview.
 
 Format: `preview edit INDEX [FIELDS]` or `preview delete INDEX`
 
