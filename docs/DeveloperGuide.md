@@ -16,6 +16,8 @@ title: Developer Guide
 
 * Notable uses of AI:
   * @BoonHow97 used OpenAI Codex to assist with implementation, debugging, testing, and documentation.
+  * @chocoHacks33 used OpenAI Codex for implementation and refactoring, debugging, test design and execution,
+    preliminary pull-request reviews, and drafting and revising the guides and project portfolio.
 * OSPS is based on [AddressBook-Level3](https://github.com/se-edu/addressbook-level3) by the
   [SE-EDU initiative](https://se-education.org). The original project structure, documentation layout, and selected
   diagrams were adapted for OSPS.
