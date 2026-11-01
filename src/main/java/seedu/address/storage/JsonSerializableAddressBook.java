@@ -1,7 +1,9 @@
 package seedu.address.storage;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -22,13 +24,16 @@ class JsonSerializableAddressBook {
     public static final String MESSAGE_DUPLICATE_PERSON = "Persons list contains duplicate person(s).";
 
     private final List<JsonAdaptedPerson> persons = new ArrayList<>();
+    private final Integer nextDebtorId;
 
     /**
      * Constructs a {@code JsonSerializableAddressBook} with the given persons.
      */
     @JsonCreator
-    public JsonSerializableAddressBook(@JsonProperty("persons") List<JsonAdaptedPerson> persons) {
+    public JsonSerializableAddressBook(@JsonProperty("persons") List<JsonAdaptedPerson> persons,
+            @JsonProperty("nextDebtorId") Integer nextDebtorId) {
         this.persons.addAll(persons);
+        this.nextDebtorId = nextDebtorId;
     }
 
     /**
@@ -38,6 +43,7 @@ class JsonSerializableAddressBook {
      */
     public JsonSerializableAddressBook(ReadOnlyAddressBook source) {
         persons.addAll(source.getPersonList().stream().map(JsonAdaptedPerson::new).collect(Collectors.toList()));
+        nextDebtorId = source.getNextDebtorId();
     }
 
     /**
@@ -47,12 +53,24 @@ class JsonSerializableAddressBook {
      */
     public AddressBook toModelType() throws IllegalValueException {
         AddressBook addressBook = new AddressBook();
+        Set<Integer> usedDebtorIds = new HashSet<>();
         for (JsonAdaptedPerson jsonAdaptedPerson : persons) {
             Person person = jsonAdaptedPerson.toModelType();
             if (addressBook.hasPerson(person)) {
                 throw new IllegalValueException(MESSAGE_DUPLICATE_PERSON);
             }
-            addressBook.addPerson(person);
+            if (person.getDebtorId() != 0 && usedDebtorIds.contains(person.getDebtorId())) {
+                throw new IllegalValueException(AddressBook.MESSAGE_DUPLICATE_DEBTOR_ID);
+            }
+            Person addedPerson = addressBook.addPerson(person);
+            usedDebtorIds.add(addedPerson.getDebtorId());
+        }
+        if (nextDebtorId != null) {
+            try {
+                addressBook.setNextDebtorId(nextDebtorId);
+            } catch (IllegalArgumentException exception) {
+                throw new IllegalValueException(exception.getMessage());
+            }
         }
         return addressBook;
     }

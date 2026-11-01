@@ -1,0 +1,4 @@
+PASS command list rejected=false elapsedMs=3
+FEEDBACK 6 active debtors listed.
+PASS first-run sample data loaded
+PASS TOTAL 2

@@ -11,6 +11,7 @@ import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -18,6 +19,9 @@ import org.junit.jupiter.api.io.TempDir;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
+import seedu.address.model.person.InteractionNote;
+import seedu.address.model.person.Person;
+import seedu.address.testutil.PersonBuilder;
 
 public class JsonAddressBookStorageTest {
     private static final Path TEST_DATA_FOLDER = Paths.get("src", "test", "data", "JsonAddressBookStorageTest");
@@ -61,6 +65,44 @@ public class JsonAddressBookStorageTest {
     }
 
     @Test
+    public void readAddressBook_invalidInteractionNoteTimestamp_throwsDataLoadingException() {
+        String filePath = "invalidInteractionNoteTimestampAddressBook.json";
+        assertThrows(DataLoadingException.class, () -> readAddressBook(filePath));
+    }
+
+    @Test
+    public void readAddressBook_negativeDebtorId_throwsDataLoadingException() {
+        assertThrows(DataLoadingException.class, () -> readAddressBook("negativeDebtorIdAddressBook.json"));
+    }
+
+    @Test
+    public void readAddressBook_duplicateDebtorIds_throwsDataLoadingException() {
+        assertThrows(DataLoadingException.class, () -> readAddressBook("duplicateDebtorIdAddressBook.json"));
+    }
+
+    @Test
+    public void readAddressBook_legacyAndExplicitDuplicateDebtorIds_throwsDataLoadingException() {
+        assertThrows(DataLoadingException.class, () ->
+                readAddressBook("legacyAndExplicitDuplicateDebtorIdAddressBook.json"));
+    }
+
+    @Test
+    public void readAddressBook_blankInteractionNoteText_throwsDataLoadingException() {
+        String filePath = "blankInteractionNoteTextAddressBook.json";
+        assertThrows(DataLoadingException.class, () -> readAddressBook(filePath));
+    }
+
+    @Test
+    public void readAddressBook_nullInteractionNote_throwsDataLoadingException() {
+        assertThrows(DataLoadingException.class, () -> readAddressBook("nullInteractionNoteAddressBook.json"));
+    }
+
+    @Test
+    public void readAddressBook_nullTag_throwsDataLoadingException() {
+        assertThrows(DataLoadingException.class, () -> readAddressBook("nullTagAddressBook.json"));
+    }
+
+    @Test
     public void readAndSaveAddressBook_allInOrder_success() throws Exception {
         Path filePath = testFolder.resolve("TempAddressBook.json");
         AddressBook original = getTypicalAddressBook();
@@ -84,6 +126,58 @@ public class JsonAddressBookStorageTest {
         readBack = jsonAddressBookStorage.readAddressBook().get(); // file path not specified
         assertEquals(original, new AddressBook(readBack));
 
+    }
+
+    @Test
+    public void readAndSaveAddressBook_nextDebtorIdIsNotReused_success() throws Exception {
+        Path filePath = testFolder.resolve("DebtorIdsAddressBook.json");
+        AddressBook original = new AddressBook();
+        original.addPerson(new PersonBuilder().withName("Alice").build());
+        Person secondPerson = original.addPerson(
+                new PersonBuilder().withName("Bob").withPhone("91234567").withEmail("bob@example.com").build());
+        original.removePerson(secondPerson);
+
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(filePath);
+        storage.saveAddressBook(original, filePath);
+        AddressBook restored = new AddressBook(storage.readAddressBook(filePath).get());
+        Person addedPerson = restored.addPerson(
+                new PersonBuilder().withName("Carol").withPhone("92345678").withEmail("carol@example.com").build());
+
+        assertEquals(3, addedPerson.getDebtorId());
+    }
+
+    @Test
+    public void readAndSaveAddressBook_nonzeroOutstandingAmountAndDebtorId_roundTrips() throws Exception {
+        Path filePath = testFolder.resolve("OutstandingAmountAddressBook.json");
+        AddressBook original = new AddressBook();
+        Person debtor = original.addPerson(new PersonBuilder().withName("Alice").withPhone("91234567")
+                .withEmail("alice@example.com").withOutstandingAmount("1,250.50").build());
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(filePath);
+
+        storage.saveAddressBook(original, filePath);
+        Person restoredDebtor = storage.readAddressBook(filePath).get().getPersonList().getFirst();
+
+        assertEquals(debtor.getDebtorId(), restoredDebtor.getDebtorId());
+        assertEquals(debtor.getOutstandingAmount(), restoredDebtor.getOutstandingAmount());
+    }
+
+    @Test
+    public void readAndSaveAddressBook_interactionNotes_roundTrips() throws Exception {
+        Path filePath = testFolder.resolve("InteractionNotesAddressBook.json");
+        InteractionNote duplicateNote = InteractionNote.fromStorage("2026-10-09T14:35:00",
+                "Sent payment reminder.");
+        List<InteractionNote> notes = List.of(
+                InteractionNote.fromStorage("2026-10-09T14:30:00", "Called debtor, promised payment."),
+                duplicateNote, duplicateNote);
+        AddressBook original = new AddressBook();
+        original.addPerson(new PersonBuilder().withName("Alice").withPhone("91234567")
+                .withEmail("alice@example.com").withInteractionNotes(notes).build());
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(filePath);
+
+        storage.saveAddressBook(original, filePath);
+        Person restoredDebtor = storage.readAddressBook(filePath).get().getPersonList().getFirst();
+
+        assertEquals(notes, restoredDebtor.getInteractionNotes());
     }
 
     @Test

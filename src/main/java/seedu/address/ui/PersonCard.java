@@ -2,6 +2,9 @@ package seedu.address.ui;
 
 import java.util.Comparator;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.NumberBinding;
+import javafx.beans.value.ObservableNumberValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
@@ -35,6 +38,8 @@ public class PersonCard extends UiPart<Region> {
     @FXML
     private Label phone;
     @FXML
+    private Label outstandingAmount;
+    @FXML
     private Label address;
     @FXML
     private Label email;
@@ -47,13 +52,26 @@ public class PersonCard extends UiPart<Region> {
     public PersonCard(Person person, int displayedIndex) {
         super(FXML);
         this.person = person;
-        id.setText(displayedIndex + ". ");
+        id.setText(displayedIndex + ". [ID " + person.getDebtorId() + "] ");
         name.setText(person.getName().fullName);
         phone.setText(person.getPhone().value);
+        outstandingAmount.setText("Outstanding: S$" + person.getOutstandingAmount());
         address.setText(person.getAddress().value);
         email.setText(person.getEmail().value);
         person.getTags().stream()
                 .sorted(Comparator.comparing(tag -> tag.tagName))
                 .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
+    }
+
+    /**
+     * Keeps every textual field within the visible list viewport so wrapping can take effect.
+     */
+    public void bindContentWidth(ObservableNumberValue listWidth) {
+        NumberBinding contentWidth = Bindings.max(Bindings.subtract(listWidth, 50), 0);
+        name.maxWidthProperty().bind(contentWidth);
+        phone.maxWidthProperty().bind(contentWidth);
+        outstandingAmount.maxWidthProperty().bind(contentWidth);
+        address.maxWidthProperty().bind(contentWidth);
+        email.maxWidthProperty().bind(contentWidth);
     }
 }

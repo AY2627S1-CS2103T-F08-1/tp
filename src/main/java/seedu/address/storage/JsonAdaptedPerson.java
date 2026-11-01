@@ -12,7 +12,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
+import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Name;
+import seedu.address.model.person.OutstandingAmount;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
 import seedu.address.model.tag.Tag;
@@ -23,11 +25,16 @@ import seedu.address.model.tag.Tag;
 class JsonAdaptedPerson {
 
     public static final String MISSING_FIELD_MESSAGE_FORMAT = "Person's %s field is missing!";
+    public static final String NULL_INTERACTION_NOTE_MESSAGE = "Interaction note entry cannot be null.";
+    public static final String NULL_TAG_MESSAGE = "Tag entry cannot be null.";
 
     private final String name;
     private final String phone;
     private final String email;
     private final String address;
+    private final Integer debtorId;
+    private final String outstandingAmount;
+    private final List<JsonAdaptedInteractionNote> interactionNotes = new ArrayList<>();
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
 
     /**
@@ -36,14 +43,38 @@ class JsonAdaptedPerson {
     @JsonCreator
     public JsonAdaptedPerson(@JsonProperty("name") String name, @JsonProperty("phone") String phone,
             @JsonProperty("email") String email, @JsonProperty("address") String address,
+            @JsonProperty("debtorId") Integer debtorId,
+            @JsonProperty("outstandingAmount") String outstandingAmount,
+            @JsonProperty("interactionNotes") List<JsonAdaptedInteractionNote> interactionNotes,
             @JsonProperty("tags") List<JsonAdaptedTag> tags) {
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
+        this.debtorId = debtorId;
+        this.outstandingAmount = outstandingAmount;
+        if (interactionNotes != null) {
+            this.interactionNotes.addAll(interactionNotes);
+        }
         if (tags != null) {
             this.tags.addAll(tags);
         }
+    }
+
+    /**
+     * Backwards-compatible constructor for data and tests that do not specify an amount.
+     */
+    public JsonAdaptedPerson(String name, String phone, String email, String address,
+            List<JsonAdaptedTag> tags) {
+        this(name, phone, email, address, null, null, null, tags);
+    }
+
+    /**
+     * Backwards-compatible constructor for callers specifying an amount but no remark.
+     */
+    public JsonAdaptedPerson(String name, String phone, String email, String address,
+            String outstandingAmount, List<JsonAdaptedTag> tags) {
+        this(name, phone, email, address, null, outstandingAmount, null, tags);
     }
 
     /**
@@ -54,6 +85,11 @@ class JsonAdaptedPerson {
         phone = source.getPhone().value;
         email = source.getEmail().value;
         address = source.getAddress().value;
+        debtorId = source.getDebtorId() == 0 ? null : source.getDebtorId();
+        outstandingAmount = source.getOutstandingAmount().toString();
+        interactionNotes.addAll(source.getInteractionNotes().stream()
+                .map(JsonAdaptedInteractionNote::new)
+                .collect(Collectors.toList()));
         tags.addAll(source.getTags().stream()
                 .map(JsonAdaptedTag::new)
                 .collect(Collectors.toList()));
@@ -67,6 +103,9 @@ class JsonAdaptedPerson {
     public Person toModelType() throws IllegalValueException {
         final List<Tag> personTags = new ArrayList<>();
         for (JsonAdaptedTag tag : tags) {
+            if (tag == null) {
+                throw new IllegalValueException(NULL_TAG_MESSAGE);
+            }
             personTags.add(tag.toModelType());
         }
 
@@ -103,7 +142,25 @@ class JsonAdaptedPerson {
         final Address modelAddress = new Address(address);
 
         final Set<Tag> modelTags = new HashSet<>(personTags);
-        return new Person(modelName, modelPhone, modelEmail, modelAddress, modelTags);
+        final List<InteractionNote> modelInteractionNotes = new ArrayList<>();
+        for (JsonAdaptedInteractionNote note : interactionNotes) {
+            if (note == null) {
+                throw new IllegalValueException(NULL_INTERACTION_NOTE_MESSAGE);
+            }
+            modelInteractionNotes.add(note.toModelType());
+        }
+        final OutstandingAmount modelOutstandingAmount;
+        try {
+            modelOutstandingAmount = outstandingAmount == null || outstandingAmount.equals("0.00")
+                    ? new OutstandingAmount() : new OutstandingAmount(outstandingAmount);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalValueException(OutstandingAmount.MESSAGE_CONSTRAINTS);
+        }
+        if (debtorId != null && debtorId < 0) {
+            throw new IllegalValueException(Person.MESSAGE_INVALID_DEBTOR_ID);
+        }
+        return new Person(modelName, modelPhone, modelEmail, modelAddress,
+                debtorId == null ? 0 : debtorId, modelOutstandingAmount, modelInteractionNotes, modelTags);
     }
 
 }

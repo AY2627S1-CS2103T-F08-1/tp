@@ -1,0 +1,16 @@
+{
+  "persons": [ {
+    "name": "Alice Tan",
+    "phone": "91234567",
+    "email": "alice@example.com",
+    "address": "123 Main Street",
+    "debtorId": 1,
+    "outstandingAmount": "100.00",
+    "interactionNotes": [ {
+      "timestamp": "not-a-valid-timestamp",
+      "text": "Called debtor."
+    } ],
+    "tags": [ ]
+  } ],
+  "nextDebtorId": 2
+}

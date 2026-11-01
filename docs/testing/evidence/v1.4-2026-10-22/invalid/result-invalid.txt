@@ -1,0 +1,154 @@
+PASS command list rejected=false elapsedMs=3
+FEEDBACK 9 active debtors listed.
+PASS command delete rejected=true elapsedMs=1
+FEEDBACK Invalid command format!
+delete: Deletes the debtor identified by the index number used in the displayed debtor list.
+Parameters: INDEX (must be a positive integer)
+Example: delete 1
+PASS survivor count unchanged
+PASS surviving ID/fields/amount/notes 1 unchanged
+PASS surviving ID/fields/amount/notes 2 unchanged
+PASS surviving ID/fields/amount/notes 3 unchanged
+PASS surviving ID/fields/amount/notes 4 unchanged
+PASS surviving ID/fields/amount/notes 5 unchanged
+PASS surviving ID/fields/amount/notes 6 unchanged
+PASS surviving ID/fields/amount/notes 7 unchanged
+PASS surviving ID/fields/amount/notes 8 unchanged
+PASS surviving ID/fields/amount/notes 9 unchanged
+PASS command delete abc rejected=true elapsedMs=1
+FEEDBACK Invalid command format!
+delete: Deletes the debtor identified by the index number used in the displayed debtor list.
+Parameters: INDEX (must be a positive integer)
+Example: delete 1
+PASS survivor count unchanged
+PASS surviving ID/fields/amount/notes 1 unchanged
+PASS surviving ID/fields/amount/notes 2 unchanged
+PASS surviving ID/fields/amount/notes 3 unchanged
+PASS surviving ID/fields/amount/notes 4 unchanged
+PASS surviving ID/fields/amount/notes 5 unchanged
+PASS surviving ID/fields/amount/notes 6 unchanged
+PASS surviving ID/fields/amount/notes 7 unchanged
+PASS surviving ID/fields/amount/notes 8 unchanged
+PASS surviving ID/fields/amount/notes 9 unchanged
+PASS command delete -1 rejected=true elapsedMs=1
+FEEDBACK Invalid command format!
+delete: Deletes the debtor identified by the index number used in the displayed debtor list.
+Parameters: INDEX (must be a positive integer)
+Example: delete 1
+PASS survivor count unchanged
+PASS surviving ID/fields/amount/notes 1 unchanged
+PASS surviving ID/fields/amount/notes 2 unchanged
+PASS surviving ID/fields/amount/notes 3 unchanged
+PASS surviving ID/fields/amount/notes 4 unchanged
+PASS surviving ID/fields/amount/notes 5 unchanged
+PASS surviving ID/fields/amount/notes 6 unchanged
+PASS surviving ID/fields/amount/notes 7 unchanged
+PASS surviving ID/fields/amount/notes 8 unchanged
+PASS surviving ID/fields/amount/notes 9 unchanged
+PASS command delete 0 rejected=true elapsedMs=1
+FEEDBACK Invalid command format!
+delete: Deletes the debtor identified by the index number used in the displayed debtor list.
+Parameters: INDEX (must be a positive integer)
+Example: delete 1
+PASS survivor count unchanged
+PASS surviving ID/fields/amount/notes 1 unchanged
+PASS surviving ID/fields/amount/notes 2 unchanged
+PASS surviving ID/fields/amount/notes 3 unchanged
+PASS surviving ID/fields/amount/notes 4 unchanged
+PASS surviving ID/fields/amount/notes 5 unchanged
+PASS surviving ID/fields/amount/notes 6 unchanged
+PASS surviving ID/fields/amount/notes 7 unchanged
+PASS surviving ID/fields/amount/notes 8 unchanged
+PASS surviving ID/fields/amount/notes 9 unchanged
+PASS command delete 0000 rejected=true elapsedMs=0
+FEEDBACK Invalid command format!
+delete: Deletes the debtor identified by the index number used in the displayed debtor list.
+Parameters: INDEX (must be a positive integer)
+Example: delete 1
+PASS survivor count unchanged
+PASS surviving ID/fields/amount/notes 1 unchanged
+PASS surviving ID/fields/amount/notes 2 unchanged
+PASS surviving ID/fields/amount/notes 3 unchanged
+PASS surviving ID/fields/amount/notes 4 unchanged
+PASS surviving ID/fields/amount/notes 5 unchanged
+PASS surviving ID/fields/amount/notes 6 unchanged
+PASS surviving ID/fields/amount/notes 7 unchanged
+PASS surviving ID/fields/amount/notes 8 unchanged
+PASS surviving ID/fields/amount/notes 9 unchanged
+PASS command delete 1.5 rejected=true elapsedMs=0
+FEEDBACK Invalid command format!
+delete: Deletes the debtor identified by the index number used in the displayed debtor list.
+Parameters: INDEX (must be a positive integer)
+Example: delete 1
+PASS survivor count unchanged
+PASS surviving ID/fields/amount/notes 1 unchanged
+PASS surviving ID/fields/amount/notes 2 unchanged
+PASS surviving ID/fields/amount/notes 3 unchanged
+PASS surviving ID/fields/amount/notes 4 unchanged
+PASS surviving ID/fields/amount/notes 5 unchanged
+PASS surviving ID/fields/amount/notes 6 unchanged
+PASS surviving ID/fields/amount/notes 7 unchanged
+PASS surviving ID/fields/amount/notes 8 unchanged
+PASS surviving ID/fields/amount/notes 9 unchanged
+PASS command delete 10 rejected=true elapsedMs=1
+FEEDBACK Index 10 is out of range. The displayed list has 9 debtors; valid range is 1 to 9.
+PASS survivor count unchanged
+PASS surviving ID/fields/amount/notes 1 unchanged
+PASS surviving ID/fields/amount/notes 2 unchanged
+PASS surviving ID/fields/amount/notes 3 unchanged
+PASS surviving ID/fields/amount/notes 4 unchanged
+PASS surviving ID/fields/amount/notes 5 unchanged
+PASS surviving ID/fields/amount/notes 6 unchanged
+PASS surviving ID/fields/amount/notes 7 unchanged
+PASS surviving ID/fields/amount/notes 8 unchanged
+PASS surviving ID/fields/amount/notes 9 unchanged
+PASS command delete 99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999 rejected=true elapsedMs=1
+FEEDBACK Index 99999999999999999999... (101 digits) is out of range. The displayed list has 9 debtors; valid range is 1 to 9.
+PASS survivor count unchanged
+PASS surviving ID/fields/amount/notes 1 unchanged
+PASS surviving ID/fields/amount/notes 2 unchanged
+PASS surviving ID/fields/amount/notes 3 unchanged
+PASS surviving ID/fields/amount/notes 4 unchanged
+PASS surviving ID/fields/amount/notes 5 unchanged
+PASS surviving ID/fields/amount/notes 6 unchanged
+PASS surviving ID/fields/amount/notes 7 unchanged
+PASS surviving ID/fields/amount/notes 8 unchanged
+PASS surviving ID/fields/amount/notes 9 unchanged
+PASS command delete <1000000 digits> rejected=true elapsedMs=32
+FEEDBACK Index 99999999999999999999... (1000000 digits) is out of range. The displayed list has 9 debtors; valid range is 1 to 9.
+PASS million-digit UI command completes within 2 seconds
+PASS survivor count unchanged
+PASS surviving ID/fields/amount/notes 1 unchanged
+PASS surviving ID/fields/amount/notes 2 unchanged
+PASS surviving ID/fields/amount/notes 3 unchanged
+PASS surviving ID/fields/amount/notes 4 unchanged
+PASS surviving ID/fields/amount/notes 5 unchanged
+PASS surviving ID/fields/amount/notes 6 unchanged
+PASS surviving ID/fields/amount/notes 7 unchanged
+PASS surviving ID/fields/amount/notes 8 unchanged
+PASS surviving ID/fields/amount/notes 9 unchanged
+PASS command delete 0 rejected=true elapsedMs=0
+FEEDBACK Invalid command format!
+delete: Deletes the debtor identified by the index number used in the displayed debtor list.
+Parameters: INDEX (must be a positive integer)
+Example: delete 1
+PASS command find NoSuchReleaseSmokeDebtor rejected=false elapsedMs=6
+FEEDBACK No debtors found matching the supplied name or phone keyword(s).
+PASS command delete 1 rejected=true elapsedMs=1
+FEEDBACK Index 1 is invalid because the displayed list is empty (0 debtors; no valid index range). Run the list command or adjust your find query before deleting.
+PASS command delete <1000000 digits> rejected=true elapsedMs=218
+FEEDBACK Index 99999999999999999999... (1000000 digits) is invalid because the displayed list is empty (0 debtors; no valid index range). Run the list command or adjust your find query before deleting.
+PASS million-digit UI command completes within 2 seconds
+PASS survivor count unchanged
+PASS surviving ID/fields/amount/notes 1 unchanged
+PASS surviving ID/fields/amount/notes 2 unchanged
+PASS surviving ID/fields/amount/notes 3 unchanged
+PASS surviving ID/fields/amount/notes 4 unchanged
+PASS surviving ID/fields/amount/notes 5 unchanged
+PASS surviving ID/fields/amount/notes 6 unchanged
+PASS surviving ID/fields/amount/notes 7 unchanged
+PASS surviving ID/fields/amount/notes 8 unchanged
+PASS surviving ID/fields/amount/notes 9 unchanged
+PASS command delete 1 rejected=true elapsedMs=1
+FEEDBACK Index 1 is invalid because the displayed list is empty (0 debtors; no valid index range). Run the list command or adjust your find query before deleting.
+PASS TOTAL 117

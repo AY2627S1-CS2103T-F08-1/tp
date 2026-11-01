@@ -1,0 +1,28 @@
+PASS command list rejected=false elapsedMs=3
+FEEDBACK 9 active debtors listed.
+PASS command show --id 9 rejected=false elapsedMs=6
+FEEDBACK Debtor profile
+ID: 9
+Name: Release QA Birch
+Phone: 81110003
+Email: release.qa.birch@example.com
+Address: 3 Test Lane
+Outstanding: S$0.00
+Tags: None
+Interaction history (newest first):
+No interaction notes recorded.
+PASS command delete 9 rejected=false elapsedMs=18
+FEEDBACK Deleted debtor: ID: 9; Release QA Birch; Phone: 81110003; Email: release.qa.birch@example.com; Address: 3 Test Lane; Outstanding: S$0.00; Tags:
+PASS success names intended last debtor
+PASS survivor count unchanged
+PASS surviving ID/fields/amount/notes 1 unchanged
+PASS surviving ID/fields/amount/notes 2 unchanged
+PASS surviving ID/fields/amount/notes 3 unchanged
+PASS surviving ID/fields/amount/notes 4 unchanged
+PASS surviving ID/fields/amount/notes 5 unchanged
+PASS surviving ID/fields/amount/notes 6 unchanged
+PASS surviving ID/fields/amount/notes 7 unchanged
+PASS surviving ID/fields/amount/notes 8 unchanged
+PASS command show --id 9 rejected=true elapsedMs=1
+FEEDBACK No active debtor with ID 9 exists. It may have been deleted.
+PASS TOTAL 14

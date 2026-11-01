@@ -11,13 +11,15 @@ import seedu.address.model.Model;
 public class ClearCommand extends Command {
 
     public static final String COMMAND_WORD = "clear";
-    public static final String MESSAGE_SUCCESS = "Address book has been cleared!";
+    public static final String MESSAGE_SUCCESS = "All debtor records have been cleared from OSPS.";
 
 
     @Override
     public CommandResult execute(Model model) {
         requireNonNull(model);
-        model.setAddressBook(new AddressBook());
+        AddressBook clearedAddressBook = new AddressBook();
+        clearedAddressBook.setNextDebtorId(model.getAddressBook().getNextDebtorId());
+        model.setAddressBook(clearedAddressBook);
         return new CommandResult(MESSAGE_SUCCESS);
     }
 }

@@ -1,0 +1,16 @@
+{
+  "persons": [ {
+    "name": "Legacy Alice",
+    "phone": "94351253",
+    "email": "alice@example.com",
+    "address": "123, Jurong West Ave 6, #08-111",
+    "tags": [ "friends" ]
+  }, {
+    "name": "Explicit Benson",
+    "phone": "98765432",
+    "email": "benson@example.com",
+    "address": "311, Clementi Ave 2, #02-25",
+    "debtorId": 1,
+    "tags": [ "owesMoney" ]
+  } ]
+}

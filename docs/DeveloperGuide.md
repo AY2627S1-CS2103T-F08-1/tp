@@ -9,7 +9,12 @@ title: Developer Guide
 
 ## **Acknowledgements**
 
-* _{List the sources of reused or adapted ideas, code, documentation, and third-party libraries here, with links to the originals.}_
+* OSPS is based on [AddressBook-Level3](https://github.com/se-edu/addressbook-level3) by the
+  [SE-EDU initiative](https://se-education.org). The original project structure, documentation layout, and selected
+  diagrams were adapted for OSPS.
+* The project uses [JavaFX](https://openjfx.io/) for its graphical interface,
+  [Jackson](https://github.com/FasterXML/jackson) for JSON persistence, and
+  [JUnit 5](https://junit.org/junit5/) for automated testing.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -36,7 +41,7 @@ The following provides a quick overview of the main components and their interac
 
 **Main components of the architecture**
 
-**`Main`** (consisting of classes [`Main`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/Main.java) and [`MainApp`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/MainApp.java)) is in charge of the app launch and shut down.
+**`Main`** (consisting of classes [`Main`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/java/seedu/address/Main.java) and [`MainApp`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/java/seedu/address/MainApp.java)) is in charge of the app launch and shut down.
 * At app launch, it initializes the other components in the correct sequence, and connects them up with each other.
 * At shut down, it shuts down the other components and invokes cleanup methods where necessary.
 
@@ -68,13 +73,13 @@ The sections below give more details of each component.
 
 ### UI component
 
-The **API** of this component is specified in [`Ui.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/ui/Ui.java)
+The **API** of this component is specified in [`Ui.java`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/java/seedu/address/ui/Ui.java)
 
 ![Structure of the UI Component](images/UiClassDiagram.png)
 
 The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDisplay`, `PersonListPanel`, and `StatusBarFooter`. All of these, including `MainWindow`, inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts.
 
-The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/ui/MainWindow.java).
+The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/java/seedu/address/ui/MainWindow.java).
 
 The `UI` component,
 
@@ -85,7 +90,7 @@ The `UI` component,
 
 ### Logic component
 
-**API** : [`Logic.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/logic/Logic.java)
+**API** : [`Logic.java`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/java/seedu/address/logic/Logic.java)
 
 Here's a (partial) class diagram of the `Logic` component:
 
@@ -106,6 +111,16 @@ How the `Logic` component works:
    Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
 1. The result of the command execution is encapsulated as a `CommandResult` object which is returned from `Logic`.
 
+#### Delete command implementation
+
+`delete INDEX` uses a one-based index into the debtor list currently shown by the model. `ModelManager#getFilteredPersonList()` returns that filtered list sorted by persistent debtor ID, so a preceding `find` affects which debtor `delete 1` selects. The index is not a debtor ID and is checked against the displayed list at execution time.
+
+`DeleteCommandParser` accepts a positive decimal integer and strips leading zeroes. Empty input, non-digits, zero, and negative values produce an invalid-command-format error with the command usage. The parser keeps the normalized index as decimal text, so very large inputs do not overflow an integer during parsing. `DeleteCommand` checks it against the current displayed-list size using decimal length and lexical comparison before converting an in-range value to an integer. An index outside the list produces an actionable range error; when the list is empty, the error suggests running `list` or adjusting the `find` query. For an index longer than 100 digits, feedback shows its first 20 digits and total digit count. These parse and range failures do not change the model or trigger a save.
+
+For an in-range index, `DeleteCommand` removes the selected `Person` through `Model#deletePerson`. The model removes that person from the address book, which updates the observable displayed list. The success message includes the deleted debtor's ID, name, phone, email, address, outstanding amount, and tags. `LogicManager` then saves the updated address book; a storage failure is reported as a command error, but the in-memory removal is not rolled back.
+
+Interaction notes are part of the `Person` record. Deleting a debtor therefore removes the profile and its complete interaction history from the active address book and, after a successful save, from the persisted data. `show --id ID` can display profiles only for active debtors, so it reports that the debtor may have been deleted after removal. The current model does not maintain undo/redo history for deletion; the next debtor ID is not reused.
+
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
 
 <img src="images/ParserClasses.png" width="600"/>
@@ -115,7 +130,21 @@ How the parsing works:
 * All `XYZCommandParser` classes, such as `AddCommandParser` and `DeleteCommandParser`, implement the `Parser` interface so they can be treated similarly where appropriate, for example during testing.
 
 ### Model component
-**API** : [`Model.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/model/Model.java)
+
+The OSPS debtor model extends the original contact model with persistent IDs, outstanding amounts and
+interaction notes. The following diagram shows the stored debtor data:
+
+<img src="images/DebtorModelDiagram.png" width="850" alt="OSPS debtor model and persistent ID allocation" />
+
+`AddressBook` saves `nextDebtorId` alongside its records so deleting a debtor, including the final debtor,
+does not cause ID reuse after restart. `clear` deliberately resets allocation. Missing IDs in legacy records
+are allocated on load.
+
+`EditCommand` creates a replacement immutable `Person`, preserving its ID, outstanding amount and notes.
+Duplicate checks compare exact phone/email values against all other active debtors, including filtered-out
+records. Email matching is currently case-sensitive; phone country codes are not normalised.
+
+**API** : [`Model.java`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/java/seedu/address/model/Model.java)
 
 <img src="images/ModelClassDiagram.png" width="450" />
 
@@ -136,7 +165,7 @@ The `Model` component,
 
 ### Storage component
 
-**API** : [`Storage.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/storage/Storage.java)
+**API** : [`Storage.java`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/java/seedu/address/storage/Storage.java)
 
 <img src="images/StorageClassDiagram.png" width="550" />
 
@@ -144,6 +173,12 @@ The `Storage` component,
 * can save both address book data and user preference data in JSON format, and read them back into corresponding objects.
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
+* stores each debtor's ordered interaction history through `JsonAdaptedInteractionNote`; invalid entries, including
+  JSON `null` notes, are reported as data-loading errors.
+
+`LogicManager` applies a valid `note` command to the in-memory model before saving. If saving fails, it reports a
+command error but does not roll back the in-memory note. A failure before writing leaves the prior file unchanged;
+the file-writing path is not atomic, so a failure during writing does not guarantee an intact prior file.
 
 ### Common classes
 
@@ -154,6 +189,78 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 ## **Implementation**
 
 This section describes some noteworthy details on how certain features are implemented.
+
+### Privacy-preserving logging
+
+OSPS stores debtor records, so its logs must not become a second, less protected copy of those records. The logging
+invariant is:
+
+> Personal data from a debtor record or command must never be written to a log. This includes names, phone numbers,
+> email addresses, postal addresses, and interaction-note text.
+
+The invariant applies to successful commands, rejected commands, startup, and error handling. In particular, developers
+must not log raw command text, command arguments, `Person` objects, the full address book, or user-facing command
+feedback, as each can contain personal data.
+
+OSPS retains useful operational diagnostics without recording command content as follows:
+
+* `CommandLogFormatter` maps input to an allowlisted command category, such as `add`, `find`, or `note`. Arguments are
+  discarded. Blank input becomes `<empty>`, while an unrecognised first token becomes `<unknown>` instead of being
+  repeated in the log, because even that token could contain personal data.
+* `LogicManager` records only the safe command category when execution starts.
+* `MainWindow` records the command category and whether execution succeeded. A failure additionally records the
+  exception class, but not the exception message or command text.
+* `ModelManager` records only aggregate metadata (the number of address-book entries) during initialization, rather than
+  serializing the address book or its people.
+
+This gives developers enough information to identify the command path, outcome, and failure category. Detailed values
+needed to reproduce a defect should be supplied through a controlled test case, not recovered from a user's log file.
+`CommandLoggingTest` enforces the boundary with sentinel personal values and checks that none appear in captured logic,
+parser, or model log records.
+
+#### Design considerations
+
+**Aspect: Amount of command information retained:**
+
+* **Alternative 1 (current choice): Log an allowlisted command category and aggregate metadata.**
+  * Pros: Preserves useful execution context while preventing command arguments, result feedback, and model content from
+    leaking into logs.
+  * Cons: A log cannot reconstruct the exact input that caused a failure.
+* **Alternative 2: Log raw input after pattern-based redaction.**
+  * Pros: Retains more detail for debugging.
+  * Cons: Free-form addresses and notes, malformed commands, and future prefixes make complete redaction unreliable. A
+    missed pattern can expose personal data, so this alternative was rejected.
+
+### Finding and listing debtors
+
+The `find` command filters the active debtors using one or more search keywords. Each keyword matches either a
+case-insensitive whole word in the debtor's name or the debtor's complete phone number. Matching uses `OR` semantics,
+so a debtor is included when any keyword matches either field.
+
+![Interactions for `find` followed by `list`](images/FindListSequenceDiagram.png)
+
+`FindCommandParser` normalises surrounding and repeated whitespace before constructing a
+`NameContainsKeywordsPredicate`. When `FindCommand` executes, it passes that predicate to
+`ModelManager#updateFilteredPersonList`. The JavaFX `FilteredList` applies the predicate to the active debtors, while
+the existing `SortedList` returned by `ModelManager#getFilteredPersonList` keeps the displayed matches in ascending
+persistent debtor ID order. The second half of the diagram shows how `list` restores all active debtors by replacing
+the search predicate with `Model#PREDICATE_SHOW_ALL_PERSONS`.
+
+#### Design considerations
+
+* **Exact phone matching instead of substring matching:** Names use case-insensitive whole-word matching because users
+  commonly remember one part of a name. Phone numbers use exact matching because a partial number can match several
+  debtors and make the result ambiguous. Phone values are already validated and stored as digit-only strings, so no
+  additional punctuation or whitespace normalisation is needed at search time. This keeps phone searches predictable:
+  the user must enter the complete stored number.
+* **One model-level `SortedList` instead of sorting inside each command:** `ModelManager` wraps its `FilteredList` in a
+  single `SortedList` ordered by persistent debtor ID. Both `find` and `list`, as well as any UI observer of
+  `getFilteredPersonList`, therefore see the same order without duplicating sorting logic. The list stays ordered when
+  the predicate or backing data changes, rather than only when a particular command happens to run.
+* **Wrapping card content instead of truncating it:** Debtor-card labels for names, contact details, addresses, and
+  outstanding amounts allow text wrapping, while tags are placed in a `FlowPane`. This preserves identifying and
+  financial information when the window is narrow or a value is long. The persistent ID is kept at its preferred
+  width so that wrapping the adjacent name does not obscure which debtor the card represents.
 
 ### \[Proposed\] Undo/redo feature
 
@@ -237,11 +344,18 @@ The following activity diagram summarizes what happens when a user executes a ne
   * Pros: Will use less memory (e.g. for `delete`, just save the person being deleted).
   * Cons: We must ensure that the implementation of each individual command is correct.
 
-_{more aspects and alternatives to be added}_
 
-### \[Proposed\] Data archiving
+### Deferred data archiving
 
-_{Explain here how the data archiving feature will be implemented}_
+Data archiving is not implemented in v1.4. Deleting a debtor currently removes that debtor and their interaction
+history from the active address book, while the monotonically increasing debtor-ID counter prevents a deleted ID from
+being reused.
+
+A future archive could move settled debtors into a separate read-only collection instead of deleting them. Keeping the
+archive separate from the active list would preserve historical records without slowing the primary list and search
+workflows. Such an extension would require an explicit archive command, storage-schema migration, rules for restoring
+archived records, and clear retention/privacy policies. Until those requirements are defined, OSPS deliberately avoids
+presenting deletion as archival.
 
 
 --------------------------------------------------------------------------------------------------------------------
@@ -261,134 +375,302 @@ _{Explain here how the data archiving feature will be implemented}_
 
 **Target user profile**:
 
-* has a need to manage a significant number of contacts
-* prefers desktop apps over other types of applications
-* can type fast
-* prefers typing to mouse interactions
-* is reasonably comfortable using CLI apps
+* works in debt collection or recovery
+* manages numerous debtor contacts, repayment commitments, outstanding amounts, and follow-ups
+* is comfortable with desktop applications
+* can type quickly and prefers keyboard commands to mouse-heavy workflows
+* needs efficient access to accurate debtor contact and case information
 
-**Value proposition**: Manage contacts faster than with a typical mouse-driven GUI application.
+**Value proposition**: OSPS aims to help fast-typing debt recovery employees organize debtor details, repayment status, payment dates, and interaction notes in one place through keyboard-driven search and update workflows, reducing administrative work, lowering the risk of missed follow-ups, and helping users prioritize cases while keeping contact management as the application's core focus.
 
 
 ### User stories
 
-Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (could have) - `*`
+Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (could have) - `*`.
+
+This table records both implemented requirements and product-roadmap ideas. The
+[User Guide](UserGuide.md#features) is the authoritative description of commands available in the current release;
+sections explicitly labelled “Proposed” or “Deferred” below are not implemented.
 
 | Priority | As a …​ | I want to …​ | So that I can …​ |
 | -------- | ------ | ------------ | ---------------- |
 | `* * *` | debt recovery agent | add a new debtor with their contact details and outstanding amount | officially register their case and begin tracking it |
-| `* * *` | fast-typing employee | use GNU-style keyboard commands to execute all actions | maintain my productivity without needing to reach for the mouse |
 | `* * *` | debt recovery agent | append interaction notes to a debtor's profile | keep an accurate, chronological history of call discussions |
-| `* * *` | busy debt collector | quickly search for a debtor by name or phone number | instantly pull up their case details when they unexpectedly call |
-| `* * *` | debt recovery agent | set a follow-up deadline and promised payment date for a debtor | avoid missing critical contact windows |
 | `* * *` | debt recovery agent | view all active cases sorted by the closest follow-up date | identify and prioritise people to call today |
-| `* * *` | debt recovery agent | update a debtor's outstanding amount | ensure the system reflects partial repayments accurately |
 | `* * *` | debt recovery agent | mark a debtor's case as settled or delete it | keep the active dashboard uncluttered after recovery |
-| `* * *` | careful employee | undo the most recent command | recover quickly after an accidental deletion or incorrect amount |
-| `* * *` | new team member | view a help menu summarising all available commands | learn the application's syntax without external documentation |
+| `* * *` | debt recovery agent | view a debtor's complete profile | see their contact details, debt, deadlines, status, and notes together |
+| `* *` | fast-typing employee | use GNU-style keyboard commands to execute all actions | maintain my productivity without needing to reach for the mouse |
+| `* *` | busy debt collector | quickly search for a debtor by name or phone number | instantly pull up their case details when they unexpectedly call |
+| `* *` | debt recovery agent | set a follow-up deadline and promised payment date for a debtor | avoid missing critical contact windows |
+| `* *` | debt recovery agent | update a debtor's outstanding amount | ensure the system reflects partial repayments accurately |
+| `* *` | new team member | view a help menu summarising all available commands | learn the application's syntax without external documentation |
 | `* *` | debt recovery agent | edit a debtor's contact details | keep their phone number, email address, and postal address current |
-| `* *` | debt recovery agent | view a debtor's complete profile | see their contact details, debt, deadlines, status, and notes together |
 | `* *` | considerate debt collector | record a debtor's preferred contact method and contactable hours | contact them through an appropriate channel at a suitable time |
 | `* *` | debt recovery agent | record the outcome of each contact attempt | track whether the debtor answered, requested a callback, or was unreachable |
 | `* *` | debt recovery agent | assign a recovery stage to a debtor | distinguish new, contacted, negotiating, disputed, and broken-promise cases |
 | `* *` | busy debt collector | list debtors whose follow-ups are due or overdue | immediately identify cases requiring attention |
 | `* *` | debt recovery agent | filter debtor contacts by recovery stage | focus on a category of cases without scanning the entire list |
+| `*` | careful employee | undo the most recent command | recover quickly after an accidental deletion or incorrect amount |
 | `*` | fast-typing employee | find debtors using partial or slightly misspelled names | retrieve the right contact without remembering the exact spelling |
 | `*` | careful employee | preview an update or deletion command | verify the affected debtor and changes before committing a risky action |
 | `*` | compliance-conscious debt recovery agent | export a debtor's profile and interaction history | provide a case record for auditing or authorised handover |
 
 ### Use cases
 
-(For all use cases below, the **System** is the `AddressBook` and the **Actor** is the `user`, unless specified otherwise)
+(For all use cases below, the **System** is `OSPS` and the **Actor** is the `debt recovery agent`, unless
+specified otherwise)
 
-**Use case: Delete a person**
+**Use case: Add a debtor**
 
 **MSS**
 
-1.  User requests to list persons
-2.  AddressBook shows a list of persons
-3.  User requests to delete a specific person in the list
-4.  AddressBook deletes the person
+1.  Debt recovery agent requests to add a new debtor with the required debtor details.
+2.  OSPS validates the provided debtor details.
+3.  OSPS adds the debtor record.
+4.  OSPS confirms that the debtor record has been added.
 
     Use case ends.
 
 **Extensions**
 
-* 2a. The list is empty.
+* 1a. Debt recovery agent omits a required debtor detail.
 
-  Use case ends.
+    * 1a1. OSPS shows an error message explaining which required detail is missing.
 
-* 3a. The given index is invalid.
+      Use case resumes at step 1.
 
-    * 3a1. AddressBook shows an error message.
+* 2a. The provided debtor details are invalid.
+
+    * 2a1. OSPS shows an error message explaining the invalid detail.
+
+      Use case resumes at step 1.
+
+**Use case: List debtors**
+
+**MSS**
+
+1.  Debt recovery agent requests to view all debtor records.
+2.  OSPS shows a list of debtor records with summary information.
+
+    Use case ends.
+
+**Extensions**
+
+* 2a. There are no debtor records.
+
+    * 2a1. OSPS informs the debt recovery agent that no debtor records are available.
+
+      Use case ends.
+
+**Use case: View debtor profile**
+
+**MSS**
+
+1.  Debt recovery agent requests to view the list of debtor records.
+2.  OSPS shows a list of debtor records with summary information.
+3.  Debt recovery agent selects a debtor record to view in detail.
+4.  OSPS shows the selected debtor's profile, including debtor details, outstanding balance, repayment status,
+    payment dates, and interaction notes where available.
+
+    Use case ends.
+
+**Extensions**
+
+* 2a. There are no debtor records.
+
+    * 2a1. OSPS informs the debt recovery agent that no debtor records are available.
+
+      Use case ends.
+
+* 3a. The selected debtor record does not exist.
+
+    * 3a1. OSPS shows an error message.
 
       Use case resumes at step 2.
 
-*{More to be added}*
+**Use case: Add an interaction note**
+
+**MSS**
+
+1.  Debt recovery agent requests to view a debtor profile.
+2.  OSPS shows the selected debtor's profile.
+3.  Debt recovery agent requests to add an interaction note to the debtor profile.
+4.  OSPS validates the interaction note.
+5.  OSPS adds the interaction note to the debtor profile.
+6.  OSPS confirms that the interaction note has been added.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. The selected debtor record does not exist.
+
+    * 1a1. OSPS shows an error message.
+
+      Use case ends.
+
+* 4a. The interaction note is empty or invalid.
+
+    * 4a1. OSPS shows an error message explaining why the note cannot be added.
+
+      Use case resumes at step 3.
+
+**Use case: Delete a debtor**
+
+**MSS**
+
+1.  Debt recovery agent requests to view all debtor records.
+2.  OSPS shows a list of debtor records with summary information.
+3.  Debt recovery agent selects a debtor record to delete.
+4.  OSPS deletes the selected debtor record.
+5.  OSPS confirms that the debtor record has been deleted.
+
+    Use case ends.
+
+**Extensions**
+
+* 2a. There are no debtor records.
+
+    * 2a1. OSPS informs the debt recovery agent that no debtor records are available.
+
+      Use case ends.
+
+* 3a. The selected debtor record does not exist.
+
+    * 3a1. OSPS shows an error message.
+
+      Use case resumes at step 2.
 
 ### Non-Functional Requirements
 
-1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
-2.  Should be able to hold up to 1000 persons without noticeable sluggishness in performance for typical usage.
-3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
+The following requirements describe qualities of OSPS rather than individual commands.
+Unless otherwise stated, response-time measurements use a supported desktop machine
+with a representative dataset of 1,000 debtor records.
 
-*{More to be added}*
+1. **NFR-Portability**: OSPS must run on Windows, Linux, and macOS systems with
+   Java `25` installed. The documented setup procedure must be sufficient to launch
+   OSPS and complete a basic debtor-listing workflow on each operating system.
+2. **NFR-Capacity and responsiveness**: OSPS must retain at least 1,000 debtor
+   records, including balances, repayment statuses, dates, and interaction notes.
+   With that dataset, listing debtors and opening one debtor's profile must each
+   complete within 2 seconds.
+3. **NFR-Persistence**: After a successful change, restarting OSPS must reproduce
+   every changed debtor field and interaction note exactly as before shutdown. This
+   is verified with a save--restart--compare test.
+4. **NFR-Input integrity**: Invalid commands or field values must not change existing
+   debtor records. OSPS must return a message identifying the invalid input so the
+   agent can correct it; this is verified with invalid-input tests before and after
+   persistence.
+5. **NFR-Keyboard workflow**: The documented primary workflows---adding a debtor,
+   listing debtors, viewing a debtor profile, and recording an interaction note---must
+   be completable through the CLI without mouse input after launch.
 
 ### Glossary
 
-* **Mainstream OS**: Windows, Linux, Unix, or macOS
-* **Private contact detail**: A contact detail that is not meant to be shared with others
+* **Debt recovery agent**: An OSPS user who manages debtor records and follows up on outstanding balances.
+* **Debtor**: A person or organisation with an outstanding payment obligation recorded in OSPS.
+* **Follow-up date**: The date on which an agent next plans to contact or review a debtor's case.
+* **Interaction history**: The collection of interaction notes associated with a debtor.
+* **Interaction note**: A dated record of a contact or other relevant interaction with a debtor.
+* **Outstanding balance**: The amount that remains to be paid under a debtor's payment scheme.
+* **Payment scheme**: The agreed plan describing how and when an outstanding balance is repaid.
+* **Repayment status**: An indicator of the current progress of a debtor's payment scheme.
 
 --------------------------------------------------------------------------------------------------------------------
 
 ## **Appendix: Instructions for manual testing**
 
-Given below are instructions to test the app manually.
+The following steps exercise the release JAR using only documented commands. Run each scenario in a separate writable
+folder when its initial data state matters.
 
-<div markdown="span" class="alert alert-info">:information_source: **Note:** These instructions only provide a starting point for testers to work on;
-testers are expected to do more *exploratory* testing.
-
+<div markdown="span" class="alert alert-info">:information_source: **Note:** These instructions provide deterministic
+regression checks, but they do not replace exploratory testing on each supported operating system.
 </div>
 
-### Launch and shutdown
+### Launch, shutdown, and window preferences
 
-1. Initial launch
+1. Copy the release JAR into an empty writable folder.
+1. Open a terminal in that folder and run `java -jar osps.jar`.<br>
+   Expected: OSPS opens with sample debtor records. A `data` folder is created after the first data-changing command.
+1. Resize and move the main window, then close OSPS using the **File → Exit** menu.
+1. Run `java -jar osps.jar` again.<br>
+   Expected: The last window size and position are restored, subject to the available screen bounds.
 
-   1. Download the JAR file and copy it into an empty folder.
+### Adding and editing a debtor
 
-   1. Double-click the JAR file.<br>
-      Expected: The GUI opens with a set of sample contacts. The window size may not be optimal.
+1. Run:
+   `add n/Olaf Go p/91234567 e/olaf.letnonego@example.com a/H4M8+3J3, Kunlun Station, Antarctica o/S$1,250.00 t/new`.<br>
+   Expected: One debtor is added with a new persistent ID and an outstanding amount of `S$1,250.00`.
+1. Run `list`, note Olaf's displayed index and persistent ID, then run
+   `edit INDEX n/Olaf Updated o/S$500.00 t/follow-up`, replacing `INDEX` with the displayed index.<br>
+   Expected: The same persistent ID now shows the updated name, amount, and replacement tag.
+1. Try adding another debtor with Olaf's phone or email.<br>
+   Expected: The command is rejected and neither debtor is changed.
 
-1. Saving window preferences
+### Finding and listing debtors
 
-   1. Resize the window to an optimal size. Move the window to a different location. Close the window.
+1. With the sample data loaded, run `find alex DAVID`.<br>
+   Expected: Only `Alex Yeoh` and `David Li` are shown, in ascending persistent-ID order.
+1. Run `find Ale`.<br>
+   Expected: No debtor is shown because name keywords must match complete words.
+1. Run `find 87438807`.<br>
+   Expected: Only the debtor with that complete phone number is shown.
+1. Run `find 8743`.<br>
+   Expected: The partial phone number does not match `87438807`.
+1. Run `list`.<br>
+   Expected: The complete active-debtor list is restored.
+1. Run `list extra` and then `find` with no keyword.<br>
+   Expected: Each command is rejected and the displayed data remains unchanged.
 
-   1. Relaunch the app by double-clicking the JAR file.<br>
-       Expected: The most recent window size and location are retained.
+### Showing profiles and recording interaction history
 
-1. _{ more test cases …​ }_
+1. Run `list` and choose an active debtor's persistent ID, referred to below as `ID`.
+1. Run `show --id ID`.<br>
+   Expected: The result contains that debtor's ID, name, phone, email, address, outstanding amount, tags, and either
+   their interaction notes or an explicit no-notes message.
+1. Run `find KEYWORD` using a keyword that hides the chosen debtor, then run `show --id ID` again.<br>
+   Expected: The same debtor profile is shown because `show` selects by persistent ID, not displayed index.
+1. Run `note --id ID --text Called debtor; promised payment on Friday.`, followed by `show --id ID`.<br>
+   Expected: The profile includes the new timestamped note.
+1. Add a second note and show the profile again.<br>
+   Expected: Both notes are present, with the newer note displayed first.
+1. Run `show --id 0`, `show --id -1`, and `show --id 999999`.<br>
+   Expected: Each invalid or missing target produces an error and does not display another debtor's profile.
 
-### Deleting a person
+### Deleting a debtor and checking stale selections
 
-1. Deleting a person while all persons are being shown
+1. Run `list`, record the persistent ID of the first displayed debtor, and run `delete 1`.<br>
+   Expected: The first displayed debtor is removed and the success message identifies that debtor.
+1. Run `show --id ID` using the deleted persistent ID.<br>
+   Expected: OSPS reports that no active debtor with that ID exists; it never substitutes a different debtor.
+1. Run `list` and show a remaining debtor by their persistent ID.<br>
+   Expected: Remaining records retain their original IDs and profile details.
+1. Run `delete 0`, `delete -1`, `delete x`, and an index larger than the displayed list.<br>
+   Expected: Every command is rejected without changing the model or saved file.
 
-   1. Prerequisites: List all persons using the `list` command, with multiple persons in the list.
+For the detailed release-JAR deletion matrix and evidence format, see the
+[deletion regression and release-JAR smoke-test checklist](testing/v1.4-release-smoke-test.md).
 
-   1. Test case: `delete 1`<br>
-      Expected: The first contact is deleted from the list. The status message shows the deleted contact's details.
+### Long content, scrolling, and resizing
 
-   1. Test case: `delete 0`<br>
-      Expected: No person is deleted. The status message shows error details.
+1. Add a debtor with a long but valid name and address, then add a multi-sentence interaction note.
+1. Run `show --id ID` for that debtor.<br>
+   Expected: Profile text wraps rather than being clipped, and every profile field remains accessible by scrolling.
+1. Make the window taller and shorter.<br>
+   Expected: The result area receives additional vertical space when the window grows; at the minimum supported window
+   size, the command box, result area, debtor list, and status bar remain usable.
+1. Narrow and widen the window.<br>
+   Expected: Debtor-card text wraps and tags flow to additional rows without obscuring the persistent ID.
 
-   1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
-      Expected: Similar to previous.
+### Persistence and edited data files
 
-1. _{ more test cases …​ }_
-
-### Saving data
-
-1. Dealing with missing/corrupted data files
-
-   1. _{Explain how to simulate missing or corrupted data files and state the expected behavior.}_
-
-1. _{ more test cases …​ }_
+1. Add or edit a debtor and add an interaction note. Record the profile shown by `show --id ID`.
+1. Exit normally and restart OSPS from the same folder.
+1. Run `show --id ID` again.<br>
+   Expected: All edited fields and interaction notes match the pre-restart profile.
+1. Exit OSPS, back up `data/addressbook.json`, and delete the original file. Restart OSPS.<br>
+   Expected: OSPS starts with sample data. The data file is recreated after a successful data-changing command.
+1. Exit OSPS, replace `data/addressbook.json` with text that is not valid JSON, and restart OSPS.<br>
+   Expected: OSPS starts with no debtor records and logs a data-loading warning. The corrupted file remains untouched
+   until a successful data-changing command writes a valid replacement.
+1. Restore the backup after completing the test.

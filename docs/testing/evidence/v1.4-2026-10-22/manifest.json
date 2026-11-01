@@ -1,0 +1,110 @@
+{
+  "issue": 69,
+  "testedAtSgt": "2026-10-22T16:21:38.210520+08:00",
+  "status": "CANDIDATE SMOKE PASS; FINAL RELEASE HASH PENDING; BRANDING DEFECT OPEN",
+  "environment": {
+    "os": "Windows-11-10.0.26100-SP0",
+    "java": "openjdk version \"25.0.3\" 2026-04-21 LTS\nOpenJDK Runtime Environment Temurin-25.0.3+9 (build 25.0.3+9-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.3+9 (build 25.0.3+9-LTS, mixed mode, sharing)",
+    "execution": "Windows JavaFX GUI on packaged JAR; command field ActionEvent driver; no source-class substitution"
+  },
+  "candidate": {
+    "commitSha": "0706f3eb7f155083012c12336252adc994496da7",
+    "jarSha256": "738f6896139a670395feb338529fbb3fd864a9e523cdfeb6470d7178fe5346d6",
+    "jarBytes": 12519448,
+    "buildCommand": "gradlew.bat clean check coverage shadowJar",
+    "buildResult": "PASS; 398 tests, 0 failures, 0 errors, 1 skipped (Linux-only ResultDisplayTest on Windows)",
+    "masterJavaCi": "https://github.com/AY2627S1-CS2103T-F08-1/tp/actions/runs/39719437732",
+    "codecov": "https://app.codecov.io/gh/AY2627S1-CS2103T-F08-1/tp/commit/0706f3eb7f155083012c12336252adc994496da7"
+  },
+  "fixture": {
+    "sourceRelease": "https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.3",
+    "sourceJarSha256": "2ba23591c8e8901ea77c2976fd0106a266531a373ddfc6796c5e54c515123287",
+    "dataSha256": "c49931f17bf1febd577f81ff712bd360660b05214ab8eaf2e3420ec7fec34194",
+    "recordCount": 9,
+    "description": "Official v1.3 sample records plus three synthetic QA records with 0, 125.00, and 900.25 balances; two timestamped notes written by v1.3 JAR"
+  },
+  "caseResults": {
+    "clean\\result-clean.txt": {
+      "status": "PASS",
+      "assertions": 2
+    },
+    "workflow-final\\result-restart.txt": {
+      "status": "PASS",
+      "assertions": 5
+    },
+    "workflow-final\\result-workflow.txt": {
+      "status": "PASS",
+      "assertions": 29
+    },
+    "first\\result-first.txt": {
+      "status": "PASS",
+      "assertions": 14
+    },
+    "middle\\result-middle.txt": {
+      "status": "PASS",
+      "assertions": 14
+    },
+    "last\\result-last.txt": {
+      "status": "PASS",
+      "assertions": 14
+    },
+    "only\\result-only.txt": {
+      "status": "PASS",
+      "assertions": 8
+    },
+    "invalid\\result-invalid.txt": {
+      "status": "PASS",
+      "assertions": 117
+    }
+  },
+  "millionDigitUiCommandMs": {
+    "populatedList": 32,
+    "emptyFilteredList": 218
+  },
+  "persistedSurvivorsEqualFixture": true,
+  "invalidCommandsPreserveStoredBytes": true,
+  "restart": "New JVM loads the same candidate JAR and folder; deleted ID absent, control note preserved",
+  "executableStartup": "java --enable-native-access=ALL-UNNAMED -jar osps.jar in an otherwise empty folder; process alive after 5 seconds, Starting UI logged, no SEVERE; externally terminated after startup. Separate GUI driver checks orderly stop/restart.",
+  "defects": [
+    "https://github.com/AY2627S1-CS2103T-F08-1/tp/issues/90"
+  ],
+  "releaseAssetHashComparison": {
+    "status": "PENDING: no published v1.4 asset",
+    "uploadedSha256": null,
+    "matchesTestedJar": null
+  },
+  "limitations": [
+    "Automated GUI smoke on Windows only, not a manual three-platform test.",
+    "Million-digit text is supplied through TextField.setText followed by its ActionEvent; this does not test clipboard paste performance.",
+    "Screenshots are unedited JavaFX scene snapshots excluding window decorations.",
+    "Initial driver attempt forgot to reapply find after edit (which resets filter); corrected driver follows checklist; failed attempt retained locally and excluded from passing results.",
+    "Candidate is not declared final release-ready while branding #90 and uploaded-hash comparison remain outstanding."
+  ],
+  "evidenceNormalization": {
+    "description": "Repository text copies normalize trailing whitespace and final newlines to satisfy CI. JSON values and feedback text content are unchanged. Original local output remains under qa-evidence/v1.4-issue69. fixture.dataSha256 describes the original source bytes, not the normalized copy.",
+    "originalByteHashesBeforeNormalization": {
+      "clean\\result-clean.txt": "d4fa314ddf9a39bcdcf20ec9eb753070f27bebb17871ea6623290483d06c7e0a",
+      "first\\after.json": "4157d962e5123a07f17ca6f2e21d303387e032585f0add0d5dc40faff764abb5",
+      "first\\baseline.json": "c49931f17bf1febd577f81ff712bd360660b05214ab8eaf2e3420ec7fec34194",
+      "first\\result-first.txt": "8802d9901d1139e08c595a1b93d7716c4df8963e5ae8752a22517b7394ddf600",
+      "fixture-v13\\addressbook.json": "c49931f17bf1febd577f81ff712bd360660b05214ab8eaf2e3420ec7fec34194",
+      "fixture-v13\\result-fixture.txt": "7883bc0b63a81998ae42f8425f8ab26b1f48872c9d8899fe6e0e0e62bd8c9659",
+      "invalid\\after.json": "c49931f17bf1febd577f81ff712bd360660b05214ab8eaf2e3420ec7fec34194",
+      "invalid\\baseline.json": "c49931f17bf1febd577f81ff712bd360660b05214ab8eaf2e3420ec7fec34194",
+      "invalid\\result-invalid.txt": "5c5a46ea73a621a3baa72f24d5c7c804c55233602e549c2886cab498ed4b49fd",
+      "last\\after.json": "8b21d8c8150069288fb5a9d7842a6f3e26782e74cf29d3df7e57489f1f449501",
+      "last\\baseline.json": "c49931f17bf1febd577f81ff712bd360660b05214ab8eaf2e3420ec7fec34194",
+      "last\\result-last.txt": "b53d9e5b02cdec10b757cfd7c0bdae9a9d17dc976aeccd5757682f72bc879201",
+      "middle\\after.json": "e3468eba6fe39158f2fe89b968d10cdd8c69d0f154edbb11e92c1177f3ba357a",
+      "middle\\baseline.json": "c49931f17bf1febd577f81ff712bd360660b05214ab8eaf2e3420ec7fec34194",
+      "middle\\result-middle.txt": "08b0b1efb4ec6dfa8999ff2d9ab43c483fa3d18e2174f19dcce371c1d46fbe77",
+      "only\\after.json": "dbb4189d87ebc38dc94db9421c4081e52e17e6a20cccd02688d6551ddd66fb0b",
+      "only\\baseline.json": "c49931f17bf1febd577f81ff712bd360660b05214ab8eaf2e3420ec7fec34194",
+      "only\\result-only.txt": "aa8d30b1343e371e0eedf82e5dfa29f8d1a4a4a81e735bf25cb66199c78874f6",
+      "workflow-final\\after.json": "da8c0443f9bf4578b0752a479c72484a72fc71ae0870d47aaf653d92f8cb28a7",
+      "workflow-final\\baseline.json": "c49931f17bf1febd577f81ff712bd360660b05214ab8eaf2e3420ec7fec34194",
+      "workflow-final\\result-restart.txt": "35cd7186a247cef4f02c74a493fbd9a0aaf029ef922c3b20ef18c2afaf853fb0",
+      "workflow-final\\result-workflow.txt": "ff69c37a1befb3d0b319cb8bb2d286bd31fd5f4cc90488f79da53e444442f95a"
+    }
+  }
+}

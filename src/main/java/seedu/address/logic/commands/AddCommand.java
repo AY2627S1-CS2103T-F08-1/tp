@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_ADDRESS;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_EMAIL;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_OUTSTANDING_AMOUNT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
 
@@ -20,23 +21,25 @@ public class AddCommand extends Command {
 
     public static final String COMMAND_WORD = "add";
 
-    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Adds a person to the address book. "
+    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Adds a debtor to OSPS. "
             + "Parameters: "
             + PREFIX_NAME + "NAME "
             + PREFIX_PHONE + "PHONE "
             + PREFIX_EMAIL + "EMAIL "
             + PREFIX_ADDRESS + "ADDRESS "
+            + "[" + PREFIX_OUTSTANDING_AMOUNT + "AMOUNT] "
             + "[" + PREFIX_TAG + "TAG]...\n"
             + "Example: " + COMMAND_WORD + " "
-            + PREFIX_NAME + "John Doe "
-            + PREFIX_PHONE + "98765432 "
-            + PREFIX_EMAIL + "johnd@example.com "
-            + PREFIX_ADDRESS + "311, Clementi Ave 2, #02-25 "
-            + PREFIX_TAG + "friends "
-            + PREFIX_TAG + "owesMoney";
+            + PREFIX_NAME + "Olaf Go "
+            + PREFIX_PHONE + "91234567 "
+            + PREFIX_EMAIL + "olaf.letnonego@example.com "
+            + PREFIX_ADDRESS + "H4M8+3J3, Kunlun Station, Antarctica "
+            + PREFIX_OUTSTANDING_AMOUNT + "S$1,250.00";
 
-    public static final String MESSAGE_SUCCESS = "New person added: %1$s";
-    public static final String MESSAGE_DUPLICATE_PERSON = "This person already exists in the address book.";
+    public static final String MESSAGE_SUCCESS = "New debtor added: %1$s";
+    public static final String MESSAGE_DUPLICATE_PERSON =
+            "A debtor with the same phone number or email address already exists.";
+    public static final String MESSAGE_ID_EXHAUSTED = "No more debtor IDs are available.";
 
     private final Person toAdd;
 
@@ -56,8 +59,11 @@ public class AddCommand extends Command {
             throw new CommandException(MESSAGE_DUPLICATE_PERSON);
         }
 
-        model.addPerson(toAdd);
-        return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(toAdd)));
+        if (model.getAddressBook().getNextDebtorId() == Integer.MAX_VALUE) {
+            throw new CommandException(MESSAGE_ID_EXHAUSTED);
+        }
+        Person addedPerson = model.addPerson(toAdd);
+        return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(addedPerson)));
     }
 
     @Override

@@ -1,0 +1,91 @@
+{
+  "persons" : [ {
+    "name" : "Alex Yeoh",
+    "phone" : "87438807",
+    "email" : "alexyeoh@example.com",
+    "address" : "Blk 30 Geylang Street 29, #06-40",
+    "debtorId" : 1,
+    "outstandingAmount" : "0.00",
+    "interactionNotes" : [ {
+      "timestamp" : "2026-10-22T16:16:52.5024954",
+      "text" : "v1.3 control note to preserve"
+    } ],
+    "tags" : [ "friends" ]
+  }, {
+    "name" : "Bernice Yu",
+    "phone" : "99272758",
+    "email" : "berniceyu@example.com",
+    "address" : "Blk 30 Lorong 3 Serangoon Gardens, #07-18",
+    "debtorId" : 2,
+    "outstandingAmount" : "0.00",
+    "interactionNotes" : [ ],
+    "tags" : [ "colleagues", "friends" ]
+  }, {
+    "name" : "Charlotte Oliveiro",
+    "phone" : "93210283",
+    "email" : "charlotte@example.com",
+    "address" : "Blk 11 Ang Mo Kio Street 74, #11-04",
+    "debtorId" : 3,
+    "outstandingAmount" : "0.00",
+    "interactionNotes" : [ ],
+    "tags" : [ "neighbours" ]
+  }, {
+    "name" : "David Li",
+    "phone" : "91031282",
+    "email" : "lidavid@example.com",
+    "address" : "Blk 436 Serangoon Gardens Street 26, #16-43",
+    "debtorId" : 4,
+    "outstandingAmount" : "0.00",
+    "interactionNotes" : [ ],
+    "tags" : [ "family" ]
+  }, {
+    "name" : "Irfan Ibrahim",
+    "phone" : "92492021",
+    "email" : "irfan@example.com",
+    "address" : "Blk 47 Tampines Street 20, #17-35",
+    "debtorId" : 5,
+    "outstandingAmount" : "0.00",
+    "interactionNotes" : [ ],
+    "tags" : [ "classmates" ]
+  }, {
+    "name" : "Roy Balakrishnan",
+    "phone" : "92624417",
+    "email" : "royb@example.com",
+    "address" : "Blk 45 Aljunied Street 85, #11-31",
+    "debtorId" : 6,
+    "outstandingAmount" : "0.00",
+    "interactionNotes" : [ ],
+    "tags" : [ "colleagues" ]
+  }, {
+    "name" : "Release QA Cedar",
+    "phone" : "81110001",
+    "email" : "release.qa.cedar@example.com",
+    "address" : "1 Test Lane",
+    "debtorId" : 7,
+    "outstandingAmount" : "125.00",
+    "interactionNotes" : [ {
+      "timestamp" : "2026-10-22T16:16:52.4984374",
+      "text" : "v1.3 fixture Cedar note"
+    } ],
+    "tags" : [ ]
+  }, {
+    "name" : "Release QA Maple",
+    "phone" : "81110002",
+    "email" : "release.qa.maple@example.com",
+    "address" : "2 Test Lane",
+    "debtorId" : 8,
+    "outstandingAmount" : "900.25",
+    "interactionNotes" : [ ],
+    "tags" : [ ]
+  }, {
+    "name" : "Release QA Birch",
+    "phone" : "81110003",
+    "email" : "release.qa.birch@example.com",
+    "address" : "3 Test Lane",
+    "debtorId" : 9,
+    "outstandingAmount" : "0.00",
+    "interactionNotes" : [ ],
+    "tags" : [ ]
+  } ],
+  "nextDebtorId" : 11
+}

@@ -25,6 +25,46 @@ public class AddressBookTest {
     private final AddressBook addressBook = new AddressBook();
 
     @Test
+    public void addPerson_duplicate_doesNotConsumeId() {
+        addressBook.addPerson(ALICE);
+        int nextId = addressBook.getNextDebtorId();
+        assertThrows(DuplicatePersonException.class, () -> addressBook.addPerson(ALICE));
+        assertEquals(nextId, addressBook.getNextDebtorId());
+    }
+
+    @Test
+    public void setPersons_duplicate_doesNotResetIdCounter() {
+        addressBook.addPerson(ALICE);
+        addressBook.setNextDebtorId(20);
+        assertThrows(DuplicatePersonException.class, () -> addressBook.setPersons(List.of(ALICE, ALICE)));
+        assertEquals(20, addressBook.getNextDebtorId());
+        assertEquals(1, addressBook.getPersonList().size());
+    }
+
+    @Test
+    public void addPerson_idOverflow_rejectedWithoutChangingData() {
+        assertThrows(IllegalArgumentException.class, () ->
+                addressBook.addPerson(ALICE.withDebtorId(Integer.MAX_VALUE)));
+        assertEquals(1, addressBook.getNextDebtorId());
+        addressBook.setNextDebtorId(Integer.MAX_VALUE);
+        assertThrows(IllegalArgumentException.class, () -> addressBook.addPerson(ALICE));
+        assertEquals(Integer.MAX_VALUE, addressBook.getNextDebtorId());
+        assertTrue(addressBook.getPersonList().isEmpty());
+    }
+
+    @Test
+    public void setPersons_invalidIds_preservesDataAndCounter() {
+        addressBook.addPerson(ALICE);
+        addressBook.setNextDebtorId(20);
+        assertThrows(IllegalArgumentException.class, () ->
+                addressBook.setPersons(List.of(ALICE.withDebtorId(Integer.MAX_VALUE))));
+        assertThrows(IllegalArgumentException.class, () ->
+                addressBook.setPersons(List.of(ALICE.withDebtorId(1), ALICE.withDebtorId(1))));
+        assertEquals(20, addressBook.getNextDebtorId());
+        assertEquals(1, addressBook.getPersonList().size());
+    }
+
+    @Test
     public void constructor() {
         assertEquals(List.of(), addressBook.getPersonList());
     }
@@ -53,6 +93,17 @@ public class AddressBookTest {
     }
 
     @Test
+    public void resetData_withDuplicateDebtorIds_throwsIllegalArgumentException() {
+        Person firstPerson = new PersonBuilder(ALICE).withDebtorId(1).build();
+        Person secondPerson = new PersonBuilder().withName("Bob").withPhone("91234567")
+                .withEmail("bob@example.com").withDebtorId(1).build();
+        AddressBookStub newData = new AddressBookStub(List.of(firstPerson, secondPerson));
+
+        assertThrows(IllegalArgumentException.class, AddressBook.MESSAGE_DUPLICATE_DEBTOR_ID, () ->
+                addressBook.resetData(newData));
+    }
+
+    @Test
     public void hasPerson_nullPerson_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> addressBook.hasPerson(null));
     }
@@ -74,6 +125,34 @@ public class AddressBookTest {
         Person editedAlice = new PersonBuilder(ALICE).withAddress(VALID_ADDRESS_BOB).withTags(VALID_TAG_HUSBAND)
                 .build();
         assertTrue(addressBook.hasPerson(editedAlice));
+    }
+
+    @Test
+    public void addPerson_assignsIncreasingIdsWithoutReuse() {
+        Person firstPerson = new PersonBuilder().withName("Alice").build();
+        Person secondPerson = new PersonBuilder().withName("Bob").withPhone("91234567")
+                .withEmail("bob@example.com").build();
+        Person thirdPerson = new PersonBuilder().withName("Carol").withPhone("92345678")
+                .withEmail("carol@example.com").build();
+
+        Person addedFirstPerson = addressBook.addPerson(firstPerson);
+        Person addedSecondPerson = addressBook.addPerson(secondPerson);
+        addressBook.removePerson(addedSecondPerson);
+        Person addedThirdPerson = addressBook.addPerson(thirdPerson);
+
+        assertEquals(1, addedFirstPerson.getDebtorId());
+        assertEquals(2, addedSecondPerson.getDebtorId());
+        assertEquals(3, addedThirdPerson.getDebtorId());
+    }
+
+    @Test
+    public void addPerson_withDuplicateDebtorId_throwsIllegalArgumentException() {
+        addressBook.addPerson(new PersonBuilder(ALICE).withDebtorId(1).build());
+        Person secondPerson = new PersonBuilder().withName("Bob").withPhone("91234567")
+                .withEmail("bob@example.com").withDebtorId(1).build();
+
+        assertThrows(IllegalArgumentException.class, AddressBook.MESSAGE_DUPLICATE_DEBTOR_ID, () ->
+                addressBook.addPerson(secondPerson));
     }
 
     @Test

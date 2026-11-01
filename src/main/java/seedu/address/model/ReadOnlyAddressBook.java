@@ -14,4 +14,11 @@ public interface ReadOnlyAddressBook {
      */
     ObservableList<Person> getPersonList();
 
+    /**
+     * Returns the next persistent debtor ID. Implementations without ID state derive a safe value from the list.
+     */
+    default int getNextDebtorId() {
+        return getPersonList().stream().mapToInt(Person::getDebtorId).max().orElse(0) + 1;
+    }
+
 }

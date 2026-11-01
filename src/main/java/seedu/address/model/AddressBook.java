@@ -2,12 +2,16 @@ package seedu.address.model;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.UniquePersonList;
+import seedu.address.model.person.exceptions.DuplicatePersonException;
 
 /**
  * Wraps all data at the address-book level.
@@ -15,7 +19,10 @@ import seedu.address.model.person.UniquePersonList;
  */
 public class AddressBook implements ReadOnlyAddressBook {
 
+    public static final String MESSAGE_DUPLICATE_DEBTOR_ID = "Debtor ID must be unique.";
+
     private final UniquePersonList persons = new UniquePersonList();
+    private int nextDebtorId = 1;
 
     public AddressBook() {}
 
@@ -34,7 +41,22 @@ public class AddressBook implements ReadOnlyAddressBook {
      * {@code persons} must not contain duplicate persons.
      */
     public void setPersons(List<Person> persons) {
-        this.persons.setPersons(persons);
+        int candidateNextId = 1;
+        List<Person> assignedPersons = new ArrayList<>();
+        Set<Integer> usedDebtorIds = new HashSet<>();
+        for (Person person : persons) {
+            Person assignedPerson = person.getDebtorId() == 0 ? person.withDebtorId(candidateNextId) : person;
+            if (assignedPerson.getDebtorId() == Integer.MAX_VALUE) {
+                throw new IllegalArgumentException("Debtor ID exceeds the supported range.");
+            }
+            if (!usedDebtorIds.add(assignedPerson.getDebtorId())) {
+                throw new IllegalArgumentException(MESSAGE_DUPLICATE_DEBTOR_ID);
+            }
+            candidateNextId = Math.max(candidateNextId, assignedPerson.getDebtorId() + 1);
+            assignedPersons.add(assignedPerson);
+        }
+        this.persons.setPersons(assignedPersons);
+        nextDebtorId = candidateNextId;
     }
 
     /**
@@ -44,12 +66,14 @@ public class AddressBook implements ReadOnlyAddressBook {
         requireNonNull(newData);
 
         setPersons(newData.getPersonList());
+        nextDebtorId = Math.max(nextDebtorId, newData.getNextDebtorId());
     }
 
     //// person-level operations
 
     /**
-     * Returns true if a person with the same identity as {@code person} exists in the address book.
+     * Returns true if a person with the same phone number or email address as {@code person} exists in the
+     * address book.
      */
     public boolean hasPerson(Person person) {
         requireNonNull(person);
@@ -60,8 +84,14 @@ public class AddressBook implements ReadOnlyAddressBook {
      * Adds a person to the address book.
      * The person must not already exist in the address book.
      */
-    public void addPerson(Person p) {
-        persons.add(p);
+    public Person addPerson(Person p) {
+        requireNonNull(p);
+        if (persons.contains(p)) {
+            throw new DuplicatePersonException();
+        }
+        Person assignedPerson = assignDebtorId(p);
+        persons.add(assignedPerson);
+        return assignedPerson;
     }
 
     /**
@@ -95,6 +125,37 @@ public class AddressBook implements ReadOnlyAddressBook {
     @Override
     public ObservableList<Person> getPersonList() {
         return persons.asUnmodifiableObservableList();
+    }
+
+    @Override
+    public int getNextDebtorId() {
+        return nextDebtorId;
+    }
+
+    /** Restores the next persistent debtor ID after loading saved data. */
+    public void setNextDebtorId(int nextDebtorId) {
+        if (nextDebtorId < this.nextDebtorId) {
+            throw new IllegalArgumentException("Next debtor ID cannot be reused.");
+        }
+        this.nextDebtorId = nextDebtorId;
+    }
+
+    private Person assignDebtorId(Person person) {
+        if (person.getDebtorId() == Integer.MAX_VALUE
+                || (person.getDebtorId() == 0 && nextDebtorId == Integer.MAX_VALUE)) {
+            throw new IllegalArgumentException("Debtor ID exceeds the supported range.");
+        }
+        if (person.getDebtorId() == 0) {
+            Person assignedPerson = person.withDebtorId(nextDebtorId);
+            nextDebtorId++;
+            return assignedPerson;
+        }
+        if (persons.asUnmodifiableObservableList().stream()
+                .anyMatch(existingPerson -> existingPerson.getDebtorId() == person.getDebtorId())) {
+            throw new IllegalArgumentException(MESSAGE_DUPLICATE_DEBTOR_ID);
+        }
+        nextDebtorId = Math.max(nextDebtorId, person.getDebtorId() + 1);
+        return person;
     }
 
     @Override

@@ -2,8 +2,11 @@ package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
 
+import java.math.BigInteger;
 import java.util.List;
+import java.util.logging.Logger;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
@@ -19,16 +22,55 @@ public class DeleteCommand extends Command {
     public static final String COMMAND_WORD = "delete";
 
     public static final String MESSAGE_USAGE = COMMAND_WORD
-            + ": Deletes the person identified by the index number used in the displayed person list.\n"
+            + ": Deletes the debtor identified by the index number used in the displayed debtor list.\n"
             + "Parameters: INDEX (must be a positive integer)\n"
             + "Example: " + COMMAND_WORD + " 1";
 
-    public static final String MESSAGE_DELETE_PERSON_SUCCESS = "Deleted person: %1$s";
+    public static final String MESSAGE_DELETE_PERSON_SUCCESS = "Deleted debtor: %1$s";
 
-    private final Index targetIndex;
+    private static final Logger logger = LogsCenter.getLogger(DeleteCommand.class);
+
+    private static final String MAX_INDEX = Integer.toString(Integer.MAX_VALUE);
+
+    private static final int MAX_DISPLAYED_INDEX_DIGITS = 100;
+    private static final int INDEX_PREVIEW_DIGITS = 20;
+
+    private final String targetIndex;
 
     public DeleteCommand(Index targetIndex) {
+        this(Integer.toString(requireNonNull(targetIndex).getOneBased()));
+    }
+
+    private DeleteCommand(String targetIndex) {
+        requireNonNull(targetIndex);
+        if (!targetIndex.matches("[1-9][0-9]*")) {
+            throw new IllegalArgumentException("Target index must be positive.");
+        }
         this.targetIndex = targetIndex;
+    }
+
+    /**
+     * Creates a command from a positive one-based index that may be larger than an {@code int}.
+     */
+    public static DeleteCommand fromOneBased(BigInteger targetIndex) {
+        return new DeleteCommand(targetIndex.toString());
+    }
+
+    /**
+     * Creates a command from a normalized positive decimal index without numeric conversion.
+     */
+    public static DeleteCommand fromOneBasedDecimal(String targetIndex) {
+        return new DeleteCommand(targetIndex);
+    }
+
+    private boolean exceeds(String limit) {
+        return targetIndex.length() > limit.length()
+                || (targetIndex.length() == limit.length() && targetIndex.compareTo(limit) > 0);
+    }
+
+    private String displayIndex() {
+        return targetIndex.length() <= MAX_DISPLAYED_INDEX_DIGITS ? targetIndex
+                : targetIndex.substring(0, INDEX_PREVIEW_DIGITS) + "... (" + targetIndex.length() + " digits)";
     }
 
     @Override
@@ -36,12 +78,15 @@ public class DeleteCommand extends Command {
         requireNonNull(model);
         List<Person> lastShownList = model.getFilteredPersonList();
 
-        if (targetIndex.getZeroBased() >= lastShownList.size()) {
-            throw new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+        if (exceeds(Integer.toString(lastShownList.size()))) {
+            logger.fine("Delete rejected: index outside displayed list.");
+            throw new CommandException(Messages.getInvalidPersonDisplayedIndexMessage(displayIndex(),
+                    lastShownList.size()));
         }
 
-        Person personToDelete = lastShownList.get(targetIndex.getZeroBased());
+        Person personToDelete = lastShownList.get(Integer.parseInt(targetIndex) - 1);
         model.deletePerson(personToDelete);
+        logger.fine("Delete applied to model; persistence is handled by LogicManager.");
         return new CommandResult(String.format(MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(personToDelete)));
     }
 
@@ -62,7 +107,8 @@ public class DeleteCommand extends Command {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-                .add("targetIndex", targetIndex)
+                .add("targetIndex", !exceeds(MAX_INDEX)
+                        ? Index.fromOneBased(Integer.parseInt(targetIndex)) : displayIndex())
                 .toString();
     }
 }
