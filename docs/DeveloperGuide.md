@@ -20,6 +20,9 @@ title: Developer Guide
 * The project uses [JavaFX](https://openjfx.io/) for its graphical interface,
   [Jackson](https://github.com/FasterXML/jackson) for JSON persistence, and
   [JUnit 5](https://junit.org/junit5/) for automated testing.
+* Edison used OpenAI Codex to review the contact, preview, and export workflows, reproduce a partial-write export
+  failure, draft the export fix, tests, and documentation, and run the recorded automated checks. The corresponding
+  [verification record](testing/edison-contact-preview-export-verification.md) describes the work and its limits.
 
 --------------------------------------------------------------------------------------------------------------------
 
