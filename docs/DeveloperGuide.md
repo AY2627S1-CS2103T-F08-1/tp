@@ -304,8 +304,9 @@ does not resolve, and IDs are never silently redirected to another debtor.
 
 `edit INDEX`, `delete INDEX`, and their previews instead select from `Model#getFilteredPersonList`. Their one-based
 index therefore refers to exactly the list and order shown in the UI at execution time. Filtering or sorting may
-change that index. Both displayed indexes and persistent IDs use positive integers written with ASCII digits `0`–`9`;
-other digit forms are rejected. The parser and command validate the target, and the success or preview feedback
+change that index. Both displayed indexes and persistent IDs accept positive decimal integers without signs,
+including full-width digits such as `１` for `1`; leading zeroes do not change the target. The parser and command
+validate the target, and the success or preview feedback
 identifies the selected debtor. The User Guide gives the corresponding user-facing rule and a card example.
 
 ![Persistent-ID commands search all active records while index commands use the displayed worklist](images/CommandTargetResolution.svg)
@@ -368,8 +369,9 @@ so a debtor is included when any keyword matches either field.
 
 ![Interactions for `find` followed by `list`](images/FindListSequenceDiagram.png)
 
-`FindCommandParser` treats characters recognised by `Character.isWhitespace` or `Character.isSpaceChar`, including
-non-breaking and EM spaces, as keyword separators. It ignores surrounding and repeated separators and rejects an
+After the dispatcher recognises the `find` command word, `FindCommandParser` treats characters recognised by
+`Character.isWhitespace` or `Character.isSpaceChar`, including non-breaking and EM spaces, as keyword separators.
+It ignores surrounding and repeated separators and rejects an
 all-whitespace query before changing the current view. It then constructs a `NameContainsKeywordsPredicate`.
 When `FindCommand` executes, it passes that predicate and the default ID comparator
 to `ModelManager#updatePersonView`. The JavaFX `FilteredList` applies the predicate to the active debtors, while the

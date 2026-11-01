@@ -123,8 +123,8 @@ Number to use | Commands | How to recognise it | Stability
 **Persistent debtor ID** | `show`, `note`, `followup`, `promise`, `stage`, `contact`, `export` | The command contains `--id`; use the number inside `[ID ...]` | Stays with the same debtor until deletion
 **Displayed index** | `edit`, `delete`, `preview edit`, `preview delete` | The syntax says `INDEX`; use the number before `[ID ...]` | Can change whenever the visible worklist changes
 
-Write both kinds of number as positive integers using ASCII digits `0`–`9`. Other digit forms, such as full-width `１`,
-are rejected; use `1` instead.
+Write both kinds of number as positive decimal integers without a sign. Decimal digit forms such as `1` and full-width
+`１` refer to the same number. Leading zeroes are accepted, but a value of zero is invalid.
 
 For example, if a card reads `2. [ID 7] Alex Tan`, use `show --id 7` to view Alex and `delete 2` to delete the
 currently displayed Alex card. Before an index-based edit or deletion, confirm the visible name and `[ID ...]` on
@@ -463,8 +463,8 @@ Format: `find KEYWORD [MORE_KEYWORDS]`
 * Debtors matching at least one name or phone keyword are returned (an `OR` search). For example,
   `Alice 98765432` returns debtors whose names contain `Alice` as a substring as well as the debtor whose phone is
   exactly `98765432`.
-* Leading, trailing, and repeated whitespace is ignored, including copied non-breaking spaces and EM spaces between
-  keywords. A whitespace-only search is rejected without changing the current results.
+* Within the keyword arguments after `find `, leading, trailing, and repeated whitespace is ignored, including copied
+  non-breaking spaces and EM spaces. A whitespace-only search is rejected without changing the current results.
 * Results are displayed in ascending persistent debtor ID order. If nothing matches, OSPS reports that no debtors
   matched the supplied name or phone keywords.
 * Run `list` to clear the search filter and restore every active debtor.
