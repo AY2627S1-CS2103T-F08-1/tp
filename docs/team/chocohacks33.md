@@ -11,7 +11,8 @@ the worklist that helps the agent decide which record to open next.
 
 ## Finding and organising debtors
 
-I added the `list` command and the outstanding balance on each debtor card. An agent can see how much a debtor
+I adapted the existing `list` command for OSPS with debtor counts and empty-state feedback, and added the
+outstanding balance on each debtor card. An agent can see how much a debtor
 owes without opening each profile. My tests cover an empty list and check that the displayed records stay
 up to date after a change. [List command](https://github.com/AY2627S1-CS2103T-F08-1/tp/pull/48)
 and [balance display tests](https://github.com/AY2627S1-CS2103T-F08-1/tp/pull/55).
