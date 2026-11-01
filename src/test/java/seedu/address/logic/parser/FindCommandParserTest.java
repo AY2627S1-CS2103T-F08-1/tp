@@ -40,4 +40,15 @@ public class FindCommandParserTest {
         assertParseSuccess(parser, "(Priority) [A] .*", expectedFindCommand);
     }
 
+    @Test
+    public void parse_unicodeWhitespace_separatesKeywordsAndRejectsBlankInput() {
+        FindCommand expected = new FindCommand(new NameContainsKeywordsPredicate(List.of("Alice", "82222222")));
+        for (String separator : List.of("\u00a0", "\u2003", "\u202f", "\u3000", "\u2028", "\t")) {
+            assertParseSuccess(parser, separator + "Alice" + separator + separator + "82222222" + separator,
+                    expected);
+            assertParseFailure(parser, separator + " " + separator,
+                    String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
+        }
+    }
+
 }

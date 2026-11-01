@@ -129,6 +129,27 @@ public class UiRuntimeTest {
     }
 
     @Test
+    public void personCard_amountLabelsShowRealValuesAndFollowViewportWidth() throws InterruptedException {
+        runOnJavaFxThread(() -> {
+            String[][] examples = {{"0", "Outstanding: S$0.00"}, {"10.50", "Outstanding: S$10.50"},
+                {"1,250.00", "Outstanding: S$1,250.00"}};
+            for (String[] example : examples) {
+                PersonCard card = new PersonCard(new PersonBuilder().withOutstandingAmount(example[0]).build(), 1);
+                SimpleDoubleProperty width = new SimpleDoubleProperty(413.0);
+                card.bindContentWidth(width);
+                Label amount = (Label) card.getRoot().lookup("#outstandingAmount");
+                assertNotNull(amount);
+                assertEquals(example[1], amount.getText());
+                assertTrue(amount.isVisible());
+                assertTrue(amount.isWrapText());
+                assertEquals(363.0, amount.getMaxWidth());
+                width.set(300.0);
+                assertEquals(250.0, amount.getMaxWidth());
+            }
+        });
+    }
+
+    @Test
     public void personCard_longTagWrapsWithinViewport() throws InterruptedException {
         runOnJavaFxThread(() -> {
             String longTag = "A".repeat(120);
@@ -182,6 +203,9 @@ public class UiRuntimeTest {
             ScrollPane reference = (ScrollPane) helpWindow.getRoot().getScene().lookup(".scroll-pane");
 
             assertNotNull(reference);
+            Label catalog = (Label) helpWindow.getRoot().getScene().lookup("#commandReference");
+            assertTrue(catalog.getText().endsWith("exit"));
+            assertTrue(catalog.getText().contains("| preview delete INDEX"));
             assertTrue(reference.isFitToWidth());
             assertTrue(reference.isFocusTraversable());
             helpWindow.getRoot().getScene().getRoot().applyCss();

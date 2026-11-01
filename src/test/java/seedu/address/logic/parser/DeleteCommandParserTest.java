@@ -33,6 +33,28 @@ public class DeleteCommandParserTest {
     }
 
     @Test
+    public void parse_decimalDigitScripts_normalizesSameDisplayedIndex() {
+        for (String input : new String[] {"\uff11", "\u0661", "\u0967", "\uff10\u06601", " \u0660\uff11 "}) {
+            assertParseSuccess(parser, input, new DeleteCommand(INDEX_FIRST_PERSON));
+        }
+        for (String input : new String[] {"\uff10\u0660", "\uff11x", "\u00b2", "\ud835\udfcf", "+\uff11"}) {
+            assertParseFailure(parser, input,
+                    String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE));
+        }
+    }
+
+    @Test
+    public void parse_largeUnicodeIndex_preservesOutOfRangeFeedback() throws Exception {
+        ModelManager model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
+        DeleteCommand command = parser.parse("\uff10\u0660" + "\uff19".repeat(101));
+        CommandException error = assertThrows(CommandException.class, () -> command.execute(model));
+        assertEquals("Index " + "9".repeat(20) + "... (101 digits) is out of range. The displayed list has "
+                + model.getFilteredPersonList().size() + " debtors; valid range is 1 to "
+                + model.getFilteredPersonList().size() + ".", error.getMessage());
+        assertEquals(getTypicalAddressBook(), model.getAddressBook());
+    }
+
+    @Test
     public void parse_invalidArgs_throwsParseException() {
         assertParseFailure(parser, "", String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE));
         assertParseFailure(parser, "a", String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE));
