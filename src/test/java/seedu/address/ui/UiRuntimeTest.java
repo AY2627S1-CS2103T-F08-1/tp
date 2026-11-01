@@ -200,16 +200,18 @@ public class UiRuntimeTest {
         runOnJavaFxThread(() -> {
             RecordingHelpWindow recordingHelpWindow = new RecordingHelpWindow();
             helpWindow = recordingHelpWindow;
+            helpWindow.show();
+            helpWindow.getRoot().getScene().getRoot().applyCss();
+            helpWindow.getRoot().getScene().getRoot().layout();
             ScrollPane reference = (ScrollPane) helpWindow.getRoot().getScene().lookup(".scroll-pane");
 
             assertNotNull(reference);
-            Label catalog = (Label) helpWindow.getRoot().getScene().lookup("#commandReference");
+            Label catalog = (Label) reference.getContent();
+            assertNotNull(catalog);
             assertTrue(catalog.getText().endsWith("exit"));
             assertTrue(catalog.getText().contains("| preview delete INDEX"));
             assertTrue(reference.isFitToWidth());
             assertTrue(reference.isFocusTraversable());
-            helpWindow.getRoot().getScene().getRoot().applyCss();
-            helpWindow.getRoot().getScene().getRoot().layout();
             assertTrue(reference.getVmax() > reference.getVmin());
             reference.setVvalue(reference.getVmin());
             KeyEvent enter = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER,
