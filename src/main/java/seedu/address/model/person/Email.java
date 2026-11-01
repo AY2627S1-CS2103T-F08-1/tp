@@ -50,6 +50,8 @@ public class Email {
             char character = email.charAt(i);
             if (isAsciiAlphanumeric(character)) {
                 previousIsAlphanumeric = true;
+            } else if (character == '\'' && i > 0 && email.charAt(i - 1) == '\'') {
+                continue;
             } else if (SPECIAL_CHARACTERS.indexOf(character) >= 0 && previousIsAlphanumeric) {
                 previousIsAlphanumeric = false;
             } else {
