@@ -64,7 +64,7 @@ public class HelpWindow extends UiPart<Stage> {
             Example: contactable --at 09:30 --method sms
 
             Preview an edit or deletion without saving
-            preview edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/AMOUNT] [t/TAG]... | delete INDEX
+            preview edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/AMOUNT] [t/TAG]... | preview delete INDEX
             Example: preview delete 2
 
             Export a debtor profile by persistent ID
@@ -136,7 +136,7 @@ public class HelpWindow extends UiPart<Stage> {
     public HelpWindow(Stage root) {
         super(FXML, root);
         helpMessage.setText(HELP_MESSAGE);
-        commandReference.setText(COMMAND_REFERENCE);
+        commandReference.setText(COMMAND_REFERENCE.stripTrailing());
         getRoot().getScene().addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPress);
     }
 
