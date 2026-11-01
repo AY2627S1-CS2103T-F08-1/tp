@@ -43,6 +43,16 @@ public class FileUtil {
         return new String(Files.readAllBytes(file), CHARSET);
     }
 
+    /** Returns whether a managed file path or any of its parent directories is a symbolic link. */
+    public static boolean hasSymbolicLink(Path file) {
+        for (Path current = file.toAbsolutePath(); current != null; current = current.getParent()) {
+            if (Files.isSymbolicLink(current)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Writes given string to a file.
      * Will create the file if it does not exist yet.

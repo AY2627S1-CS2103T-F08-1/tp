@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.commons.exceptions.IllegalValueException;
+import seedu.address.commons.util.FileUtil;
 import seedu.address.commons.util.JsonUtil;
 import seedu.address.model.ReadOnlyAddressBook;
 
@@ -55,6 +56,10 @@ public class JsonAddressBookStorage {
     public Optional<ReadOnlyAddressBook> readAddressBook(Path filePath) throws DataLoadingException {
         requireNonNull(filePath);
 
+        if (FileUtil.hasSymbolicLink(filePath)) {
+            throw new DataLoadingException(new IOException("Refusing symbolic link in managed path: " + filePath));
+        }
+
         Optional<JsonSerializableAddressBook> jsonAddressBook = JsonUtil.readJsonFile(
                 filePath, JsonSerializableAddressBook.class);
         if (!jsonAddressBook.isPresent()) {
@@ -86,6 +91,9 @@ public class JsonAddressBookStorage {
     public void saveAddressBook(ReadOnlyAddressBook addressBook, Path filePath) throws IOException {
         requireNonNull(addressBook);
         requireNonNull(filePath);
+        if (FileUtil.hasSymbolicLink(filePath)) {
+            throw new IOException("Refusing symbolic link in managed path: " + filePath);
+        }
 
         Path target = filePath.toAbsolutePath();
         Path parent = target.getParent();

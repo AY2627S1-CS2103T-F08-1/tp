@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.exceptions.DataLoadingException;
+import seedu.address.commons.util.FileUtil;
 import seedu.address.commons.util.JsonUtil;
 import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.UserPrefs;
@@ -41,6 +42,9 @@ public class JsonUserPrefsStorage {
      * @throws DataLoadingException if the file format is not as expected.
      */
     public Optional<UserPrefs> readUserPrefs(Path prefsFilePath) throws DataLoadingException {
+        if (FileUtil.hasSymbolicLink(prefsFilePath)) {
+            throw new DataLoadingException(new IOException("Refusing symbolic link in managed path: " + prefsFilePath));
+        }
         Optional<UserPrefs> preferences = JsonUtil.readJsonFile(prefsFilePath, UserPrefs.class);
         // Jackson populates fields directly, so explicit JSON null bypasses the non-null setter.
         preferences.ifPresent(prefs -> {
@@ -57,6 +61,9 @@ public class JsonUserPrefsStorage {
      * @throws IOException if there was any problem writing to the file.
      */
     public void saveUserPrefs(ReadOnlyUserPrefs userPrefs) throws IOException {
+        if (FileUtil.hasSymbolicLink(filePath)) {
+            throw new IOException("Refusing symbolic link in managed path: " + filePath);
+        }
         JsonUtil.saveJsonFile(userPrefs, filePath);
     }
 

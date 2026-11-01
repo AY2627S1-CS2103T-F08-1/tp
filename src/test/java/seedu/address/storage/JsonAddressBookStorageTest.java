@@ -17,11 +17,14 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
+import seedu.address.model.UserPrefs;
 import seedu.address.model.person.ContactOutcome;
 import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Person;
@@ -189,6 +192,28 @@ public class JsonAddressBookStorageTest {
         readBack = jsonAddressBookStorage.readAddressBook().get(); // file path not specified
         assertEquals(original, new AddressBook(readBack));
 
+    }
+
+    @Test
+    @EnabledOnOs(OS.LINUX)
+    public void readAndSave_storageSymbolicLinks_rejected() throws Exception {
+        Path appHome = Files.createDirectory(testFolder.resolve("app-home"));
+        Path outside = Files.createDirectory(testFolder.resolve("outside"));
+        Path outsideBook = Files.writeString(outside.resolve("addressbook.json"), "{}");
+        Files.createSymbolicLink(appHome.resolve("data"), outside);
+        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(
+                appHome.resolve("data/addressbook.json"));
+
+        assertThrows(DataLoadingException.class, () -> addressBookStorage.readAddressBook());
+        assertThrows(IOException.class, () -> addressBookStorage.saveAddressBook(new AddressBook()));
+        Path outsidePrefs = Files.writeString(testFolder.resolve("outside.json"), "{}");
+        Path managedPrefs = appHome.resolve("preferences.json");
+        Files.createSymbolicLink(managedPrefs, outsidePrefs);
+        JsonUserPrefsStorage prefsStorage = new JsonUserPrefsStorage(managedPrefs);
+
+        assertThrows(DataLoadingException.class, () -> prefsStorage.readUserPrefs());
+        assertThrows(IOException.class, () -> prefsStorage.saveUserPrefs(new UserPrefs()));
+        assertEquals(List.of("{}", "{}"), List.of(Files.readString(outsideBook), Files.readString(outsidePrefs)));
     }
 
     @Test
