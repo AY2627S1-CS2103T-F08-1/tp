@@ -150,8 +150,8 @@ preferences, pending follow-up date, follow-up history, promised payment date, a
 stage. A recovery stage is one of `new`, `contacted`, `negotiating`, `disputed`, `broken-promise`, or `settled`.
 `stage --id ID --value STAGE` selects a debtor by persistent ID, so it still targets the correct debtor while the list
 is filtered. Old JSON omits the optional stage and loads as `new`.
-Duplicate checks compare exact phone/email values against all other active debtors, including filtered-out
-records. Email matching is currently case-sensitive; phone country codes are not normalised.
+Duplicate checks compare phone numbers exactly and email addresses by an exact local part and a case-insensitive
+domain against all other active debtors, including filtered-out records. Phone country codes are not normalised.
 
 **API** : [`Model.java`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/java/seedu/address/model/Model.java)
 
@@ -189,6 +189,12 @@ Interaction notes retain their insertion order in JSON, including identical text
 reverses a copy of the insertion-ordered list before applying the ordered stream's stable sort by descending
 timestamp. Stability preserves reverse insertion order for equal timestamps. Editing a debtor preserves the full
 history. `NoteHistoryWorkflowTest` verifies these behaviours together across editing, JSON reload and `show`.
+
+New note input has a separate content check in the parser and command. It rejects text containing only whitespace,
+control or format characters, without stripping those characters from otherwise valid text. Stored-note validation
+retains compatibility with older invisible-only notes, so tightening new input does
+not make an existing book unreadable. `NoteInputCompatibilityTest` checks rejected-input state preservation and legacy
+note save/reload behaviour.
 
 Each interaction note can also store a `ContactOutcome`: `reached`, `callback-requested`, `unreachable`, or
 `payment-promised`. The JSON `outcome` field is nullable so files created before this feature remain loadable; a
@@ -298,7 +304,8 @@ does not resolve, and IDs are never silently redirected to another debtor.
 
 `edit INDEX`, `delete INDEX`, and their previews instead select from `Model#getFilteredPersonList`. Their one-based
 index therefore refers to exactly the list and order shown in the UI at execution time. Filtering or sorting may
-change that index. The parser and command validate the index before conversion, and the success or preview feedback
+change that index. Both displayed indexes and persistent IDs use positive integers written with ASCII digits `0`–`9`;
+other digit forms are rejected. The parser and command validate the target, and the success or preview feedback
 identifies the selected debtor. The User Guide gives the corresponding user-facing rule and a card example.
 
 ![Persistent-ID commands search all active records while index commands use the displayed worklist](images/CommandTargetResolution.svg)
@@ -329,11 +336,15 @@ OSPS retains useful operational diagnostics without recording command content as
   exception class, but not the exception message or command text.
 * `ModelManager` records only aggregate metadata (the number of address-book entries) during initialization, rather than
   serializing the address book or its people.
+* JSON syntax and stored-value validation failures record a safe failure category rather than exception messages that
+  could contain the input JSON or debtor values. The invalid data file remains protected from later saves.
 
 This gives developers enough information to identify the command path, outcome, and failure category. Detailed values
 needed to reproduce a defect should be supplied through a controlled test case, not recovered from a user's log file.
 `CommandLoggingTest` enforces the boundary with sentinel personal values and checks that none appear in captured logic,
-parser, or model log records.
+parser, or model log records. `StoredDataPrivacyTest` also captures diagnostics for malformed JSON and invalid stored
+values, asserts that sentinel names, contact details, addresses and notes are absent, and verifies that the original
+file remains unchanged after loading fails.
 
 #### Design considerations
 
@@ -357,8 +368,10 @@ so a debtor is included when any keyword matches either field.
 
 ![Interactions for `find` followed by `list`](images/FindListSequenceDiagram.png)
 
-`FindCommandParser` normalises surrounding and repeated whitespace before constructing a
-`NameContainsKeywordsPredicate`. When `FindCommand` executes, it passes that predicate and the default ID comparator
+`FindCommandParser` treats characters recognised by `Character.isWhitespace` or `Character.isSpaceChar`, including
+non-breaking and EM spaces, as keyword separators. It ignores surrounding and repeated separators and rejects an
+all-whitespace query before changing the current view. It then constructs a `NameContainsKeywordsPredicate`.
+When `FindCommand` executes, it passes that predicate and the default ID comparator
 to `ModelManager#updatePersonView`. The JavaFX `FilteredList` applies the predicate to the active debtors, while the
 existing `SortedList` returned by `ModelManager#getFilteredPersonList` keeps the displayed matches in ascending
 persistent debtor ID order. The second half of the diagram shows how `list` restores all active debtors by replacing
@@ -853,7 +866,7 @@ from one build being attributed to another and makes a failure reproducible by a
    `add n/Olaf Go p/91234567 e/olaf.letnonego@example.com a/H4M8+3J3, Kunlun Station, Antarctica o/S$1,250.00 t/new`.<br>
    Expected: One debtor is added with a new persistent ID and an outstanding amount of `S$1,250.00`.
 1. Run `list`, note Olaf's displayed index and persistent ID, then run
-   `edit INDEX n/Olaf Updated o/S$500.00 t/follow-up`, replacing `INDEX` with the displayed index.<br>
+   `edit INDEX n/Olaf Updated o/S$500.00 t/followup`, replacing `INDEX` with the displayed index.<br>
    Expected: The same persistent ID now shows the updated name, amount, and replacement tag.
 1. Try adding another debtor with Olaf's phone or email.<br>
    Expected: The command is rejected and neither debtor is changed.
@@ -899,8 +912,9 @@ Use a disposable data folder and run `clear` first, because a fresh folder start
    Expected: Exactly these three debtors are displayed in ascending persistent-ID order.
 1. Run `list-amount min/500 max/1000`.<br>
    Expected: The `S$500.00` and `S$1,000.00` debtors are displayed; both boundaries are included.
-1. Run `list-amount max/500`, then use `edit 1` on the first displayed debtor with a harmless name change.<br>
-   Expected: The edited debtor is the first visible result, not the first debtor hidden outside the filter.
+1. Keep that filtered view, record the `S$500.00` debtor's persistent ID, and run `edit 1 n/Filtered Debtor`.<br>
+   Expected: Only the debtor with that recorded ID is renamed. The excluded `S$0.00` debtor, which was first in the
+   complete list, is unchanged. This distinguishes displayed-index selection from underlying-list selection.
 1. Run `list`.<br>
    Expected: The complete active-debtor list is restored in persistent-ID order.
 1. Run `list-amount`, `list-amount min/501 max/500`, `list-amount min/-1`, and
