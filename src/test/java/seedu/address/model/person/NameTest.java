@@ -41,6 +41,8 @@ public class NameTest {
         assertTrue(Name.isValidName("David Roger Jackson Ray Jr 2nd")); // long names
         assertTrue(Name.isValidName("Anne-Marie")); // contains a hyphen
         assertTrue(Name.isValidName("O'Neil")); // contains an apostrophe
+        assertTrue(Name.isValidName("José Tan")); // accented Latin characters
+        assertTrue(Name.isValidName("陈小明")); // non-Latin characters
     }
 
     @Test

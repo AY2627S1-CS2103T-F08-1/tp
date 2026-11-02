@@ -144,6 +144,14 @@ public class AddCommandParserTest {
     }
 
     @Test
+    public void parse_internationalName_success() {
+        Person expectedPerson = new PersonBuilder(BOB).withName("José 陈").withTags().build();
+
+        assertParseSuccess(parser, " n/José 陈" + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB,
+                new AddCommand(expectedPerson));
+    }
+
+    @Test
     public void parse_outstandingAmount_success() {
         Person expectedPerson = new PersonBuilder(BOB).withOutstandingAmount("S$1,250.00").withTags().build();
         assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB + " "

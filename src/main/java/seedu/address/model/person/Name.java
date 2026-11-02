@@ -16,7 +16,7 @@ public class Name {
      * The first and last characters of the name must be alphanumeric.
      * Spaces, hyphens, and apostrophes are allowed within the name.
      */
-    public static final String VALIDATION_REGEX = "[\\p{Alnum}](?:[\\p{Alnum} '-]*[\\p{Alnum}])?";
+    public static final String VALIDATION_REGEX = "(?U)[\\p{Alnum}](?:[\\p{Alnum} '-]*[\\p{Alnum}])?";
 
     public final String fullName;
 

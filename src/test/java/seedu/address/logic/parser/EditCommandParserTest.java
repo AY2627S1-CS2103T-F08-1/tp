@@ -136,6 +136,13 @@ public class EditCommandParserTest {
     }
 
     @Test
+    public void parse_internationalName_success() {
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withName("José 陈").build();
+
+        assertParseSuccess(parser, "1 n/José 陈", new EditCommand(INDEX_FIRST_PERSON, descriptor));
+    }
+
+    @Test
     public void parse_oneFieldSpecified_success() {
         // name
         Index targetIndex = INDEX_THIRD_PERSON;
