@@ -57,7 +57,9 @@ public class AddressTest {
 
     @Test
     public void isValidUserInput_standaloneMarksAndFillers_rejectsBlankAddresses() {
-        for (String blank : new String[] {"\u034f", "\ufe0f", "\udb40\udd00", "\u3164"}) {
+        for (String blank : new String[] {"\u0000", "\u200b", "\u034f", "\u0903", "\u20dd",
+            "\ufe0f", "\udb40\udd00", "\u115f", "\u1160", "\u3164", "\uffa0", "\u200b\t",
+            "\u200b\u00a0"}) {
             assertFalse(Address.isValidUserInput(blank));
         }
         assertTrue(Address.isValidUserInput("Cafe\u0301 Road"));

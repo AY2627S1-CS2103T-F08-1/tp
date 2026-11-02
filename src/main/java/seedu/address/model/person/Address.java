@@ -3,6 +3,8 @@ package seedu.address.model.person;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 
+import java.util.Set;
+
 /**
  * Represents a Person's address in the address book.
  * Guarantees: immutable; is valid as declared in {@link #isValidAddress(String)}
@@ -16,6 +18,8 @@ public class Address {
      * otherwise " " (a blank string) becomes a valid input.
      */
     public static final String VALIDATION_REGEX = "(?U)[^\\s].*";
+
+    private static final Set<Integer> INVISIBLE_FILLERS = Set.of(0x115f, 0x1160, 0x3164, 0xffa0);
 
     public final String value;
 
@@ -48,12 +52,21 @@ public class Address {
     }
 
     private static boolean isVisibleBaseCharacter(int character) {
+        if (Character.isWhitespace(character)) {
+            return false;
+        }
+        if (Character.isSpaceChar(character)) {
+            return false;
+        }
+        if (INVISIBLE_FILLERS.contains(character)) {
+            return false;
+        }
         int type = Character.getType(character);
-        return !Character.isWhitespace(character) && !Character.isSpaceChar(character)
-                && type != Character.CONTROL && type != Character.FORMAT
-                && type != Character.NON_SPACING_MARK && type != Character.COMBINING_SPACING_MARK
-                && type != Character.ENCLOSING_MARK && character != '\u115f' && character != '\u1160'
-                && character != '\u3164' && character != '\uffa0';
+        return switch (type) {
+            case Character.CONTROL, Character.FORMAT, Character.NON_SPACING_MARK,
+                    Character.COMBINING_SPACING_MARK, Character.ENCLOSING_MARK -> false;
+            default -> true;
+        };
     }
 
     @Override
