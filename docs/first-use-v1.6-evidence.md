@@ -9,10 +9,10 @@ The first launch created six sample debtors. Adding the fictional Maya Tan retur
 subsequently showed seven active debtors. These commands were entered through the keyboard. `help` opened the
 reference window; Page Down scrolled the reference and Escape closed it. `exit` closed the application successfully.
 
-For the compact-window check, OSPS was started with saved dimensions of 1280×720. The capture reports a 1268×714
-client area after the window frame is excluded. The main window retained a visible command box and scrollable debtor
-list. Help opened as a 603×571 window; Page Down scrolled it and Escape closed it. The Windows display was configured
-at 100% scaling, so 150% display scaling remains untested.
+For the display check, Windows was set to 1280×720 at 150% scaling (an effective 853×480 desktop). OSPS opened with
+a visible command box and a scrollable debtor list. Help opened as a 603×426 logical-pixel window; Page Down scrolled
+it and Escape closed it. No reproducible usability problem was found in this condition. The laptop was restored to its
+original 2560×1600 resolution at 150% scaling afterwards.
 
 The capture interface adds a cursor highlight and renders text poorly, so its images are not suitable for publication.
 They were not substituted into the guide. A clean v1.6 main-window, Help, and homepage capture is still required.
