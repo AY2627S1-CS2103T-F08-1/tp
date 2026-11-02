@@ -70,6 +70,13 @@ public class EmailTest {
     }
 
     @Test
+    public void isValidEmail_consecutiveApostrophes_validatesOnlyInternally() {
+        assertTrue(Email.isValidEmail("o''connor@example.com"));
+        assertFalse(Email.isValidEmail("''connor@example.com"));
+        assertFalse(Email.isValidEmail("o''@example.com"));
+    }
+
+    @Test
     public void isValidEmail_longInput_validatesWithoutRecursiveMatching() {
         assertTrue(Email.isValidEmail("a.".repeat(10000) + "a@example.com"));
         assertTrue(Email.isValidEmail("person@" + "a".repeat(20000) + ".com"));
