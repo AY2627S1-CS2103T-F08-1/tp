@@ -6,7 +6,7 @@ title: Orchestration and Scheduling of Payment Scheme
 [![Java CI](https://github.com/AY2627S1-CS2103T-F08-1/tp/actions/workflows/gradle.yml/badge.svg)](https://github.com/AY2627S1-CS2103T-F08-1/tp/actions/workflows/gradle.yml)
 [![codecov](https://codecov.io/gh/AY2627S1-CS2103T-F08-1/tp/branch/master/graph/badge.svg)](https://codecov.io/gh/AY2627S1-CS2103T-F08-1/tp)
 
-![OSPS interface showing debtor profiles and outstanding amounts](images/Ui.png)
+![OSPS showing Maya Tan's debtor profile and matching debtor card](images/Ui.png)
 
 **Orchestration and Scheduling of Payment Scheme (OSPS) is a desktop application for debt recovery agents to
 manage debtor details, outstanding balances, and interaction histories.** Its graphical interface and keyboard-driven

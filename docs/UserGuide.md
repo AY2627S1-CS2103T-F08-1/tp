@@ -45,10 +45,25 @@ while retaining the benefits of a graphical user interface (GUI).
    OSPS allows one instance per home folder. If another instance is already using that folder, close it before
    starting OSPS again. Older OSPS versions do not enforce this lock, so close them too before starting this version.
 
-   ![OSPS interface showing debtor profiles and outstanding amounts](images/Ui.png)
+   ![OSPS showing Maya Tan's debtor profile and matching debtor card](images/Ui.png)
 
-1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
-   Some example commands you can try:
+1. To try the following commands, use a new folder with the sample data described above. Enter each command in the
+   command box and press Enter:
+
+   * `list` shows the sample debtors.
+   * `add n/Maya Tan p/91234567 e/maya.tan@example.com a/12 Orchid Road o/1250.00 t/priority` adds a fictional debtor.
+     Note the persistent ID in the confirmation message.
+   * `note --id 7 --outcome reached --text Called Maya to discuss the outstanding balance.` records an interaction.
+     Replace `7` with Maya's actual ID from the confirmation.
+   * `find Maya` filters the list; `show --id 7` displays her profile and history. Again, replace `7` with her actual ID.
+   * `help` opens the in-app command reference; close it to return to the main window.
+   * When you are finished, `exit` closes OSPS.
+
+   The number before a card is its current displayed index, which can change when the list is filtered or sorted.
+   Commands with `--id` use the persistent ID shown in `[ID ...]`; `edit` and `delete` use the displayed index.
+   See [Choosing the correct debtor number](#choosing-the-correct-debtor-number).
+
+   Other commands you can try before exiting (check the displayed IDs and indexes first):
 
    * `list` : Lists all active debtors.
 
@@ -154,7 +169,7 @@ change displayed indexes. Re-read the list after any of these commands before us
 Opens a scrollable, keyboard-accessible in-app command reference. It includes the syntax and a short example for
 each supported command in that build. The window also retains a button to copy the link to this online User Guide.
 
-![help message](images/helpMessage.png)
+![OSPS Help window showing the in-app command reference](images/helpMessage.png)
 
 Format: `help`
 
