@@ -63,7 +63,8 @@ public class AddCommand extends Command {
             throw new CommandException(MESSAGE_ID_EXHAUSTED);
         }
         Person addedPerson = model.addPerson(toAdd);
-        return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(addedPerson)));
+        return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(addedPerson))
+                + Messages.suspiciousAddressWarning(addedPerson.getAddress().value));
     }
 
     @Override
