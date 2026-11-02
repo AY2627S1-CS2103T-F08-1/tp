@@ -73,6 +73,17 @@ public final class InteractionNote {
                 .anyMatch(character -> !Character.isWhitespace(character) && !Character.isSpaceChar(character));
     }
 
+    /**
+     * Requires content in new notes while preserving the validation used to load older notes.
+     * Formatting characters remain unchanged when they accompany content.
+     */
+    public static boolean isValidNewText(String text) {
+        return text != null && text.codePoints().anyMatch(character -> switch (Character.getType(character)) {
+            case Character.CONTROL, Character.FORMAT -> false;
+            default -> !Character.isWhitespace(character) && !Character.isSpaceChar(character);
+        });
+    }
+
     public LocalDateTime getTimestamp() {
         return timestamp;
     }

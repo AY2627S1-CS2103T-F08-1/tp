@@ -1,0 +1,92 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+skinparam ParticipantPadding 10
+title Executing and saving the delete 1 command
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant "d:DeleteCommand" as DeleteCommand LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant "m:ModelManager\n(live model)" as LiveModel MODEL_COLOR
+participant "c:ModelManager\n(candidate copy)" as Candidate MODEL_COLOR
+participant "a:AddressBook\n(of c)" as AddressBook MODEL_COLOR
+end box
+
+box Storage STORAGE_COLOR_T1
+participant ":Storage" as Storage STORAGE_COLOR
+end box
+
+note over LogicManager, Candidate
+The parser has created d. LogicManager executes it on candidate c,
+which preserves the live model's current filter and sort order.
+end note
+
+[-> LogicManager : execute("delete 1")
+activate LogicManager
+LogicManager -> DeleteCommand : execute(c)
+activate DeleteCommand
+
+DeleteCommand -> Candidate : getFilteredPersonList()
+activate Candidate
+Candidate --> DeleteCommand : displayed list
+deactivate Candidate
+note right of DeleteCommand
+INDEX is one-based in the currently displayed list.
+A find filter or sort changes which person each index selects;
+the default order is ascending debtor ID.
+end note
+
+alt INDEX is greater than displayed list size
+    DeleteCommand --> LogicManager : throws CommandException\n(candidate discarded, live model unchanged)
+    deactivate DeleteCommand
+    [<--LogicManager : throws CommandException
+    deactivate LogicManager
+else INDEX is within displayed list
+    DeleteCommand -> Candidate : deletePerson(person at INDEX - 1)
+    activate Candidate
+    Candidate -> AddressBook : removePerson(person)
+    activate AddressBook
+    AddressBook --> Candidate
+    deactivate AddressBook
+    Candidate --> DeleteCommand
+    deactivate Candidate
+
+    DeleteCommand --> LogicManager : CommandResult r\n(success with debtor details)
+    deactivate DeleteCommand
+
+    LogicManager -> Candidate : commitAddressBook()
+    activate Candidate
+    Candidate --> LogicManager
+    deactivate Candidate
+    note right of Candidate
+    The undo entry is on c, so a failed save discards it too.
+    end note
+
+    LogicManager -> Storage : saveAddressBook(c's address book)
+    activate Storage
+    alt save succeeds
+        Storage --> LogicManager : saved
+        deactivate Storage
+        LogicManager -> LiveModel : publishTransaction(c)
+        activate LiveModel
+        LiveModel --> LogicManager
+        deactivate LiveModel
+        [<--LogicManager : r
+        deactivate LogicManager
+    else save fails
+        Storage --> LogicManager : IOException / AccessDeniedException
+        deactivate Storage
+        [<--LogicManager : throws CommandException\n(candidate discarded; live data, history and view unchanged)
+        deactivate LogicManager
+    end
+end
+
+note over LiveModel, Storage
+The removed Person includes the debtor profile and interaction notes.
+A successful save removes the record from storage; undo can restore it
+during the current session.
+end note
+@enduml

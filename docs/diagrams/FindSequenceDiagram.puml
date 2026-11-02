@@ -1,11 +1,12 @@
 @startuml
 !include style.puml
 skinparam ArrowFontStyle plain
+skinparam ParticipantPadding 10
+title Finding debtors
 
 box Logic LOGIC_COLOR_T1
 participant ":LogicManager" as LogicManager LOGIC_COLOR
 participant "f:FindCommand" as FindCommand LOGIC_COLOR
-participant "l:ListCommand" as ListCommand LOGIC_COLOR
 end box
 
 box Model MODEL_COLOR_T1
@@ -17,10 +18,9 @@ participant "sortedPersons:\nSortedList" as SortedList MODEL_COLOR
 end box
 
 note over LiveModel, SortedList
-sortedPersons wraps filteredPersons. find and list reset the comparator to
-PersonSort.DEFAULT_COMPARATOR (ascending persistent debtor ID), replacing any earlier sort.
-LogicManager runs each command on a transaction copy c of the live model m. As these commands
-change no debtor data, c is published to m without saving.
+sortedPersons wraps filteredPersons. find resets the comparator to
+PersonSort.DEFAULT_COMPARATOR (ascending persistent debtor ID).
+The command runs on a transaction copy c and publishes its view without saving debtor data.
 end note
 
 [-> LogicManager : execute("find Alice 91234567")
@@ -57,37 +57,6 @@ FindCommand -> SortedList : size()
 SortedList --> FindCommand : matchCount
 FindCommand --> LogicManager : result
 deactivate FindCommand
-LogicManager -> LiveModel : publishTransaction(c)
-[<-- LogicManager
-deactivate LogicManager
-
-[-> LogicManager : execute("list")
-activate LogicManager
-note over LogicManager, ListCommand
-The parser has already created l.
-end note
-LogicManager -> LiveModel : createTransactionCopy()
-LiveModel --> LogicManager : c
-LogicManager -> ListCommand : execute(c)
-activate ListCommand
-ListCommand -> ModelManager : updatePersonView(\nPREDICATE_SHOW_ALL_PERSONS,\nDEFAULT_COMPARATOR)
-activate ModelManager
-ModelManager -> FilteredList : setPredicate(\nPREDICATE_SHOW_ALL_PERSONS)
-activate FilteredList
-FilteredList -> SortedList : change notification
-FilteredList --> ModelManager
-deactivate FilteredList
-ModelManager -> SortedList : setComparator(DEFAULT_COMPARATOR)
-ModelManager --> ListCommand
-deactivate ModelManager
-ListCommand -> ModelManager : getFilteredPersonList()
-activate ModelManager
-ModelManager --> ListCommand : sortedPersons
-deactivate ModelManager
-ListCommand -> SortedList : size()
-SortedList --> ListCommand : debtorCount
-ListCommand --> LogicManager : result
-deactivate ListCommand
 LogicManager -> LiveModel : publishTransaction(c)
 [<-- LogicManager
 deactivate LogicManager

@@ -109,6 +109,14 @@ public class NoteCommandTest {
     }
 
     @Test
+    public void execute_formattingOnlyText_rejectsWithoutChangingModel() {
+        int debtorId = model.getAddressBook().getPersonList().getFirst().getDebtorId();
+        for (String text : List.of("", " ", "\u00a0", "\u200b", "\ufeff", "\u200d", "\u0085")) {
+            assertCommandFailure(new NoteCommand(debtorId, text), model, InteractionNote.MESSAGE_CONSTRAINTS);
+        }
+    }
+
+    @Test
     public void execute_debtorFilteredOut_addsNoteByPersistentId() throws Exception {
         Person debtor = model.getAddressBook().getPersonList().getFirst();
         showPersonAtIndex(model, INDEX_SECOND_PERSON);
