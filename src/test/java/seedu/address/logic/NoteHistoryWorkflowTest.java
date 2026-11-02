@@ -76,7 +76,7 @@ public class NoteHistoryWorkflowTest {
         assertTrue(profile.contains("Outstanding: S$0.00"));
         assertTrue(profile.contains("\n- " + originalNotes.get(2)
                 + "\n- " + originalNotes.get(1) + "\n- " + originalNotes.getFirst()
-                + "\nFollow-up history (chronological, oldest first):"));
+                + "\nFollow-up history (recorded order, oldest first):"));
 
         reloadedLogic.execute("edit 1 p/92345678");
         assertEquals(originalNotes, storage.readAddressBook().orElseThrow()

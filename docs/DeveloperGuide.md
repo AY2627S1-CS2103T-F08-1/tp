@@ -190,9 +190,10 @@ The `Storage` component,
   JSON `null` notes and unrecognised contact outcomes, are reported as data-loading errors.
 
 Interaction notes retain their insertion order in JSON, including identical text and timestamps. Profile formatting
-reverses a copy of the insertion-ordered list before applying the ordered stream's stable sort by descending
-timestamp. Stability preserves reverse insertion order for equal timestamps. Editing a debtor preserves the full
-history. `NoteHistoryWorkflowTest` verifies these behaviours together across editing, JSON reload and `show`.
+shows the latest recorded note first by reversing a copy of that list. Timestamps use the system-default local clock
+and store no zone or offset; after a time-zone change, displayed clock times can appear out of order even though the
+recorded order is preserved. Editing a debtor preserves the full history. `NoteHistoryWorkflowTest` verifies these
+behaviours together across editing, JSON reload and `show`.
 
 Each interaction note can also store a `ContactOutcome`: `reached`, `callback-requested`, `unreachable`, or
 `payment-promised`. The JSON `outcome` field is nullable so files created before this feature remain loadable; a
@@ -229,7 +230,8 @@ JSON stores the pending date in optional `followUpDate` and the event list in `f
 as `{ "timestamp": "YYYY-MM-DDTHH:mm:ss", "action": "SCHEDULED|RESCHEDULED|CLEARED|COMPLETED", "previousDate": null|"YYYY-MM-DD", "newDate": null|"YYYY-MM-DD" }`.
 The loader also accepts the earlier single `date` field and migrates it according to the preceding follow-up state.
 The timestamp comes from the system-default clock and has no stored zone or offset. Events remain in insertion order
-in JSON. `show` sorts by timestamp ascending with a stable sort, so equal timestamps retain insertion order.
+in JSON and `show` displays that recorded order. After a time-zone change, displayed clock times can appear out of
+order even though event order is preserved.
 
 Older address-book JSON files that omit `followUpDate` and `followUpHistory` load with no pending date and an empty
 history. Invalid dates, timestamps, actions, or event entries are reported as data-loading errors. A valid follow-up

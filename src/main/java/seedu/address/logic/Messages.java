@@ -122,7 +122,8 @@ public class Messages {
                 .append("Promised payment: ")
                 .append(person.getPromisedPaymentDate().map(Object::toString).orElse("None"))
                 .append('\n')
-                .append("Interaction history (newest first):");
+                .append("History timestamps are local times; no time zone is stored.\n")
+                .append("Interaction history (latest recorded first):");
 
         if (person.getInteractionNotes().isEmpty()) {
             builder.append("\nNo interaction notes recorded.");
@@ -131,12 +132,12 @@ public class Messages {
             Collections.reverse(newestFirstNotes);
             newestFirstNotes.forEach(note -> builder.append("\n- ").append(note));
         }
-        builder.append("\nFollow-up history (chronological, oldest first):");
+        builder.append("\nFollow-up history (recorded order, oldest first):");
         if (person.getFollowUpHistory().isEmpty()) {
             builder.append("\nNo follow-up history recorded.");
         } else {
-            List<FollowUpEvent> chronologicalEvents = new ArrayList<>(person.getFollowUpHistory());
-            chronologicalEvents.forEach(event -> builder.append("\n- ").append(event));
+            List<FollowUpEvent> recordedEvents = new ArrayList<>(person.getFollowUpHistory());
+            recordedEvents.forEach(event -> builder.append("\n- ").append(event));
         }
         return builder.toString();
     }
