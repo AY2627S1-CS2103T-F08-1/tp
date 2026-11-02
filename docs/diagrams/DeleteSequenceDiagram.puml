@@ -1,6 +1,7 @@
 @startuml
 !include style.puml
 skinparam ArrowFontStyle plain
+skinparam ParticipantPadding 10
 
 box Logic LOGIC_COLOR_T1
 participant ":LogicManager" as LogicManager LOGIC_COLOR
@@ -29,6 +30,9 @@ activate AddressBookParser
 
 create DeleteCommandParser
 AddressBookParser -> DeleteCommandParser : new DeleteCommandParser()
+activate DeleteCommandParser
+DeleteCommandParser --> AddressBookParser : parser
+deactivate DeleteCommandParser
 AddressBookParser -> DeleteCommandParser : parse(INDEX)
 activate DeleteCommandParser
 

@@ -27,6 +27,11 @@ Main -[#grey]-> Storage
 Main -up[#grey]-> Model
 Main -down[hidden]-> Commons
 
+note bottom of Commons
+  Shared support used by several components;
+  individual dependencies are omitted in this view.
+end note
+
 Storage -up[STORAGE_COLOR].> Model
 Storage .right[STORAGE_COLOR].>File
 User ..> UI
