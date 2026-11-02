@@ -24,6 +24,24 @@ public class WindowBoundsTest {
     }
 
     @Test
+    public void preferredHeight_usesFiniteStageThenSceneThenMinimum() {
+        assertEquals(577, HelpWindow.preferredHeight(577, 540, 420));
+        assertEquals(540, HelpWindow.preferredHeight(Double.NaN, 540, 420));
+        assertEquals(540, HelpWindow.preferredHeight(0, 540, 420));
+        assertEquals(420, HelpWindow.preferredHeight(Double.NaN, 0, 420));
+        assertEquals(420, HelpWindow.preferredHeight(Double.NaN, Double.NaN, 420));
+    }
+
+    @Test
+    public void usableDimension_usesFiniteStageThenSceneThenFallback() {
+        assertEquals(800, HelpWindow.usableDimension(800, 600));
+        assertEquals(600, HelpWindow.usableDimension(Double.NaN, 600));
+        assertEquals(600, HelpWindow.usableDimension(0, 600));
+        assertEquals(1, HelpWindow.usableDimension(Double.NaN, 0));
+        assertEquals(1, HelpWindow.usableDimension(Double.NaN, Double.NaN));
+    }
+
+    @Test
     public void screenFor_helpWindowOnShortSecondaryScreen_selectsThatScreen() {
         Rectangle2D helpWindow = new Rectangle2D(2000, 30, 800, 540);
 

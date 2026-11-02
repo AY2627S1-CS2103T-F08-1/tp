@@ -225,7 +225,7 @@ public class HelpWindow extends UiPart<Stage> {
         }
         if (!Double.isFinite(preferredHeight) || preferredHeight <= 0) {
             stage.sizeToScene();
-            preferredHeight = finitePreferredHeight(stage);
+            preferredHeight = preferredHeight(stage.getHeight(), stage.getScene().getHeight(), stage.getMinHeight());
         }
 
         getRoot().setMinHeight(capHeight(preferredMinHeight, screenHeight));
@@ -239,21 +239,17 @@ public class HelpWindow extends UiPart<Stage> {
         return Math.min(height, screenHeight);
     }
 
-    private static double finitePreferredHeight(Stage stage) {
-        double height = stage.getHeight();
-        if (!Double.isFinite(height) || height <= 0) {
-            height = stage.getScene().getHeight();
+    static double preferredHeight(double stageHeight, double sceneHeight, double minimumHeight) {
+        if (Double.isFinite(stageHeight) && stageHeight > 0) {
+            return stageHeight;
         }
-        if (!Double.isFinite(height) || height <= 0) {
-            height = stage.getScene().getRoot().prefHeight(-1);
+        if (Double.isFinite(sceneHeight) && sceneHeight > 0) {
+            return Math.max(sceneHeight, minimumHeight);
         }
-        if (!Double.isFinite(height) || height <= 0) {
-            height = stage.getMinHeight();
-        }
-        return height;
+        return minimumHeight;
     }
 
-    private static double usableDimension(double stageSize, double sceneSize) {
+    static double usableDimension(double stageSize, double sceneSize) {
         double size = Double.isFinite(stageSize) && stageSize > 0 ? stageSize : sceneSize;
         return Double.isFinite(size) && size > 0 ? size : 1;
     }
