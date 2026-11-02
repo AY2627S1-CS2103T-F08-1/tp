@@ -3,6 +3,7 @@ package seedu.address.storage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.HOON;
@@ -10,6 +11,10 @@ import static seedu.address.testutil.TypicalPersons.IDA;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
 import java.io.IOException;
+import java.net.StandardProtocolFamily;
+import java.net.UnixDomainSocketAddress;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,11 +22,15 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.commons.exceptions.DataLoadingException;
+import seedu.address.commons.util.FileUtil;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
+import seedu.address.model.UserPrefs;
 import seedu.address.model.person.ContactOutcome;
 import seedu.address.model.person.InteractionNote;
 import seedu.address.model.person.Person;
@@ -202,6 +211,110 @@ public class JsonAddressBookStorageTest {
         readBack = jsonAddressBookStorage.readAddressBook().get(); // file path not specified
         assertEquals(original, new AddressBook(readBack));
 
+    }
+
+    @Test
+    @EnabledOnOs(OS.LINUX)
+    public void readAndSave_storageSymbolicLinks_rejected() throws Exception {
+        Path appHome = Files.createDirectory(testFolder.resolve("app-home"));
+        Path outside = Files.createDirectory(testFolder.resolve("outside"));
+        String validAddressBook = "{\"persons\":[]}";
+        Path outsideBook = Files.writeString(outside.resolve("addressbook.json"), validAddressBook);
+        Files.createSymbolicLink(appHome.resolve("data"), outside);
+        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(
+                appHome.resolve("data/addressbook.json"));
+
+        assertThrows(DataLoadingException.class, () -> addressBookStorage.readAddressBook());
+        assertThrows(IOException.class, () -> addressBookStorage.saveAddressBook(new AddressBook()));
+        Path outsidePrefs = Files.writeString(testFolder.resolve("outside.json"), "{}");
+        Path managedPrefs = appHome.resolve("preferences.json");
+        Files.createSymbolicLink(managedPrefs, outsidePrefs);
+        JsonUserPrefsStorage prefsStorage = new JsonUserPrefsStorage(managedPrefs);
+
+        assertThrows(DataLoadingException.class, () -> prefsStorage.readUserPrefs());
+        assertThrows(IOException.class, () -> prefsStorage.saveUserPrefs(new UserPrefs()));
+        assertEquals(List.of(validAddressBook, "{}"),
+                List.of(Files.readString(outsideBook), Files.readString(outsidePrefs)));
+    }
+
+    @Test
+    @EnabledOnOs({OS.LINUX, OS.MAC})
+    public void readAndSave_storageUnderSymbolicLinkAncestor_allowed() throws Exception {
+        Path realParent = Files.createDirectory(testFolder.resolve("real-parent"));
+        Path aliasParent = Files.createSymbolicLink(testFolder.resolve("alias-parent"), realParent);
+        Path appHome = Files.createDirectory(aliasParent.resolve("app-home"));
+        Path dataDirectory = Files.createDirectory(appHome.resolve("data"));
+        Path addressBook = Files.writeString(dataDirectory.resolve("addressbook.json"), "{\"persons\":[]}");
+        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(addressBook);
+
+        assertEquals(new AddressBook(), new AddressBook(addressBookStorage.readAddressBook().orElseThrow()));
+        addressBookStorage.saveAddressBook(new AddressBook());
+        assertEquals(new AddressBook(), new AddressBook(addressBookStorage.readAddressBook().orElseThrow()));
+
+        Path preferences = Files.writeString(appHome.resolve("preferences.json"), "{}");
+        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(preferences);
+        assertEquals(new UserPrefs(), userPrefsStorage.readUserPrefs().orElseThrow());
+        userPrefsStorage.saveUserPrefs(new UserPrefs());
+        assertEquals(new UserPrefs(), userPrefsStorage.readUserPrefs().orElseThrow());
+    }
+
+    @Test
+    public void managedHome_rootLevelAddressBook_returnsFilesystemRoot() {
+        Path root = Path.of("/").toAbsolutePath().normalize();
+        assertEquals(root, JsonAddressBookStorage.managedHome(root.resolve("addressbook.json")));
+    }
+
+    @Test
+    public void hasRedirectedPath_rejectsTargetsOutsideOrEqualToTrustedRoot() throws Exception {
+        Path appHome = Files.createDirectory(testFolder.resolve("trusted-home"));
+        Path outside = Files.createDirectory(testFolder.resolve("outside-home")).resolve("addressbook.json");
+
+        assertTrue(FileUtil.hasRedirectedPath(appHome, outside));
+        assertTrue(FileUtil.hasRedirectedPath(appHome, appHome));
+        assertFalse(FileUtil.hasRedirectedPath(appHome, appHome.resolve("data/addressbook.json")));
+    }
+
+    @Test
+    @EnabledOnOs({OS.LINUX, OS.MAC})
+    public void hasRedirectedPath_rejectsSpecialFilesystemEntries() throws Exception {
+        Path appHome = Files.createDirectory(testFolder.resolve("socket-home"));
+        Path socketPath = appHome.resolve("managed.sock");
+        try (ServerSocketChannel socket = ServerSocketChannel.open(StandardProtocolFamily.UNIX)) {
+            socket.bind(UnixDomainSocketAddress.of(socketPath));
+            assertTrue(FileUtil.hasRedirectedPath(appHome, socketPath));
+        }
+    }
+
+    @Test
+    @EnabledOnOs(OS.WINDOWS)
+    public void readAndSave_storageDirectoryJunctions_rejected() throws Exception {
+        Path appHome = Files.createDirectory(testFolder.resolve("junction-home"));
+        Path outside = Files.createDirectory(testFolder.resolve("junction-target"));
+        Files.writeString(outside.resolve("addressbook.json"), "{\"persons\":[]}");
+        Path dataJunction = appHome.resolve("data");
+        createDirectoryJunction(dataJunction, outside);
+        try {
+            JsonAddressBookStorage storage = new JsonAddressBookStorage(dataJunction.resolve("addressbook.json"));
+
+            assertThrows(DataLoadingException.class, storage::readAddressBook);
+            assertThrows(IOException.class, () -> storage.saveAddressBook(new AddressBook()));
+        } finally {
+            removeDirectoryJunction(dataJunction);
+        }
+    }
+
+    private static void createDirectoryJunction(Path link, Path target) throws Exception {
+        Process command = new ProcessBuilder("cmd.exe", "/c",
+                "mklink /J \"" + link + "\" \"" + target + "\"").redirectErrorStream(true).start();
+        String output = new String(command.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(0, command.waitFor(), output);
+    }
+
+    private static void removeDirectoryJunction(Path link) throws Exception {
+        Process command = new ProcessBuilder("cmd.exe", "/c", "rmdir \"" + link + "\"")
+                .redirectErrorStream(true).start();
+        String output = new String(command.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(0, command.waitFor(), output);
     }
 
     @Test

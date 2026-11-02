@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.commons.exceptions.IllegalValueException;
+import seedu.address.commons.util.FileUtil;
 import seedu.address.commons.util.JsonUtil;
 import seedu.address.model.ReadOnlyAddressBook;
 
@@ -26,7 +27,7 @@ public class JsonAddressBookStorage {
 
     private static final Logger logger = LogsCenter.getLogger(JsonAddressBookStorage.class);
 
-    private Path filePath;
+    private final Path filePath;
 
     public JsonAddressBookStorage(Path filePath) {
         this.filePath = filePath;
@@ -54,6 +55,14 @@ public class JsonAddressBookStorage {
      */
     public Optional<ReadOnlyAddressBook> readAddressBook(Path filePath) throws DataLoadingException {
         requireNonNull(filePath);
+
+        try {
+            if (FileUtil.hasRedirectedPath(managedHome(filePath), filePath)) {
+                throw new IOException("Refusing redirected managed path: " + filePath);
+            }
+        } catch (IOException e) {
+            throw new DataLoadingException(e);
+        }
 
         Optional<JsonSerializableAddressBook> jsonAddressBook = JsonUtil.readJsonFile(
                 filePath, JsonSerializableAddressBook.class);
@@ -86,6 +95,9 @@ public class JsonAddressBookStorage {
     public void saveAddressBook(ReadOnlyAddressBook addressBook, Path filePath) throws IOException {
         requireNonNull(addressBook);
         requireNonNull(filePath);
+        if (FileUtil.hasRedirectedPath(managedHome(filePath), filePath)) {
+            throw new IOException("Refusing redirected managed path: " + filePath);
+        }
 
         Path target = filePath.toAbsolutePath();
         Path parent = target.getParent();
@@ -95,7 +107,7 @@ public class JsonAddressBookStorage {
         Path temporaryFile = Files.createTempFile(parent, target.getFileName().toString() + ".", ".tmp");
         try {
             try (FileChannel channel = FileChannel.open(temporaryFile, StandardOpenOption.WRITE,
-                    StandardOpenOption.TRUNCATE_EXISTING)) {
+                    StandardOpenOption.TRUNCATE_EXISTING, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
                 ByteBuffer buffer = ByteBuffer.wrap(jsonBytes);
                 while (buffer.hasRemaining()) {
                     channel.write(buffer);
@@ -120,6 +132,11 @@ public class JsonAddressBookStorage {
     /** Replaces the destination only when the file system supports an atomic move. */
     void moveAtomically(Path source, Path target) throws IOException {
         Files.move(source, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    static Path managedHome(Path filePath) {
+        Path dataDirectory = filePath.toAbsolutePath().normalize().getParent();
+        return dataDirectory.getParent() != null ? dataDirectory.getParent() : dataDirectory;
     }
 
 }

@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.exceptions.DataLoadingException;
+import seedu.address.commons.util.FileUtil;
 import seedu.address.commons.util.JsonUtil;
 import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.UserPrefs;
@@ -15,7 +16,7 @@ import seedu.address.model.UserPrefs;
  */
 public class JsonUserPrefsStorage {
 
-    private Path filePath;
+    private final Path filePath;
 
     public JsonUserPrefsStorage(Path filePath) {
         this.filePath = filePath;
@@ -41,6 +42,13 @@ public class JsonUserPrefsStorage {
      * @throws DataLoadingException if the file format is not as expected.
      */
     public Optional<UserPrefs> readUserPrefs(Path prefsFilePath) throws DataLoadingException {
+        try {
+            if (FileUtil.hasRedirectedPath(managedHome(prefsFilePath), prefsFilePath)) {
+                throw new IOException("Refusing redirected managed path: " + prefsFilePath);
+            }
+        } catch (IOException e) {
+            throw new DataLoadingException(e);
+        }
         Optional<UserPrefs> preferences = JsonUtil.readJsonFile(prefsFilePath, UserPrefs.class);
         // Jackson populates fields directly, so explicit JSON null bypasses the non-null setter.
         preferences.ifPresent(prefs -> {
@@ -57,7 +65,14 @@ public class JsonUserPrefsStorage {
      * @throws IOException if there was any problem writing to the file.
      */
     public void saveUserPrefs(ReadOnlyUserPrefs userPrefs) throws IOException {
+        if (FileUtil.hasRedirectedPath(managedHome(filePath), filePath)) {
+            throw new IOException("Refusing redirected managed path: " + filePath);
+        }
         JsonUtil.saveJsonFile(userPrefs, filePath);
+    }
+
+    private static Path managedHome(Path filePath) {
+        return filePath.toAbsolutePath().normalize().getParent();
     }
 
 }

@@ -11,10 +11,13 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.exceptions.DataLoadingException;
+import seedu.address.commons.util.JsonUtil;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
@@ -77,6 +80,17 @@ public class JsonUserPrefsStorageTest {
         assertEquals(new GuiSettings(), model.getGuiSettings());
         storage.saveUserPrefs(loaded);
         assertEquals(loaded, storage.readUserPrefs().orElseThrow());
+    }
+
+    @Test
+    @EnabledOnOs(OS.LINUX)
+    public void jsonUtilityDoesNotFollowFinalSymbolicLink() throws Exception {
+        Path outside = Files.writeString(testFolder.resolve("outside-prefs.json"), "{}");
+        Path link = Files.createSymbolicLink(testFolder.resolve("linked-prefs.json"), outside);
+
+        assertThrows(DataLoadingException.class, () -> JsonUtil.readJsonFile(link, UserPrefs.class));
+        assertThrows(IOException.class, () -> JsonUtil.saveJsonFile(new UserPrefs(), link));
+        assertEquals("{}", Files.readString(outside));
     }
 
     @Test
