@@ -1,8 +1,10 @@
 package seedu.address.ui;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 import javafx.fxml.FXML;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -116,6 +118,8 @@ public class HelpWindow extends UiPart<Stage> {
 
     private static final Logger logger = LogsCenter.getLogger(HelpWindow.class);
     private static final String FXML = "HelpWindow.fxml";
+    private final double preferredHeight;
+    private final double preferredMinHeight;
 
     @FXML
     private Button copyButton;
@@ -136,6 +140,8 @@ public class HelpWindow extends UiPart<Stage> {
      */
     public HelpWindow(Stage root) {
         super(FXML, root);
+        preferredHeight = getRoot().getHeight();
+        preferredMinHeight = getRoot().getMinHeight();
         helpMessage.setText(HELP_MESSAGE);
         commandReference.setText(COMMAND_REFERENCE.stripTrailing());
         getRoot().getScene().addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPress);
@@ -200,12 +206,19 @@ public class HelpWindow extends UiPart<Stage> {
      */
     public void show() {
         logger.fine("Showing help page about the application.");
-        double screenHeight = Screen.getPrimary().getVisualBounds().getHeight();
-        getRoot().setMinHeight(capHeight(getRoot().getMinHeight(), screenHeight));
+        Stage stage = getRoot();
+        Rectangle2D primaryBounds = Screen.getPrimary().getVisualBounds();
+        List<Rectangle2D> screenBounds = Screen.getScreens().stream().map(Screen::getVisualBounds).toList();
+        Rectangle2D windowBounds = new Rectangle2D(stage.getX(), stage.getY(),
+                Math.max(stage.getWidth(), 1), Math.max(stage.getHeight(), 1));
+        Rectangle2D screen = WindowBounds.screenFor(windowBounds, screenBounds, primaryBounds);
+        double screenHeight = screen.getHeight();
+        getRoot().setMinHeight(capHeight(preferredMinHeight, screenHeight));
         getRoot().setMaxHeight(screenHeight);
-        getRoot().setHeight(capHeight(getRoot().getHeight(), screenHeight));
-        getRoot().show();
-        getRoot().centerOnScreen();
+        getRoot().setHeight(capHeight(preferredHeight, screenHeight));
+        stage.show();
+        stage.setX(screen.getMinX() + (screen.getWidth() - stage.getWidth()) / 2);
+        stage.setY(screen.getMinY() + (screen.getHeight() - stage.getHeight()) / 2);
     }
 
     static double capHeight(double height, double screenHeight) {

@@ -54,6 +54,20 @@ final class WindowBounds {
                 (int) (screen.getMinY() + (screen.getHeight() - height) / 2));
     }
 
+    /** Returns the screen with the most overlap with {@code window}, or {@code fallback} if there is no overlap. */
+    static Rectangle2D screenFor(Rectangle2D window, List<Rectangle2D> screens, Rectangle2D fallback) {
+        Rectangle2D best = fallback;
+        double largestOverlap = 0;
+        for (Rectangle2D screen : screens) {
+            double screenOverlap = overlap(window, screen);
+            if (screenOverlap > largestOverlap) {
+                best = screen;
+                largestOverlap = screenOverlap;
+            }
+        }
+        return best;
+    }
+
     private static boolean isUsable(double size, double minimum) {
         return Double.isFinite(size) && size >= minimum;
     }
