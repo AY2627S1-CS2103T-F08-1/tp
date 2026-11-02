@@ -194,10 +194,10 @@ timestamp. Stability preserves reverse insertion order for equal timestamps. Edi
 history. `NoteHistoryWorkflowTest` verifies these behaviours together across editing, JSON reload and `show`.
 
 New note input has a separate content check in the parser and command. It rejects text containing only whitespace,
-control or format characters, without stripping those characters from otherwise valid text. Stored-note validation
-retains compatibility with older invisible-only notes, so tightening new input does
-not make an existing book unreadable. `NoteInputCompatibilityTest` checks rejected-input state preservation and legacy
-note save/reload behaviour.
+control or format characters. Accepted notes still use the existing `String.trim()` normalization, which removes
+leading and trailing characters up to U+0020. Stored-note validation retains compatibility with older invisible-only
+notes, so tightening new input does not make an existing book unreadable. `NoteInputCompatibilityTest` checks
+rejected-input state preservation and legacy note save/reload behaviour.
 
 Each interaction note can also store a `ContactOutcome`: `reached`, `callback-requested`, `unreachable`, or
 `payment-promised`. The JSON `outcome` field is nullable so files created before this feature remain loadable; a
