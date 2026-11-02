@@ -14,6 +14,6 @@ a visible command box and a scrollable debtor list. Help opened as a 603×426 lo
 it and Escape closed it. No reproducible usability problem was found in this condition. The laptop was restored to its
 original 2560×1600 resolution at 150% scaling afterwards.
 
-The capture interface adds a cursor highlight and renders text poorly, so its images are not suitable for publication.
-They were not substituted into the guide. A clean v1.6 main-window, Help, and homepage capture is still required.
-The candidate JAR's source commit has also not been independently verified.
+Clean native screenshots from the supplied v1.6 JAR now replace the homepage/User Guide main-window image and the
+User Guide Help image. They use the fictional Maya Tan record from the walkthrough and contain no local file path or
+pointer overlay. The candidate JAR's source commit has not been independently verified.

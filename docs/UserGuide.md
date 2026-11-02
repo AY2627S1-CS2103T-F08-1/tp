@@ -42,7 +42,7 @@ while retaining the benefits of a graphical user interface (GUI).
    OSPS allows one instance per home folder. If another instance is already using that folder, close it before
    starting OSPS again. Older OSPS versions do not enforce this lock, so close them too before starting this version.
 
-   ![OSPS interface showing debtor profiles and outstanding amounts](images/Ui.png)
+   ![OSPS showing Maya Tan's debtor profile and matching debtor card](images/Ui.png)
 
 1. To try the following commands, use a new folder with the sample data described above. Enter each command in the
    command box and press Enter:
@@ -166,7 +166,7 @@ change displayed indexes. Re-read the list after any of these commands before us
 Opens a scrollable, keyboard-accessible in-app command reference. It includes the syntax and a short example for
 each supported command in that build. The window also retains a button to copy the link to this online User Guide.
 
-![help message](images/helpMessage.png)
+![OSPS Help window showing the in-app command reference](images/helpMessage.png)
 
 Format: `help`
 
