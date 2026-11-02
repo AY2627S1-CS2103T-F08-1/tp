@@ -11,6 +11,9 @@ import static seedu.address.testutil.TypicalPersons.IDA;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
 import java.io.IOException;
+import java.net.StandardProtocolFamily;
+import java.net.UnixDomainSocketAddress;
+import java.nio.channels.ServerSocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
@@ -256,6 +259,17 @@ public class JsonAddressBookStorageTest {
         assertTrue(FileUtil.hasRedirectedPath(appHome, outside));
         assertTrue(FileUtil.hasRedirectedPath(appHome, appHome));
         assertFalse(FileUtil.hasRedirectedPath(appHome, appHome.resolve("data/addressbook.json")));
+    }
+
+    @Test
+    @EnabledOnOs({OS.LINUX, OS.MAC})
+    public void hasRedirectedPath_rejectsSpecialFilesystemEntries() throws Exception {
+        Path appHome = Files.createDirectory(testFolder.resolve("socket-home"));
+        Path socketPath = appHome.resolve("managed.sock");
+        try (ServerSocketChannel socket = ServerSocketChannel.open(StandardProtocolFamily.UNIX)) {
+            socket.bind(UnixDomainSocketAddress.of(socketPath));
+            assertTrue(FileUtil.hasRedirectedPath(appHome, socketPath));
+        }
     }
 
     @Test
