@@ -7,12 +7,13 @@ Orchestration and Scheduling of Payment Scheme (OSPS) is a **desktop application
 It manages debtor contact details, outstanding balances, and interaction histories through keyboard-driven commands
 while retaining the benefits of a graphical user interface (GUI).
 
-> **Guide for the refreshed v1.5 build.** Check the source commit and JAR SHA-256 in the
-> [v1.5 release notes](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5) before using this guide.
-> The refreshed JAR replaces the download asset; the original v1.5 source tag remains unchanged.
-> Older saved v1.5 JARs support fewer commands. Until you download the refreshed artifact identified in the release
-> notes, use the [original v1.5 guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/UserGuide.md).
-> The window title alone does not distinguish the two builds.
+> **v1.6 candidate/development guide.** This page describes the current source, including fixes that are not in the
+> published v1.5 JAR. It does not announce a v1.6 release. For the refreshed v1.5 download, use the
+> [guide pinned to its source commit](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/e5c7066959164fb720843a8b06c6d9f4080b6089/docs/UserGuide.md)
+> and verify the JAR SHA-256 in the [v1.5 release notes](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5).
+> For an older JAR saved before that refresh, use the
+> [original v1.5 guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/UserGuide.md).
+> The window title alone does not identify the source commit or distinguish these builds.
 
 * Table of Contents
 {:toc}
@@ -24,12 +25,13 @@ while retaining the benefits of a graphical user interface (GUI).
 1. Ensure that Java `25` or later is installed on your computer.<br>
    **Mac users:** Ensure you have the precise JDK version prescribed [here](https://se-education.org/guides/tutorials/javaInstallationMac.html).
 
-1. Download `osps.jar` from the [v1.5 release](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5).
-   Use the refreshed build identified in the release notes, and compare its SHA-256 with the recorded value.
+1. To follow this candidate guide, use a JAR built from its matching source revision. Follow
+   [the setup guide](SettingUp.md) and run `gradlew.bat shadowJar` on Windows or `./gradlew shadowJar` on macOS/Linux;
+   the output is `build/libs/osps.jar`. Record the source commit and the JAR's SHA-256 when sharing a candidate.
+   If you prefer the published [v1.5 download](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5), follow
+   its pinned guide linked above and verify its SHA-256 against the release notes instead.
    Keep a backup of your existing data before replacing an older JAR. To try the app without existing records,
    put the JAR in a new, writable folder.
-   Developers can instead follow [the setup guide](SettingUp.md) and run `gradlew.bat shadowJar` on Windows or
-   `./gradlew shadowJar` on macOS/Linux; the output is `build/libs/osps.jar`.
 
 1. Copy the file to the folder you want to use as the _home folder_ for OSPS.
 
@@ -126,6 +128,9 @@ Number to use | Commands | How to recognise it | Stability
 **Persistent debtor ID** | `show`, `note`, `followup`, `promise`, `stage`, `contact`, `export` | The command contains `--id`; use the number inside `[ID ...]` | Stays with the same debtor until deletion
 **Displayed index** | `edit`, `delete`, `preview edit`, `preview delete` | The syntax says `INDEX`; use the number before `[ID ...]` | Can change whenever the visible worklist changes
 
+Write both kinds of number as positive decimal integers without a sign. Decimal digit forms such as `1` and full-width
+`１` refer to the same number. Leading zeroes are accepted, but a value of zero is invalid.
+
 For example, if a card reads `2. [ID 7] Alex Tan`, use `show --id 7` to view Alex and `delete 2` to delete the
 currently displayed Alex card. Before an index-based edit or deletion, confirm the visible name and `[ID ...]` on
 that card. You can run `preview edit INDEX ...` or `preview delete INDEX` first when you want an additional check.
@@ -198,7 +203,7 @@ Format: `list`
 The command does not accept any parameters.
 
 Examples of result messages:
-* `No active debtors found (0 active). Add a debtor with the add command.`
+* `No debtors found in the current session (0 listed).`
 * `1 active debtor listed.`
 * `5 active debtors listed.`
 
@@ -238,7 +243,9 @@ Format: `note --id DEBTOR_ID [--outcome OUTCOME] --text NOTE_TEXT`
 * `DEBTOR_ID` must be a positive integer shown as the debtor's ID in the debtor list.
 * `OUTCOME` is optional and is case-insensitive. It must be one of `reached`, `callback-requested`, `unreachable`, or
   `payment-promised`. If omitted, the note is displayed with the outcome `unspecified`.
-* `NOTE_TEXT` must not be blank. Ordinary punctuation is allowed, and there is no arbitrary note-length limit.
+* New `NOTE_TEXT` must not consist only of whitespace, control or formatting characters, such as zero-width spaces.
+  Ordinary punctuation, Chinese text and emoji are allowed, and there is no arbitrary note-length limit.
+  Previously saved notes remain loadable, including older invisible-only entries.
 * `--outcome`, when used, must appear before `--text`. The `--id` and `--text` parameters can be provided in either
   order. Text after `--text`, including `--outcome`, is treated as note text unless it is a reserved `--id` or
   `--text` parameter.
@@ -461,7 +468,8 @@ Format: `find KEYWORD [MORE_KEYWORDS]`
 * Debtors matching at least one name or phone keyword are returned (an `OR` search). For example,
   `Alice 98765432` returns debtors whose names contain `Alice` as a substring as well as the debtor whose phone is
   exactly `98765432`.
-* Leading, trailing, and repeated whitespace is ignored. A blank search is rejected.
+* Within the keyword arguments after `find `, leading, trailing, and repeated whitespace is ignored, including copied
+  non-breaking spaces and EM spaces. A whitespace-only search is rejected without changing the current results.
 * Results are displayed in ascending persistent debtor ID order. If nothing matches, OSPS reports that no debtors
   matched the supplied name or phone keywords.
 * Run `list` to clear the search filter and restore every active debtor.
@@ -587,8 +595,10 @@ OSPS prevents another instance of this version from opening the same home, but o
 Do not remove or replace the `.osps.lock` file while OSPS is running. Copy the `data` folder to a separate location
 for a backup; to restore, preserve the current data, replace the folder with the backup, and restart OSPS.
 
-To keep your records when you move to a newer JAR, copy the `data` folder (and `preferences.json` if you want your
-window settings) into the folder that contains the new JAR. If you used an earlier version and launched it from a
+To keep your records when you move to a newer JAR, close both OSPS instances and back up any destination data before
+copying the `data` folder (and `preferences.json` if you want your window settings) into the folder that contains the
+new JAR. Reopen OSPS and verify the debtor IDs, balances and history. Do not replace data while OSPS is running: its
+next save can overwrite the copied records. If you used an earlier version and launched it from a
 different folder than the one containing the JAR (for example by following an older instruction to `cd` into a separate
 data folder), copy that folder's `data` and `preferences.json` into the JAR's folder. The folder containing the JAR
 must be writable, otherwise OSPS cannot save your records or preferences. Advanced users may update data directly by editing the JSON file.
@@ -606,9 +616,11 @@ Malformed JSON can also cause OSPS to fail to start.
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Install OSPS on the other computer and overwrite the data file it creates with the `data/addressbook.json` file
-from your previous OSPS home folder. Place it at `data/addressbook.json` inside the folder that contains the
-`osps.jar` you will run (copying the whole `data` folder next to the JAR does this).
+**A**: Install OSPS on the other computer, then close OSPS on both computers. Back up the destination data before
+replacing it with `data/addressbook.json` from your previous OSPS home folder. Place the file at
+`data/addressbook.json` inside the folder containing the destination `osps.jar`. Reopen OSPS and verify the debtor
+IDs, balances and history. Never replace this file while OSPS is running: a later save can overwrite the imported
+records with the old in-memory data.
 
 --------------------------------------------------------------------------------------------------------------------
 
