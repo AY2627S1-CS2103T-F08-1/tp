@@ -8,9 +8,16 @@ title: Orchestration and Scheduling of Payment Scheme
 
 ![OSPS interface showing debtor profiles and outstanding amounts](images/Ui.png)
 
-**Orchestration and Scheduling of Payment Scheme (OSPS) v1.5 is a desktop application for debt recovery agents to
+**Orchestration and Scheduling of Payment Scheme (OSPS) is a desktop application for debt recovery agents to
 manage debtor details, outstanding balances, and interaction histories.** Its graphical interface and keyboard-driven
 commands support fast case-management workflows.
+
+> **v1.6 candidate documentation.** These pages describe the current source. Use the
+> [candidate instructions](UserGuide.html#quick-start) and the source commit/JAR SHA-256 recorded in
+> [#221](https://github.com/AY2627S1-CS2103T-F08-1/tp/issues/221) to identify the build you are testing.
+> Published downloads are listed on [GitHub Releases](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases).
+> The published v1.5 JAR has a separate guide linked at the top of the User Guide; it does not contain every
+> candidate fix described here.
 
 OSPS can add, edit, list, find, and delete debtors, show complete debtor profiles, and append timestamped interaction
 notes. Persistent debtor IDs are used by `show` and `note`; the displayed one-based list index is used by `edit` and

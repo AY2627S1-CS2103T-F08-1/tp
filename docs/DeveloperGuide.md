@@ -9,6 +9,8 @@ title: Developer Guide
 > [release notes](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5).
 > For an older JAR saved before that refresh, use the
 > [original Developer Guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/DeveloperGuide.md).
+> The candidate's source commit, JAR SHA-256 and verification results are tracked in
+> [#221](https://github.com/AY2627S1-CS2103T-F08-1/tp/issues/221); a v1.6 title alone does not identify a build.
 
 * Table of Contents
 {:toc}
@@ -23,6 +25,11 @@ title: Developer Guide
     preliminary pull-request reviews, and drafting and revising the guides and project portfolio.
   * @nje14 used OpenAI Codex to assist with implementation, design, testing, debugging, and documentation,
     including the export fix and the [contact, preview, and export verification](testing/edison-contact-preview-export-verification.md).
+  * @Alfred051201 reported using Codex to assist with preparing the
+    [structured contact-outcome change in PR #157](https://github.com/AY2627S1-CS2103T-F08-1/tp/pull/157).
+  * @ewonglh reported using automated coding agents for parser and reload fixes, regression testing,
+    documentation updates, and preliminary pull-request reviews in the
+    [overnight coordination record](https://github.com/AY2627S1-CS2103T-F08-1/tp/issues/169).
 * OSPS is based on [AddressBook-Level3](https://github.com/se-edu/addressbook-level3) by the
   [SE-EDU initiative](https://se-education.org). The original project structure, documentation layout, and selected
   diagrams were adapted for OSPS.

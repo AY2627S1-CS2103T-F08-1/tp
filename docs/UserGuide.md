@@ -13,7 +13,8 @@ while retaining the benefits of a graphical user interface (GUI).
 > and verify the JAR SHA-256 in the [v1.5 release notes](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5).
 > For an older JAR saved before that refresh, use the
 > [original v1.5 guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/UserGuide.md).
-> The window title alone does not identify the source commit or distinguish these builds.
+> The v1.6 window title identifies the version, not the exact build. Candidate source commits, JAR SHA-256
+> checksums and verification results are tracked in [#221](https://github.com/AY2627S1-CS2103T-F08-1/tp/issues/221).
 
 * Table of Contents
 {:toc}
@@ -27,7 +28,9 @@ while retaining the benefits of a graphical user interface (GUI).
 
 1. To follow this candidate guide, use a JAR built from its matching source revision. Follow
    [the setup guide](SettingUp.md) and run `gradlew.bat shadowJar` on Windows or `./gradlew shadowJar` on macOS/Linux;
-   the output is `build/libs/osps.jar`. Record the source commit and the JAR's SHA-256 when sharing a candidate.
+   the output is `build/libs/osps.jar`. Record the source commit and the JAR's SHA-256 when sharing a candidate,
+   or compare a shared candidate with the exact identity recorded in
+   [#221](https://github.com/AY2627S1-CS2103T-F08-1/tp/issues/221). Do not mix test results from different JARs.
    If you prefer the published [v1.5 download](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5), follow
    its pinned guide linked above and verify its SHA-256 against the release notes instead.
    Keep a backup of your existing data before replacing an older JAR. To try the app without existing records,

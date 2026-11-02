@@ -36,7 +36,7 @@ import seedu.address.ui.UiManager;
 public class MainApp extends Application {
 
     public static final String APP_NAME = "OSPS";
-    public static final String VERSION = "v1.5";
+    public static final String VERSION = "v1.6";
 
     static final Path USER_PREFS_FILE_PATH = AppHome.resolve("preferences.json");
     static final Path ADDRESS_BOOK_FILE_PATH = AppHome.resolve("data", "addressbook.json");
