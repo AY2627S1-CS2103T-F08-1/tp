@@ -9,7 +9,11 @@ The first launch created six sample debtors. Adding the fictional Maya Tan retur
 subsequently showed seven active debtors. These commands were entered through the keyboard. `help` opened the
 reference window; Page Down scrolled the reference and Escape closed it. `exit` closed the application successfully.
 
-The capture interface produced a 728×594 main-window image and a 603×571 Help image with visibly degraded text.
-The main capture also contains a local file path and a cursor highlight. These captures were not substituted into the
-guide because they are not suitable for publication. The available display was not confirmed at 1280×720 and 150%
-scaling; those conditions remain untested. Further keyboard-only primary workflows remain to be checked.
+For the compact-window check, OSPS was started with saved dimensions of 1280×720. The capture reports a 1268×714
+client area after the window frame is excluded. The main window retained a visible command box and scrollable debtor
+list. Help opened as a 603×571 window; Page Down scrolled it and Escape closed it. The Windows display was configured
+at 100% scaling, so 150% display scaling remains untested.
+
+The capture interface adds a cursor highlight and renders text poorly, so its images are not suitable for publication.
+They were not substituted into the guide. A clean v1.6 main-window, Help, and homepage capture is still required.
+The candidate JAR's source commit has also not been independently verified.
