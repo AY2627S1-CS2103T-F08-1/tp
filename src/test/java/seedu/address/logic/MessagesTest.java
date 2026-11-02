@@ -41,10 +41,11 @@ public class MessagesTest {
                 Contact hours: Not set
                 Follow-up: None
                 Promised payment: None
-                Interaction history (newest first):
+                History timestamps are local times; no time zone is stored.
+                Interaction history (latest recorded first):
                 - [2026-10-10 09:15] [reached] Sent follow-up email.
                 - [2026-10-09 14:30] [unspecified] Called debtor, promised payment.
-                Follow-up history (chronological, oldest first):
+                Follow-up history (recorded order, oldest first):
                 No follow-up history recorded.""";
 
         assertEquals(expected, Messages.formatProfile(debtor));
@@ -57,8 +58,8 @@ public class MessagesTest {
         String profile = Messages.formatProfile(debtor);
 
         assertTrue(profile.contains("Tags: None"));
-        assertTrue(profile.contains("Interaction history (newest first):\nNo interaction notes recorded."));
-        assertTrue(profile.endsWith("Follow-up history (chronological, oldest first):\n"
+        assertTrue(profile.contains("Interaction history (latest recorded first):\nNo interaction notes recorded."));
+        assertTrue(profile.endsWith("Follow-up history (recorded order, oldest first):\n"
                 + "No follow-up history recorded."));
     }
 
@@ -90,6 +91,6 @@ public class MessagesTest {
         Person debtor = new PersonBuilder().withInteractionNotes(List.of(note, note)).build();
 
         assertTrue(Messages.formatProfile(debtor).contains("\n- " + note + "\n- " + note
-                + "\nFollow-up history (chronological, oldest first):"));
+                + "\nFollow-up history (recorded order, oldest first):"));
     }
 }

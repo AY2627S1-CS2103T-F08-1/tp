@@ -394,8 +394,10 @@ Formats: `summary` or `summary --all`
 Shows the complete profile of the active debtor identified by persistent debtor ID. The profile includes the
 debtor's name, phone number, email address, address, outstanding amount, tags, contact preferences, pending follow-up
 date, promised payment date, interaction history, and follow-up history. An unset date is shown as `None`.
-Interaction notes are shown newest first, with each note's timestamp, outcome, and text. Follow-up events are shown
-oldest first. If the debtor has no notes, the profile states that no interaction notes are recorded.
+Interaction notes are shown latest recorded first, with each note's timestamp, outcome, and text. Follow-up events are
+shown in recorded order, oldest first. These timestamps are local times with no stored time zone or offset, so their
+displayed clock times can appear out of order after a system time-zone change. If the debtor has no notes, the profile
+states that no interaction notes are recorded.
 If two notes have exactly the same timestamp, the later-added note is shown first; neither note is removed.
 Displayed times have minute precision, so two notes showing the same time may have different stored timestamps.
 

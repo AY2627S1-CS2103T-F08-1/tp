@@ -44,10 +44,12 @@ public class NoteHistoryWorkflowTest {
     public Path temporaryFolder;
 
     @Test
-    public void execute_equalTimestampAndRepeatedNotes_surviveEditReloadAndShow() throws Exception {
+    public void execute_crossZoneTimestampAndRepeatedNotes_surviveEditReloadAndShow() throws Exception {
         Model model = new ModelManager();
         Person debtor = model.addPerson(new PersonBuilder().withName("Alice Tan").build());
         int debtorId = debtor.getDebtorId();
+        Clock laterLocalClock = Clock.fixed(Instant.parse("2026-10-09T06:31:00Z"),
+                ZoneId.of("America/Los_Angeles"));
         String firstText = "Called debtor; callback at 5pm?";
         String repeatedText = "Sent the same payment reminder.";
 
@@ -55,7 +57,7 @@ public class NoteHistoryWorkflowTest {
         // The punctuation workflow below covers parsing and saving each note through LogicManager.
         new NoteCommand(debtorId, firstText, FIXED_CLOCK).execute(model);
         new NoteCommand(debtorId, repeatedText, FIXED_CLOCK).execute(model);
-        new NoteCommand(debtorId, repeatedText, FIXED_CLOCK).execute(model);
+        new NoteCommand(debtorId, repeatedText, laterLocalClock).execute(model);
         List<InteractionNote> originalNotes = model.getAddressBook().getPersonList().getFirst().getInteractionNotes();
 
         JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
@@ -74,7 +76,7 @@ public class NoteHistoryWorkflowTest {
         assertTrue(profile.contains("Outstanding: S$0.00"));
         assertTrue(profile.contains("\n- " + originalNotes.get(2)
                 + "\n- " + originalNotes.get(1) + "\n- " + originalNotes.getFirst()
-                + "\nFollow-up history (chronological, oldest first):"));
+                + "\nFollow-up history (recorded order, oldest first):"));
 
         reloadedLogic.execute("edit 1 p/92345678");
         assertEquals(originalNotes, storage.readAddressBook().orElseThrow()

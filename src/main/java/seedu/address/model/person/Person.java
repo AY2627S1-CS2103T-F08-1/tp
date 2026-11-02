@@ -177,7 +177,7 @@ public class Person {
     }
 
     /**
-     * Returns the chronological interaction history of this debtor.
+     * Returns this debtor's interaction notes in insertion order.
      */
     public List<InteractionNote> getInteractionNotes() {
         return interactionNotes;

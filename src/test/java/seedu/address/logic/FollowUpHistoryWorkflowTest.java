@@ -66,7 +66,7 @@ class FollowUpHistoryWorkflowTest {
         Person debtor = model.addPerson(new PersonBuilder().build());
         int id = debtor.getDebtorId();
         Clock late = Clock.fixed(Instant.parse("2026-10-29T10:00:00Z"), ZoneId.of("UTC"));
-        Clock early = Clock.fixed(Instant.parse("2026-10-29T08:00:00Z"), ZoneId.of("UTC"));
+        Clock early = Clock.fixed(Instant.parse("2026-10-29T10:01:00Z"), ZoneId.of("America/Los_Angeles"));
 
         new FollowUpCommand(id, FollowUpCommand.Operation.SCHEDULE, Optional.of(FOLLOW_UP_DATE), late)
                 .execute(model);
@@ -90,8 +90,8 @@ class FollowUpHistoryWorkflowTest {
         assertEquals(FOLLOW_UP_DATE, completed.getFollowUpHistory().getLast().getDate().orElseThrow());
         assertTrue(completed.getFollowUpDate().isEmpty());
         String profile = Messages.formatProfile(completed);
-        assertTrue(profile.indexOf("] RESCHEDULED") < profile.indexOf("] SCHEDULED"));
-        assertTrue(profile.indexOf("2026-10-29 08:00") < profile.indexOf("2026-10-29 10:00"));
+        assertTrue(profile.indexOf("] SCHEDULED") < profile.indexOf("] RESCHEDULED"));
+        assertTrue(profile.indexOf("2026-10-29 10:00") < profile.indexOf("2026-10-29 03:01"));
         assertTrue(profile.contains("] CLEARED 2026-11-05"));
         assertTrue(profile.contains("] COMPLETED 2026-11-03"));
         assertTrue(profile.indexOf("] SCHEDULED 2026-11-03") < profile.indexOf("] CLEARED 2026-11-05"));
