@@ -1,5 +1,6 @@
 @startuml
 !include style.puml
+left to right direction
 skinparam arrowThickness 1.1
 skinparam arrowColor LOGIC_COLOR_T4
 skinparam classBackgroundColor LOGIC_COLOR
@@ -7,41 +8,42 @@ skinparam classBackgroundColor LOGIC_COLOR
 package Logic as LogicPackage {
 
 package "Parser Classes" as ParserClasses{
+Class AddressBookParser
 }
 Class XYZCommand
 Class CommandResult
 Class "{abstract}\nCommand" as Command
 
 
-Class "<<interface>>\nLogic" as Logic
+Class "<<interface>>\nLogic" as LogicApi
 Class LogicManager
 }
 
 package Model {
-Class HiddenModel #FFFFFF
+Class "<<interface>>\nModel" as ModelApi
 }
 
 package Storage {
+Class "<<interface>>\nStorage" as StorageApi
 }
 
 Class HiddenOutside #FFFFFF
-HiddenOutside ..> Logic
+HiddenOutside ..> LogicApi
 
-LogicManager .right.|> Logic
-LogicManager -right->"1" ParserClasses
+LogicManager .right.|> LogicApi
+LogicManager -right->"1" AddressBookParser
 ParserClasses ..> XYZCommand : <<create>>
 
 XYZCommand -up-|> Command
 LogicManager .left.> Command : <<call>>
 
-LogicManager --> Model
-LogicManager --> Storage
+LogicManager --> ModelApi
+LogicManager --> StorageApi
 Storage --[hidden] Model
 Command .[hidden]up.> Storage
-Command .right.> Model
+Command .right.> ModelApi
 note right of XYZCommand: XYZCommand = AddCommand, \nFindCommand, etc
 
-Logic ..> CommandResult
-LogicManager .down.> CommandResult
+LogicApi ..> CommandResult
 Command .up.> CommandResult : <<create>>
 @enduml

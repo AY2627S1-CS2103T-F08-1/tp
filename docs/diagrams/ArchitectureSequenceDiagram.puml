@@ -8,6 +8,11 @@ Participant ":Logic" as logic LOGIC_COLOR
 Participant ":Model" as model MODEL_COLOR
 Participant ":Storage" as storage STORAGE_COLOR
 
+note over model
+createTransactionCopy() returns candidate c. The deletePerson(p) call operates on c;
+publishTransaction(c) updates the live model after a successful save.
+end note
+
 user -[USER_COLOR]> ui : "delete 1"
 activate ui UI_COLOR
 
@@ -20,7 +25,7 @@ activate model MODEL_COLOR
 model -[MODEL_COLOR]-> logic : candidate
 deactivate model
 
-logic -[LOGIC_COLOR]> model : command.execute(candidate)\n(deletes p)
+logic -[LOGIC_COLOR]> model : deletePerson(p)\n(via DeleteCommand on candidate c)
 activate model MODEL_COLOR
 
 model -[MODEL_COLOR]-> logic

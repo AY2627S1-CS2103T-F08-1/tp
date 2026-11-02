@@ -42,9 +42,18 @@ Refer to the guide [_Setting up and getting started_](SettingUp.md).
 
 ### Architecture
 
-<img src="images/ArchitectureDiagram.png" width="280" />
+<img src="images/ArchitectureDiagram.png" width="360" />
 
-The ***Architecture Diagram*** given above explains the high-level design of the App.
+The ***Architecture Diagram*** given above explains the high-level design of the App. `Commons` provides shared support to several components; its individual dependencies are omitted from this high-level view.
+
+**Arrow key:**
+
+- Solid green: `UI` uses `Logic` and `Model`.
+- Solid blue: `Logic` uses `Storage` and `Model`.
+- Solid grey: `Main` initializes and connects the four components.
+- Dotted gold: `Storage` depends on `Model` and the data file.
+- Dotted black: the user interacts with `UI`.
+- Dependency direction: the tail depends on the head.
 
 The following provides a quick overview of the main components and their interactions.
 
@@ -103,13 +112,17 @@ The `UI` component,
 
 Here's a (partial) class diagram of the `Logic` component:
 
-<img src="images/LogicClassDiagram.png" width="550"/>
+<img src="images/LogicClassDiagram.png" width="900"/>
 
-The sequence diagram below illustrates the interactions within the `Logic` component, taking `execute("delete 1")` API call as an example.
+The following figures show `delete 1` in two phases: parsing and validating the index, then executing the command and saving the candidate model.
 
-![Interactions Inside the Logic Component for the `delete 1` Command](images/DeleteSequenceDiagram.png)
+<img src="images/DeleteParsingSequenceDiagram.png" width="960" alt="Parsing and validating the delete command" />
 
-<div markdown="span" class="alert alert-info">:information_source: **Note:** The lifeline for `DeleteCommandParser` should end at the destroy marker (X), but due to a limitation of PlantUML, it continues to the end of the diagram.
+<img src="images/DeleteTransactionSequenceDiagram.png" width="960" alt="Executing delete and saving the candidate model" />
+
+<p><a href="images/DeleteSequenceDiagram.png">Open the complete sequence at full size</a>.</p>
+
+<div markdown="span" class="alert alert-info">:information_source: **Note:** PlantUML extends the `DeleteCommandParser` lifeline to the bottom of the complete figure even though it has a destroy marker.
 </div>
 
 How the `Logic` component works:
@@ -141,13 +154,15 @@ How the parsing works:
 ### Model component
 
 The OSPS debtor model extends the original contact model with persistent IDs, outstanding amounts and
-interaction notes. The following diagram shows the stored debtor data:
+interaction notes. The following diagram shows selected stored data fields and persistent-ID allocation:
 
-<img src="images/DebtorModelDiagram.png" width="850" alt="OSPS debtor model and persistent ID allocation" />
+<img src="images/DebtorModelDiagram.png" width="1000" alt="OSPS debtor model and persistent ID allocation" />
 
-`AddressBook` saves `nextDebtorId` alongside its records so deleting a debtor, including the final debtor,
-does not cause ID reuse after restart. `clear` deliberately resets allocation. Missing IDs in legacy records
-are allocated on load.
+The associations from `Person` to immutable values and interaction notes allow reuse across replacement snapshots; they do not imply exclusive composition ownership.
+
+`AddressBook` saves `nextDebtorId` alongside its records. Deleting a debtor, including the final debtor, and
+running `clear` both preserve the allocator's high-water mark, so IDs are not reused after restart. Missing IDs
+in legacy records are allocated on load.
 
 `EditCommand` creates a replacement immutable `Person`, preserving its ID, outstanding amount, notes, contact
 preferences, pending follow-up date, follow-up history, promised payment date, and recovery
@@ -159,7 +174,9 @@ records. Email matching is currently case-sensitive; phone country codes are not
 
 **API** : [`Model.java`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/java/seedu/address/model/Model.java)
 
-<img src="images/ModelClassDiagram.png" width="450" />
+<img src="images/ModelClassDiagram.png" width="650" />
+
+The figure uses associations for immutable `Person` values and history entries that may be reused by replacement instances. The filled diamond remains where the collection's lifetime is owned by its containing address book.
 
 
 The `Model` component,
@@ -180,7 +197,7 @@ The `Model` component,
 
 **API** : [`Storage.java`](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/master/src/main/java/seedu/address/storage/Storage.java)
 
-<img src="images/StorageClassDiagram.png" width="550" />
+<img src="images/StorageClassDiagram.png" width="800" />
 
 The `Storage` component,
 * can save both address book data and user preference data in JSON format, and read them back into corresponding objects.
@@ -359,14 +376,16 @@ case-insensitive literal substring in the debtor's name or the debtor's complete
 semantics,
 so a debtor is included when any keyword matches either field.
 
-![Interactions for `find` followed by `list`](images/FindListSequenceDiagram.png)
+<img src="images/FindSequenceDiagram.png" width="960" alt="Interactions for the find command" />
+
+<img src="images/ListSequenceDiagram.png" width="960" alt="Interactions for the list command" />
 
 `FindCommandParser` normalises surrounding and repeated whitespace before constructing a
-`NameContainsKeywordsPredicate`. When `FindCommand` executes, it passes that predicate and the default ID comparator
+`NameContainsKeywordsPredicate`. In the first figure, `FindCommand` passes that predicate and the default ID comparator
 to `ModelManager#updatePersonView`. The JavaFX `FilteredList` applies the predicate to the active debtors, while the
 existing `SortedList` returned by `ModelManager#getFilteredPersonList` keeps the displayed matches in ascending
-persistent debtor ID order. The second half of the diagram shows how `list` restores all active debtors by replacing
-the search predicate with `Model#PREDICATE_SHOW_ALL_PERSONS` and restoring the same default comparator.
+persistent debtor ID order. The second figure shows how `list` restores all active debtors by replacing the search
+predicate with `Model#PREDICATE_SHOW_ALL_PERSONS` and restoring the same default comparator.
 
 The `sort` command changes only the comparator of that `SortedList`, so the current `FilteredList` predicate and the
 backing `AddressBook` remain unchanged. `SortCommandParser` requires one `--by` option (`id`, `name`, or `amount`) and
@@ -569,7 +588,7 @@ Step 6. The user executes `clear`, which calls `Model#commitAddressBook()`. Sinc
 
 The following activity diagram summarizes what happens when a user executes a new command:
 
-<img src="images/CommitActivityDiagram.png" width="250" />
+<img src="images/CommitActivityDiagram.png" width="380" />
 
 #### Design considerations:
 

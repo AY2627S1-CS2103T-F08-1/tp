@@ -1,4 +1,5 @@
 @startuml
+title Example design sketch: add-remark command
 hide circle
 skinparam classAttributeIconSize 0
 
@@ -6,9 +7,9 @@ Class "{abstract}\nCommand" as Command {
   +execute(Model): CommandResult
 }
 Class RemarkCommand {
-  +COMMAND_WORD: String
-  +MESSAGE_USAGE: String
-  +MESSAGE_NOT_IMPLEMENTED_YET: String
+  +{static} COMMAND_WORD: String
+  +{static} MESSAGE_USAGE: String
+  +{static} MESSAGE_NOT_IMPLEMENTED_YET: String
   +execute(Model): CommandResult
 }
 Class CommandException
@@ -16,4 +17,7 @@ Class CommandException
 RemarkCommand -up-|> Command
 Command ..> CommandException: throws >
 RemarkCommand .right.> CommandException: throws >
+note bottom
+  Teaching example only; RemarkCommand is not part of the current OSPS source.
+end note
 @enduml

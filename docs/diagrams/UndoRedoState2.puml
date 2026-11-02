@@ -15,7 +15,10 @@ package States <<rectangle>> {
 State1 -[hidden]right-> State2
 State2 -[hidden]right-> State3
 
-class Pointer as "Current State" #FFFFFF
-
-Pointer -up-> State3
+object "<u>history:VersionedAddressBook</u>" as Pointer
+Pointer : currentStatePointer = 2
+show Pointer members
+Pointer --> State1 : state[0]
+Pointer --> State2 : state[1]
+Pointer --> State3 : state[2]
 @end
