@@ -33,7 +33,10 @@ public class NameTest {
         assertFalse(Name.isValidName("-peter")); // starts with a non-alphanumeric character
         assertFalse(Name.isValidName("peter-")); // ends with a non-alphanumeric character
         assertFalse(Name.isValidName("O'Neil!")); // contains an invalid character
-        assertFalse(Name.isValidName("\u3164")); // invisible Hangul filler
+        for (String filler : new String[] {"\u115f", "\u1160", "\u3164", "\uffa0"}) {
+            assertFalse(Name.isValidName(filler));
+            assertFalse(Name.isValidName(filler + "Alice"));
+        }
         assertFalse(Name.isValidName("A \u0301B")); // combining mark is not attached to an alphanumeric character
 
         // valid name

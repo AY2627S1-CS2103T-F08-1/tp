@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 
 import java.text.Normalizer;
+import java.util.Set;
 
 /**
  * Represents a Person's name in the address book.
@@ -21,6 +22,8 @@ public class Name {
      */
     public static final String VALIDATION_REGEX =
             "(?U)\\p{Alnum}\\p{M}*(?:(?:\\p{Alnum}|[ '’-]+\\p{Alnum})\\p{M}*)*";
+
+    private static final Set<Integer> INVISIBLE_FILLERS = Set.of(0x115f, 0x1160, 0x3164, 0xffa0);
 
     public final String fullName;
 
@@ -42,12 +45,7 @@ public class Name {
         requireNonNull(test);
         String normalizedName = Normalizer.normalize(test, Normalizer.Form.NFC);
         return normalizedName.matches(VALIDATION_REGEX)
-                && normalizedName.codePoints().anyMatch(Name::isVisibleAlphanumeric);
-    }
-
-    private static boolean isVisibleAlphanumeric(int character) {
-        return Character.isLetterOrDigit(character) && character != '\u115f' && character != '\u1160'
-                && character != '\u3164' && character != '\uffa0';
+                && !INVISIBLE_FILLERS.contains(normalizedName.codePointAt(0));
     }
 
 
