@@ -53,6 +53,8 @@ public class EditCommand extends Command {
             + PREFIX_EMAIL + "johndoe@example.com";
 
     public static final String MESSAGE_EDIT_PERSON_SUCCESS = "Edited debtor: %1$s";
+    public static final String MESSAGE_UNCHANGED =
+            "The supplied values for debtor ID %1$d are unchanged; no change made.";
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
     public static final String MESSAGE_DUPLICATE_PERSON =
             "A debtor with the same phone number or email address already exists.";
@@ -85,6 +87,10 @@ public class EditCommand extends Command {
 
         Person personToEdit = lastShownList.get(index.getZeroBased());
         Person editedPerson = createEditedPerson(personToEdit, editPersonDescriptor);
+
+        if (personToEdit.equals(editedPerson)) {
+            return new CommandResult(String.format(MESSAGE_UNCHANGED, personToEdit.getDebtorId()));
+        }
 
         boolean duplicatesAnotherPerson = model.getAddressBook().getPersonList().stream()
                 .anyMatch(person -> person != personToEdit && person.isSamePerson(editedPerson));

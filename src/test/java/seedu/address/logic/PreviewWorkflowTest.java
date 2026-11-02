@@ -1,6 +1,7 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -11,6 +12,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.Model;
@@ -40,7 +42,10 @@ public class PreviewWorkflowTest {
         assertTrue(edit.contains("Would edit debtor:"));
         assertTrue(edit.contains("Bob Updated"));
         assertTrue(edit.contains("Current debtor: ID: 2; Bob"));
-        assertTrue(logic.execute("preview edit 1 n/Bob").getFeedbackToUser().contains("No data would change"));
+        String unchangedPreview = logic.execute("preview edit 1 n/Bob").getFeedbackToUser();
+        assertTrue(unchangedPreview.contains("No data would change"));
+        assertTrue(unchangedPreview.contains(String.format(EditCommand.MESSAGE_UNCHANGED, 2)));
+        assertFalse(unchangedPreview.contains("Would edit debtor:"));
         assertEquals(before, model.getAddressBook().getPersonList());
         assertEquals("Bob", model.getFilteredPersonList().getFirst().getName().toString());
         assertEquals(saves, storage.saves);
@@ -56,6 +61,22 @@ public class PreviewWorkflowTest {
                 new seedu.address.logic.commands.PreviewCommand(new seedu.address.logic.commands.ListCommand()));
         assertThrows(ParseException.class, () -> logic.execute("preview edit"));
         assertEquals(saves, storage.saves);
+    }
+
+    @Test
+    public void noOpEdit_doesNotSaveOrAddUndoState() throws Exception {
+        Model model = new ModelManager();
+        CountingStorage storage = new CountingStorage(directory.resolve("no-op-book.json"));
+        Logic logic = new LogicManager(model,
+                new StorageManager(storage, new JsonUserPrefsStorage(directory.resolve("no-op-prefs.json"))));
+        logic.execute("add n/Alice p/91111111 e/alice@example.com a/Main Street");
+        int savesBeforeEdit = storage.saves;
+
+        assertEquals(String.format(EditCommand.MESSAGE_UNCHANGED, 1),
+                logic.execute("edit 1 n/Alice").getFeedbackToUser());
+        assertEquals(savesBeforeEdit, storage.saves);
+        logic.execute("undo");
+        assertTrue(model.getAddressBook().getPersonList().isEmpty());
     }
 
     private static class CountingStorage extends JsonAddressBookStorage {
