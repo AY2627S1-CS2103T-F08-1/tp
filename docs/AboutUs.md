@@ -20,7 +20,7 @@ We are a team based in the [School of Computing, National University of Singapor
 
 <img src="images/chocohacks33.png" width="200px" alt="Profile image for Prakash">
 
-[[github](https://github.com/chocoHacks33)]
+[[github](https://github.com/chocoHacks33)] [[portfolio](team/chocohacks33.md)]
 
 * Role: Developer
 * Responsibilities: Debtor search and list presentation, privacy-preserving logging, DevOps, continuous integration,

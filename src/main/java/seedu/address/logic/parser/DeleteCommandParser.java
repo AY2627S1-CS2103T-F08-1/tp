@@ -17,20 +17,22 @@ public class DeleteCommandParser implements Parser<DeleteCommand> {
      */
     public DeleteCommand parse(String args) throws ParseException {
         String trimmedArgs = args.trim();
+        StringBuilder decimal = new StringBuilder(trimmedArgs.length());
         int firstNonZero = -1;
         for (int index = 0; index < trimmedArgs.length(); index++) {
-            char character = trimmedArgs.charAt(index);
-            if (character < '0' || character > '9') {
+            int digit = Character.digit(trimmedArgs.charAt(index), 10);
+            if (digit < 0) {
                 throw invalidIndex();
             }
-            if (firstNonZero < 0 && character != '0') {
+            decimal.append((char) ('0' + digit));
+            if (firstNonZero < 0 && digit != 0) {
                 firstNonZero = index;
             }
         }
         if (firstNonZero < 0) {
             throw invalidIndex();
         }
-        return DeleteCommand.fromOneBasedDecimal(trimmedArgs.substring(firstNonZero));
+        return DeleteCommand.fromOneBasedDecimal(decimal.substring(firstNonZero));
     }
 
     private ParseException invalidIndex() {

@@ -75,7 +75,7 @@ public class BrandingTest {
             Map.entry("contactable [--at HH:mm] [--method call|sms|email|letter]",
                     List.of("contactable", "contactable --at 09:30 --method sms")),
             Map.entry("preview edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/AMOUNT] [t/TAG]... "
-                    + "| delete INDEX",
+                    + "| preview delete INDEX",
                     List.of("preview edit 1 n/Alice", "preview delete 2")),
             Map.entry("export --id DEBTOR_ID", List.of("export --id 1", "export --id 3")),
             Map.entry("followup --id DEBTOR_ID --date YYYY-MM-DD | --clear | --done",

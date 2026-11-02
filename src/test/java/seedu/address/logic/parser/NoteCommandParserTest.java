@@ -7,6 +7,8 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_OUTCOME;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.Messages;
@@ -123,6 +125,22 @@ public class NoteCommandParserTest {
     public void parse_blankText_throwsParseException() {
         assertParseFailure(parser, " --id 1 --text    ", InteractionNote.MESSAGE_CONSTRAINTS);
         assertParseFailure(parser, " --id 1 --text", InteractionNote.MESSAGE_CONSTRAINTS);
+    }
+
+    @Test
+    public void parse_formattingOnlyText_throwsParseException() {
+        for (String text : List.of("\u200b", "\ufeff", "\u200d", "\u0085", "\u00a0\u200b\ufeff")) {
+            assertParseFailure(parser, " --id 1 --text " + text, InteractionNote.MESSAGE_CONSTRAINTS);
+            assertParseFailure(parser, " --id 1 --outcome reached --text " + text,
+                    InteractionNote.MESSAGE_CONSTRAINTS);
+        }
+    }
+
+    @Test
+    public void parse_meaningfulUnicodeText_preservesFormattingAndCombiningMarks() {
+        for (String text : List.of("已联系", "👩‍💻", "e\u0301", "\u0301", "Call\u200bback", "\ufeffPaid")) {
+            assertParseSuccess(parser, " --id 1 --text " + text, new NoteCommand(1, text));
+        }
     }
 
     @Test

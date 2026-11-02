@@ -1,4 +1,5 @@
 @startuml
+title Example design sketch: add-remark parser
 hide circle
 skinparam classAttributeIconSize 0
 
@@ -11,4 +12,7 @@ Class ParserException
 RemarkCommandParser .up.|> Parser
 Parser .right.> ParserException: throws >
 RemarkCommandParser .right.> ParserException: throws >
+note bottom
+  Teaching example only; RemarkCommandParser is not part of the current OSPS source.
+end note
 @enduml

@@ -38,12 +38,12 @@ UserPrefs .up.|> ReadOnlyUserPrefs
 
 AddressBook *--> "1" UniquePersonList
 UniquePersonList --> "~* all" Person
-Person *--> Name
-Person *--> Phone
-Person *--> Email
-Person *--> Address
-Person *--> "*" Tag
-Person *--> "0..* {ordered}" InteractionNote
+Person --> Name
+Person --> Phone
+Person --> Email
+Person --> Address
+Person --> "*" Tag
+Person --> "0..* {ordered}" InteractionNote
 
 Person -[hidden]up--> I
 InteractionNote -[hidden]up--> I

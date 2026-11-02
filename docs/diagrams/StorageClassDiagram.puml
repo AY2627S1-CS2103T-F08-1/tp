@@ -1,5 +1,6 @@
 @startuml
 !include style.puml
+title Storage internals and Model boundary
 skinparam arrowThickness 1.1
 skinparam arrowColor STORAGE_COLOR
 skinparam classBackgroundColor STORAGE_COLOR
@@ -23,6 +24,10 @@ Class JsonAdaptedTag
 
 }
 
+package Model as ModelPackage <<Rectangle>> {
+Class "<<interface>>\nReadOnlyAddressBook" as ReadOnlyAddressBook
+}
+
 Class HiddenOutside #FFFFFF
 HiddenOutside ..> Storage
 
@@ -31,8 +36,11 @@ StorageManager -down-> "1" JsonUserPrefsStorage
 StorageManager -down-> "1" JsonAddressBookStorage
 
 JsonAddressBookStorage ..> JsonSerializableAddressBook
+Storage ..> ReadOnlyAddressBook
 JsonSerializableAddressBook --> "*" JsonAdaptedPerson
 JsonAdaptedPerson --> "0..* {ordered}" JsonAdaptedInteractionNote
 JsonAdaptedPerson --> "*" JsonAdaptedTag
+
+StoragePackage -right[hidden]-> ModelPackage
 
 @enduml

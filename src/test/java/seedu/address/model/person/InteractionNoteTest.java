@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,30 @@ public class InteractionNoteTest {
         assertFalse(InteractionNote.isValidText(""));
         assertFalse(InteractionNote.isValidText("   "));
         assertTrue(InteractionNote.isValidText("Left voicemail; follow up tomorrow."));
+    }
+
+    @Test
+    public void isValidNewText_spacingControlsAndFormatsOnly_returnsFalse() {
+        assertFalse(InteractionNote.isValidNewText(null));
+        for (String text : List.of("", " ", "\u00a0", "\u2003", "\u200b", "\ufeff", "\u200d",
+                "\u0000", "\u0085", " \u00a0\u200b\ufeff\t")) {
+            assertFalse(InteractionNote.isValidNewText(text));
+        }
+    }
+
+    @Test
+    public void isValidNewText_contentWithFormattingOrCombiningMarks_returnsTrue() {
+        for (String text : List.of("Called; promised payment.", "已联系", "👩‍💻", "e\u0301", "\u0301",
+                "Call\u200bback", "\ufeffPaid", "\u00a0已联系\u200d")) {
+            assertTrue(InteractionNote.isValidNewText(text));
+        }
+    }
+
+    @Test
+    public void fromStorage_legacyFormattingOnlyText_preservesContent() {
+        for (String text : List.of("\u200b", "\ufeff", "\u200d", "\u00a0\u200b")) {
+            assertEquals(text, InteractionNote.fromStorage(TIMESTAMP.toString(), text).getText());
+        }
     }
 
     @Test

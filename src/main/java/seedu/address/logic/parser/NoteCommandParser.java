@@ -45,7 +45,7 @@ public class NoteCommandParser implements Parser<NoteCommand> {
         String idText = validateOptions(optionMultimap, textMultimap);
         int debtorId = ParserUtil.parseDebtorId(idText);
         String noteText = textMultimap.getValue(PREFIX_NOTE_TEXT).orElseThrow();
-        if (!InteractionNote.isValidText(noteText)) {
+        if (!InteractionNote.isValidNewText(noteText)) {
             throw new ParseException(InteractionNote.MESSAGE_CONSTRAINTS);
         }
         return createCommand(debtorId, noteText, optionMultimap.getValue(PREFIX_OUTCOME));

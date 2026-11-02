@@ -6,8 +6,11 @@ import java.util.Optional;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import seedu.address.commons.core.AppHome;
+import seedu.address.commons.core.AppHomeLock;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.commons.util.StringUtil;
@@ -44,11 +47,22 @@ public class MainApp extends Application {
     protected Logic logic;
     protected Storage storage;
     protected Model model;
+    private AppHomeLock homeLock;
+    private String startupError;
 
     @Override
     public void init() throws Exception {
         logger.info("=============================[ Initializing AddressBook ]===========================");
         super.init();
+
+        try {
+            homeLock = AppHomeLock.acquire(AppHome.resolve(".osps.lock"));
+        } catch (IOException exception) {
+            startupError = "OSPS could not lock its data folder. " + exception.getMessage()
+                    + "\nClose other OSPS instances using this folder and check folder permissions.";
+            logger.warning(startupError);
+            return;
+        }
 
         JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(USER_PREFS_FILE_PATH);
         UserPrefs userPrefs = initPrefs(userPrefsStorage);
@@ -122,6 +136,15 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        if (startupError != null) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("OSPS cannot start");
+            alert.setHeaderText("Data folder is unavailable");
+            alert.setContentText(startupError);
+            alert.showAndWait();
+            Platform.exit();
+            return;
+        }
         logger.info("Starting AddressBook " + MainApp.VERSION);
         ui.start(primaryStage);
     }
@@ -130,9 +153,19 @@ public class MainApp extends Application {
     public void stop() {
         logger.info("============================ [ Stopping AddressBook ] =============================");
         try {
-            storage.saveUserPrefs(model.getUserPrefs());
+            if (storage != null && model != null) {
+                storage.saveUserPrefs(model.getUserPrefs());
+            }
         } catch (IOException e) {
             logger.severe("Failed to save preferences " + StringUtil.getDetails(e));
+        } finally {
+            if (homeLock != null) {
+                try {
+                    homeLock.close();
+                } catch (IOException e) {
+                    logger.severe("Failed to release data folder lock " + StringUtil.getDetails(e));
+                }
+            }
         }
     }
 }

@@ -71,6 +71,23 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parseIndexAndId_nonAsciiDecimalDigits_preserveTargets() throws Exception {
+        for (String token : List.of("\uff11", "\u0661", "\u0967", "1\uff10", "\uff101")) {
+            assertEquals(Integer.parseInt(token), ParserUtil.parseIndex(token).getOneBased());
+            assertEquals(Integer.parseInt(token), ParserUtil.parseDebtorId(token));
+        }
+    }
+
+    @Test
+    public void parseIndex_asciiBoundaryAndLeadingZeroes_preserved() throws Exception {
+        assertEquals(1, ParserUtil.parseIndex("0001").getOneBased());
+        assertEquals(Integer.MAX_VALUE, ParserUtil.parseIndex("2147483647").getOneBased());
+        for (String token : List.of("+1", "-1", "0", "000", "2147483648", "9".repeat(200))) {
+            assertThrows(ParseException.class, MESSAGE_INVALID_INDEX, () -> ParserUtil.parseIndex(token));
+        }
+    }
+
+    @Test
     public void parseName_null_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> ParserUtil.parseName((String) null));
     }

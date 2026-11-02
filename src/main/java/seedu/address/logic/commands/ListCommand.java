@@ -18,7 +18,7 @@ public class ListCommand extends Command {
             + "Example: " + COMMAND_WORD;
 
     public static final String MESSAGE_EMPTY_LIST =
-            "No active debtors found (0 active). Add a debtor with the add command.";
+            "No debtors found in the current session (0 listed).";
     public static final String MESSAGE_SINGLE_DEBTOR = "1 active debtor listed.";
     public static final String MESSAGE_MULTIPLE_DEBTORS = "%1$d active debtors listed.";
 

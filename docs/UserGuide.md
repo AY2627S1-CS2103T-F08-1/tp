@@ -37,6 +37,9 @@ while retaining the benefits of a graphical user interface (GUI).
    OSPS stores its data, preferences, logs and exports in the folder containing the JAR, wherever you launch it from.<br>
    The OSPS window should appear in a few seconds with sample debtor data on a first run.
 
+   OSPS allows one instance per home folder. If another instance is already using that folder, close it before
+   starting OSPS again. Older OSPS versions do not enforce this lock, so close them too before starting this version.
+
    ![OSPS interface showing debtor profiles and outstanding amounts](images/Ui.png)
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
@@ -587,6 +590,11 @@ OSPS keeps all of its files in the **home folder**, the folder that contains `os
 folder your terminal is in when you launch OSPS. Records are saved to `data/addressbook.json`, and `preferences.json`,
 the log file `osps.log.0` and the `exports` folder are in the same home folder. For example, if the JAR is at
 `~/Downloads/osps/osps.jar`, records are saved to `~/Downloads/osps/data/addressbook.json`.
+
+Close all OSPS instances using a home folder before backing up, restoring, migrating or manually editing its data.
+OSPS prevents another instance of this version from opening the same home, but older versions do not respect this lock.
+Do not remove or replace the `.osps.lock` file while OSPS is running. Copy the `data` folder to a separate location
+for a backup; to restore, preserve the current data, replace the folder with the backup, and restart OSPS.
 
 To keep your records when you move to a newer JAR, copy the `data` folder (and `preferences.json` if you want your
 window settings) into the folder that contains the new JAR. If you used an earlier version and launched it from a
