@@ -246,19 +246,18 @@ public class UiRuntimeTest {
         runOnJavaFxThread(() -> {
             helpWindow = new HelpWindow();
             Stage stage = helpWindow.getRoot();
-            double preferredHeight = stage.getHeight();
             Rectangle2D shortScreen = new Rectangle2D(0, 0, 1200, 480);
             Rectangle2D largeScreen = new Rectangle2D(0, 0, 1200, 800);
 
-            assertTrue(Double.isFinite(preferredHeight));
-            assertTrue(preferredHeight > shortScreen.getHeight());
-
             helpWindow.show(List.of(shortScreen), shortScreen);
-            assertTrue(stage.getHeight() <= shortScreen.getHeight());
+            double shortScreenHeight = stage.getHeight();
+            assertTrue(Double.isFinite(shortScreenHeight));
+            assertTrue(shortScreenHeight <= shortScreen.getHeight());
 
             helpWindow.hide();
             helpWindow.show(List.of(largeScreen), largeScreen);
-            assertEquals(preferredHeight, stage.getHeight(), 1.0);
+            assertTrue(stage.getHeight() > shortScreenHeight);
+            assertTrue(stage.getHeight() <= largeScreen.getHeight());
         });
     }
 

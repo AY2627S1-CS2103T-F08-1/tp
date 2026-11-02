@@ -118,7 +118,7 @@ public class HelpWindow extends UiPart<Stage> {
 
     private static final Logger logger = LogsCenter.getLogger(HelpWindow.class);
     private static final String FXML = "HelpWindow.fxml";
-    private final double preferredHeight;
+    private double preferredHeight = Double.NaN;
     private final double preferredMinHeight;
 
     @FXML
@@ -143,8 +143,6 @@ public class HelpWindow extends UiPart<Stage> {
         helpMessage.setText(HELP_MESSAGE);
         commandReference.setText(COMMAND_REFERENCE.stripTrailing());
         getRoot().getScene().addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPress);
-        getRoot().sizeToScene();
-        preferredHeight = finitePreferredHeight(getRoot());
         preferredMinHeight = getRoot().getMinHeight();
     }
 
@@ -215,14 +213,24 @@ public class HelpWindow extends UiPart<Stage> {
     /** Shows the window using the supplied visual bounds. Package-private for screen-size regressions. */
     void show(List<Rectangle2D> screenBounds, Rectangle2D primaryBounds) {
         Stage stage = getRoot();
+        double width = usableDimension(stage.getWidth(), stage.getScene().getWidth());
+        double height = usableDimension(stage.getHeight(), stage.getScene().getHeight());
         Rectangle2D windowBounds = new Rectangle2D(stage.getX(), stage.getY(),
-                Math.max(stage.getWidth(), 1), Math.max(stage.getHeight(), 1));
+                width, height);
         Rectangle2D screen = WindowBounds.screenFor(windowBounds, screenBounds, primaryBounds);
         double screenHeight = screen.getHeight();
+
+        if (!stage.isShowing()) {
+            stage.show();
+        }
+        if (!Double.isFinite(preferredHeight) || preferredHeight <= 0) {
+            stage.sizeToScene();
+            preferredHeight = finitePreferredHeight(stage);
+        }
+
         getRoot().setMinHeight(capHeight(preferredMinHeight, screenHeight));
         getRoot().setMaxHeight(screenHeight);
         getRoot().setHeight(capHeight(preferredHeight, screenHeight));
-        stage.show();
         stage.setX(screen.getMinX() + (screen.getWidth() - stage.getWidth()) / 2);
         stage.setY(screen.getMinY() + (screen.getHeight() - stage.getHeight()) / 2);
     }
@@ -236,7 +244,18 @@ public class HelpWindow extends UiPart<Stage> {
         if (!Double.isFinite(height) || height <= 0) {
             height = stage.getScene().getHeight();
         }
+        if (!Double.isFinite(height) || height <= 0) {
+            height = stage.getScene().getRoot().prefHeight(-1);
+        }
+        if (!Double.isFinite(height) || height <= 0) {
+            height = stage.getMinHeight();
+        }
         return height;
+    }
+
+    private static double usableDimension(double stageSize, double sceneSize) {
+        double size = Double.isFinite(stageSize) && stageSize > 0 ? stageSize : sceneSize;
+        return Double.isFinite(size) && size > 0 ? size : 1;
     }
 
     /**
