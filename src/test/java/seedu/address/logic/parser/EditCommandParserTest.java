@@ -95,6 +95,7 @@ public class EditCommandParserTest {
         assertParseFailure(parser, "1 o/1.234", OutstandingAmount.MESSAGE_CONSTRAINTS); // too many decimals
         assertParseFailure(parser, "1 o/one", OutstandingAmount.MESSAGE_CONSTRAINTS); // malformed amount
         assertParseFailure(parser, "1 a/\u200b", Address.MESSAGE_CONSTRAINTS); // invisible-only address
+        assertParseFailure(parser, "1 a/\ufe0f", Address.MESSAGE_CONSTRAINTS); // standalone variation selector
 
         // invalid phone followed by valid email
         assertParseFailure(parser, "1" + INVALID_PHONE_DESC + EMAIL_DESC_AMY, Phone.MESSAGE_CONSTRAINTS);
@@ -172,6 +173,12 @@ public class EditCommandParserTest {
         // address
         userInput = targetIndex.getOneBased() + ADDRESS_DESC_AMY;
         descriptor = new EditPersonDescriptorBuilder().withAddress(VALID_ADDRESS_AMY).build();
+        expectedCommand = new EditCommand(targetIndex, descriptor);
+        assertParseSuccess(parser, userInput, expectedCommand);
+
+        // address with a combining mark
+        userInput = targetIndex.getOneBased() + " a/Cafe\u0301 Road";
+        descriptor = new EditPersonDescriptorBuilder().withAddress("Cafe\u0301 Road").build();
         expectedCommand = new EditCommand(targetIndex, descriptor);
         assertParseSuccess(parser, userInput, expectedCommand);
 

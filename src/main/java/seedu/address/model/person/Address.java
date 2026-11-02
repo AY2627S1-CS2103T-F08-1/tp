@@ -35,13 +35,25 @@ public class Address {
      */
     public static boolean isValidAddress(String test) {
         requireNonNull(test);
-        if (!test.matches(VALIDATION_REGEX)) {
-            return false;
-        }
-        return test.codePoints().anyMatch(character -> switch (Character.getType(character)) {
-            case Character.CONTROL, Character.FORMAT -> false;
-            default -> !Character.isWhitespace(character) && !Character.isSpaceChar(character);
-        });
+        return test.matches(VALIDATION_REGEX);
+    }
+
+    /**
+     * Returns true if a new address has valid syntax and at least one visible base character.
+     * This is stricter than {@link #isValidAddress(String)} so legacy stored addresses remain loadable.
+     */
+    public static boolean isValidUserInput(String test) {
+        requireNonNull(test);
+        return isValidAddress(test) && test.codePoints().anyMatch(Address::isVisibleBaseCharacter);
+    }
+
+    private static boolean isVisibleBaseCharacter(int character) {
+        int type = Character.getType(character);
+        return !Character.isWhitespace(character) && !Character.isSpaceChar(character)
+                && type != Character.CONTROL && type != Character.FORMAT
+                && type != Character.NON_SPACING_MARK && type != Character.COMBINING_SPACING_MARK
+                && type != Character.ENCLOSING_MARK && character != '\u115f' && character != '\u1160'
+                && character != '\u3164' && character != '\uffa0';
     }
 
     @Override

@@ -1,5 +1,6 @@
 package seedu.address.model.person;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
@@ -45,12 +46,22 @@ public class AddressTest {
     }
 
     @Test
-    public void isValidAddress_invisibleFormattingCharacters_rejectsBlankAddresses() {
+    public void isValidUserInput_invisibleFormattingCharacters_rejectsBlankAddresses() {
         for (String blank : new String[] {"\u200b", "\ufeff", "\u0000", "\u200b\ufeff"}) {
-            assertFalse(Address.isValidAddress(blank));
-            assertThrows(IllegalArgumentException.class, () -> new Address(blank));
+            assertTrue(Address.isValidAddress(blank));
+            assertFalse(Address.isValidUserInput(blank));
+            assertEquals(blank, new Address(blank).toString());
         }
-        assertTrue(Address.isValidAddress("Block\u200b123"));
+        assertTrue(Address.isValidUserInput("Block\u200b123"));
+    }
+
+    @Test
+    public void isValidUserInput_standaloneMarksAndFillers_rejectsBlankAddresses() {
+        for (String blank : new String[] {"\u034f", "\ufe0f", "\udb40\udd00", "\u3164"}) {
+            assertFalse(Address.isValidUserInput(blank));
+        }
+        assertTrue(Address.isValidUserInput("Cafe\u0301 Road"));
+        assertTrue(Address.isValidUserInput("地址\ufe0f"));
     }
 
     @Test

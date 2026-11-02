@@ -222,9 +222,21 @@ public class AddCommandParserTest {
         assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + " a/\u200b",
                 Address.MESSAGE_CONSTRAINTS);
 
+        // address containing only an invisible combining mark
+        assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + " a/\u034f",
+                Address.MESSAGE_CONSTRAINTS);
+
         // non-empty preamble
         assertParseFailure(parser, PREAMBLE_NON_EMPTY + NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB
                 + ADDRESS_DESC_BOB + TAG_DESC_HUSBAND + TAG_DESC_FRIEND,
                 String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddCommand.MESSAGE_USAGE));
+    }
+
+    @Test
+    public void parse_addressWithCombiningMark_success() {
+        Person expectedPerson = new PersonBuilder(BOB).withAddress("Cafe\u0301 Road").withTags().build();
+
+        assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + " a/Cafe\u0301 Road",
+                new AddCommand(expectedPerson));
     }
 }
