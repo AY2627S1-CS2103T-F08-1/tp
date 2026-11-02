@@ -161,8 +161,10 @@ A debtor can have any number of tags, including zero.
 * `OUTSTANDING_AMOUNT` must be a non-negative number with at most two decimal places. An optional `S$` or `$` prefix
   and correctly grouped comma separators are accepted; for example, `0`, `S$0.00`, `$1250.5`, and `S$1,250.00`.
 * Negative values, malformed currency, and values with more than two decimal places are rejected.
-* Names must start and end with an alphanumeric Unicode character. Spaces, hyphens, and apostrophes are allowed within
-  a name; for example, `Anne-Marie`, `O'Neil`, `José Tan`, and `陈小明` are valid.
+* Names must start with an alphanumeric Unicode character. Unicode letters, numbers, combining marks, spaces,
+  hyphens, straight apostrophes, and typographic apostrophes are accepted. Combining marks must follow an
+  alphanumeric character. For example, `Anne-Marie`, `O'Neil`, `O’Connor`, `José Tan`, `陈小明`, and `குமார்` are valid.
+  Canonically equivalent spellings, such as composed and decomposed `José`, are stored in the same composed form.
 * Phone numbers and email addresses must be unique across active debtors. Debtors may share the same name.
 * Leading and trailing spaces around command values are removed. Phone numbers accept digits only (at least
   three); spaces within a number, hyphens and `+` are rejected. Country codes and leading zeroes are not

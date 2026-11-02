@@ -138,8 +138,15 @@ public class EditCommandParserTest {
     @Test
     public void parse_internationalName_success() {
         EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withName("José 陈").build();
+        EditPersonDescriptor typographicApostropheDescriptor =
+                new EditPersonDescriptorBuilder().withName("D’Arcy").build();
+        EditPersonDescriptor combiningMarksDescriptor =
+                new EditPersonDescriptorBuilder().withName("குமார்").build();
 
-        assertParseSuccess(parser, "1 n/José 陈", new EditCommand(INDEX_FIRST_PERSON, descriptor));
+        assertParseSuccess(parser, "1 n/Jose\u0301 陈", new EditCommand(INDEX_FIRST_PERSON, descriptor));
+        assertParseSuccess(parser, "1 n/D’Arcy",
+                new EditCommand(INDEX_FIRST_PERSON, typographicApostropheDescriptor));
+        assertParseSuccess(parser, "1 n/குமார்", new EditCommand(INDEX_FIRST_PERSON, combiningMarksDescriptor));
     }
 
     @Test
