@@ -123,10 +123,10 @@ public class BrandingTest {
             Map.entry("undo", UndoCommand.class));
 
     @Test
-    public void releaseIdentity_matchesV14Branding() {
+    public void releaseIdentity_matchesV16Branding() {
         assertEquals("OSPS", MainApp.APP_NAME);
-        assertEquals("v1.5", MainApp.VERSION);
-        assertEquals("OSPS v1.5", MainWindow.APP_TITLE);
+        assertEquals("v1.6", MainApp.VERSION);
+        assertEquals("OSPS v1.6", MainWindow.APP_TITLE);
         assertEquals("Exiting OSPS as requested ...", ExitCommand.MESSAGE_EXIT_ACKNOWLEDGEMENT);
     }
 
