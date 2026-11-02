@@ -450,6 +450,8 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [o/OUTSTANDING_AMOU
   The index **must be a positive integer** 1, 2, 3, …​
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
+* Supplying only values that the debtor already has reports that no change was made. It does not rewrite the data or
+  add an undo step. A preview of the same input also reports that no data would change.
 * Updated names follow the same rules as names provided to `add`.
 * Use `o/OUTSTANDING_AMOUNT` to replace the outstanding amount. It accepts the same non-negative currency values as
   `add`, such as `o/S$1,250.00` and `o/0`.
