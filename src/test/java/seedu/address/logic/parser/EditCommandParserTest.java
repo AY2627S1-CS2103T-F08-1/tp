@@ -96,6 +96,7 @@ public class EditCommandParserTest {
         assertParseFailure(parser, "1 o/one", OutstandingAmount.MESSAGE_CONSTRAINTS); // malformed amount
         assertParseFailure(parser, "1 a/\u200b", Address.MESSAGE_CONSTRAINTS); // invisible-only address
         assertParseFailure(parser, "1 a/\ufe0f", Address.MESSAGE_CONSTRAINTS); // standalone variation selector
+        assertParseFailure(parser, "1 a/\u2800", Address.MESSAGE_CONSTRAINTS); // blank braille pattern
 
         // invalid phone followed by valid email
         assertParseFailure(parser, "1" + INVALID_PHONE_DESC + EMAIL_DESC_AMY, Phone.MESSAGE_CONSTRAINTS);

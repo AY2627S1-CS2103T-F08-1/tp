@@ -19,7 +19,7 @@ public class Address {
      */
     public static final String VALIDATION_REGEX = "(?U)[^\\s].*";
 
-    private static final Set<Integer> INVISIBLE_FILLERS = Set.of(0x115f, 0x1160, 0x3164, 0xffa0);
+    private static final Set<Integer> INVISIBLE_FILLERS = Set.of(0x115f, 0x1160, 0x2800, 0x3164, 0xffa0);
 
     public final String value;
 
