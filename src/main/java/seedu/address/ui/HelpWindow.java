@@ -140,11 +140,12 @@ public class HelpWindow extends UiPart<Stage> {
      */
     public HelpWindow(Stage root) {
         super(FXML, root);
-        preferredHeight = getRoot().getHeight();
-        preferredMinHeight = getRoot().getMinHeight();
         helpMessage.setText(HELP_MESSAGE);
         commandReference.setText(COMMAND_REFERENCE.stripTrailing());
         getRoot().getScene().addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPress);
+        getRoot().sizeToScene();
+        preferredHeight = finitePreferredHeight(getRoot());
+        preferredMinHeight = getRoot().getMinHeight();
     }
 
     /**
@@ -206,9 +207,14 @@ public class HelpWindow extends UiPart<Stage> {
      */
     public void show() {
         logger.fine("Showing help page about the application.");
-        Stage stage = getRoot();
         Rectangle2D primaryBounds = Screen.getPrimary().getVisualBounds();
         List<Rectangle2D> screenBounds = Screen.getScreens().stream().map(Screen::getVisualBounds).toList();
+        show(screenBounds, primaryBounds);
+    }
+
+    /** Shows the window using the supplied visual bounds. Package-private for screen-size regressions. */
+    void show(List<Rectangle2D> screenBounds, Rectangle2D primaryBounds) {
+        Stage stage = getRoot();
         Rectangle2D windowBounds = new Rectangle2D(stage.getX(), stage.getY(),
                 Math.max(stage.getWidth(), 1), Math.max(stage.getHeight(), 1));
         Rectangle2D screen = WindowBounds.screenFor(windowBounds, screenBounds, primaryBounds);
@@ -223,6 +229,14 @@ public class HelpWindow extends UiPart<Stage> {
 
     static double capHeight(double height, double screenHeight) {
         return Math.min(height, screenHeight);
+    }
+
+    private static double finitePreferredHeight(Stage stage) {
+        double height = stage.getHeight();
+        if (!Double.isFinite(height) || height <= 0) {
+            height = stage.getScene().getHeight();
+        }
+        return height;
     }
 
     /**

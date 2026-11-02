@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -237,6 +238,27 @@ public class UiRuntimeTest {
                     false, false, false, false);
             Event.fireEvent(reference, escape);
             assertTrue(recordingHelpWindow.hideCalled);
+        });
+    }
+
+    @Test
+    public void helpWindow_fitsShortScreenAndRestoresPreferredHeightWhenReopened() throws InterruptedException {
+        runOnJavaFxThread(() -> {
+            helpWindow = new HelpWindow();
+            Stage stage = helpWindow.getRoot();
+            double preferredHeight = stage.getHeight();
+            Rectangle2D shortScreen = new Rectangle2D(0, 0, 1200, 480);
+            Rectangle2D largeScreen = new Rectangle2D(0, 0, 1200, 800);
+
+            assertTrue(Double.isFinite(preferredHeight));
+            assertTrue(preferredHeight > shortScreen.getHeight());
+
+            helpWindow.show(List.of(shortScreen), shortScreen);
+            assertTrue(stage.getHeight() <= shortScreen.getHeight());
+
+            helpWindow.hide();
+            helpWindow.show(List.of(largeScreen), largeScreen);
+            assertEquals(preferredHeight, stage.getHeight(), 1.0);
         });
     }
 
