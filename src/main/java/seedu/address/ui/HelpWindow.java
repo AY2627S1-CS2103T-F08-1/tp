@@ -1,14 +1,17 @@
 package seedu.address.ui;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 import javafx.fxml.FXML;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyEvent;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import seedu.address.commons.core.LogsCenter;
 
@@ -115,6 +118,8 @@ public class HelpWindow extends UiPart<Stage> {
 
     private static final Logger logger = LogsCenter.getLogger(HelpWindow.class);
     private static final String FXML = "HelpWindow.fxml";
+    private double preferredHeight = Double.NaN;
+    private final double preferredMinHeight;
 
     @FXML
     private Button copyButton;
@@ -138,6 +143,7 @@ public class HelpWindow extends UiPart<Stage> {
         helpMessage.setText(HELP_MESSAGE);
         commandReference.setText(COMMAND_REFERENCE.stripTrailing());
         getRoot().getScene().addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPress);
+        preferredMinHeight = getRoot().getMinHeight();
     }
 
     /**
@@ -199,8 +205,53 @@ public class HelpWindow extends UiPart<Stage> {
      */
     public void show() {
         logger.fine("Showing help page about the application.");
-        getRoot().show();
-        getRoot().centerOnScreen();
+        Rectangle2D primaryBounds = Screen.getPrimary().getVisualBounds();
+        List<Rectangle2D> screenBounds = Screen.getScreens().stream().map(Screen::getVisualBounds).toList();
+        show(screenBounds, primaryBounds);
+    }
+
+    /** Shows the window using the supplied visual bounds. Package-private for screen-size regressions. */
+    void show(List<Rectangle2D> screenBounds, Rectangle2D primaryBounds) {
+        Stage stage = getRoot();
+        double width = usableDimension(stage.getWidth(), stage.getScene().getWidth());
+        double height = usableDimension(stage.getHeight(), stage.getScene().getHeight());
+        Rectangle2D windowBounds = new Rectangle2D(stage.getX(), stage.getY(),
+                width, height);
+        Rectangle2D screen = WindowBounds.screenFor(windowBounds, screenBounds, primaryBounds);
+        double screenHeight = screen.getHeight();
+
+        if (!stage.isShowing()) {
+            stage.show();
+        }
+        if (!Double.isFinite(preferredHeight) || preferredHeight <= 0) {
+            stage.sizeToScene();
+            preferredHeight = preferredHeight(stage.getHeight(), stage.getScene().getHeight(), stage.getMinHeight());
+        }
+
+        getRoot().setMinHeight(capHeight(preferredMinHeight, screenHeight));
+        getRoot().setMaxHeight(screenHeight);
+        getRoot().setHeight(capHeight(preferredHeight, screenHeight));
+        stage.setX(screen.getMinX() + (screen.getWidth() - stage.getWidth()) / 2);
+        stage.setY(screen.getMinY() + (screen.getHeight() - stage.getHeight()) / 2);
+    }
+
+    static double capHeight(double height, double screenHeight) {
+        return Math.min(height, screenHeight);
+    }
+
+    static double preferredHeight(double stageHeight, double sceneHeight, double minimumHeight) {
+        if (Double.isFinite(stageHeight) && stageHeight > 0) {
+            return stageHeight;
+        }
+        if (Double.isFinite(sceneHeight) && sceneHeight > 0) {
+            return Math.max(sceneHeight, minimumHeight);
+        }
+        return minimumHeight;
+    }
+
+    static double usableDimension(double stageSize, double sceneSize) {
+        double size = Double.isFinite(stageSize) && stageSize > 0 ? stageSize : sceneSize;
+        return Double.isFinite(size) && size > 0 ? size : 1;
     }
 
     /**

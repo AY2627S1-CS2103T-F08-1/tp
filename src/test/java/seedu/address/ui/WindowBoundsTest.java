@@ -15,7 +15,46 @@ public class WindowBoundsTest {
     private static final Rectangle2D PRIMARY = new Rectangle2D(0, 0, 1707, 912);
     private static final Rectangle2D LEFT = new Rectangle2D(-1920, 0, 1920, 1040);
     private static final Rectangle2D ABOVE = new Rectangle2D(0, -1080, 1920, 1080);
+    private static final Rectangle2D SHORT_SECONDARY = new Rectangle2D(1920, 0, 1200, 600);
     private static final List<Rectangle2D> ONE_SCREEN = List.of(PRIMARY);
+
+    @Test
+    public void capHeight_smallLogicalScreen() {
+        assertEquals(480, HelpWindow.capHeight(540, 480));
+    }
+
+    @Test
+    public void preferredHeight_usesFiniteStageThenSceneThenMinimum() {
+        assertEquals(577, HelpWindow.preferredHeight(577, 540, 420));
+        assertEquals(540, HelpWindow.preferredHeight(Double.NaN, 540, 420));
+        assertEquals(540, HelpWindow.preferredHeight(0, 540, 420));
+        assertEquals(420, HelpWindow.preferredHeight(Double.NaN, 0, 420));
+        assertEquals(420, HelpWindow.preferredHeight(Double.NaN, Double.NaN, 420));
+    }
+
+    @Test
+    public void usableDimension_usesFiniteStageThenSceneThenFallback() {
+        assertEquals(800, HelpWindow.usableDimension(800, 600));
+        assertEquals(600, HelpWindow.usableDimension(Double.NaN, 600));
+        assertEquals(600, HelpWindow.usableDimension(0, 600));
+        assertEquals(1, HelpWindow.usableDimension(Double.NaN, 0));
+        assertEquals(1, HelpWindow.usableDimension(Double.NaN, Double.NaN));
+    }
+
+    @Test
+    public void screenFor_helpWindowOnShortSecondaryScreen_selectsThatScreen() {
+        Rectangle2D helpWindow = new Rectangle2D(2000, 30, 800, 540);
+
+        assertEquals(SHORT_SECONDARY,
+                WindowBounds.screenFor(helpWindow, List.of(PRIMARY, SHORT_SECONDARY), PRIMARY));
+    }
+
+    @Test
+    public void screenFor_windowOffAllScreens_usesFallback() {
+        Rectangle2D helpWindow = new Rectangle2D(5000, 5000, 800, 540);
+
+        assertEquals(PRIMARY, WindowBounds.screenFor(helpWindow, List.of(PRIMARY, SHORT_SECONDARY), PRIMARY));
+    }
 
     @Test
     public void fit_validBounds_unchanged() {

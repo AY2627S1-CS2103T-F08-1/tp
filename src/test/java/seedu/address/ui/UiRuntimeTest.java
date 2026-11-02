@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -201,6 +202,7 @@ public class UiRuntimeTest {
             RecordingHelpWindow recordingHelpWindow = new RecordingHelpWindow();
             helpWindow = recordingHelpWindow;
             helpWindow.show();
+            assertTrue(helpWindow.getRoot().getHeight() <= Screen.getPrimary().getVisualBounds().getHeight());
             helpWindow.getRoot().getScene().getRoot().applyCss();
             helpWindow.getRoot().getScene().getRoot().layout();
             ScrollPane reference = (ScrollPane) helpWindow.getRoot().getScene().lookup(".scroll-pane");
@@ -236,6 +238,26 @@ public class UiRuntimeTest {
                     false, false, false, false);
             Event.fireEvent(reference, escape);
             assertTrue(recordingHelpWindow.hideCalled);
+        });
+    }
+
+    @Test
+    public void helpWindow_fitsShortScreenAndRestoresPreferredHeightWhenReopened() throws InterruptedException {
+        runOnJavaFxThread(() -> {
+            helpWindow = new HelpWindow();
+            Stage stage = helpWindow.getRoot();
+            Rectangle2D shortScreen = new Rectangle2D(0, 0, 1200, 480);
+            Rectangle2D largeScreen = new Rectangle2D(0, 0, 1200, 800);
+
+            helpWindow.show(List.of(shortScreen), shortScreen);
+            double shortScreenHeight = stage.getHeight();
+            assertTrue(Double.isFinite(shortScreenHeight));
+            assertTrue(shortScreenHeight <= shortScreen.getHeight());
+
+            helpWindow.hide();
+            helpWindow.show(List.of(largeScreen), largeScreen);
+            assertTrue(stage.getHeight() > shortScreenHeight);
+            assertTrue(stage.getHeight() <= largeScreen.getHeight());
         });
     }
 
