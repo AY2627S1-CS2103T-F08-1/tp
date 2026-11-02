@@ -3,6 +3,7 @@ package seedu.address.storage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.HOON;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.commons.exceptions.DataLoadingException;
+import seedu.address.commons.util.FileUtil;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.UserPrefs;
@@ -238,6 +240,22 @@ public class JsonAddressBookStorageTest {
         assertEquals(new UserPrefs(), userPrefsStorage.readUserPrefs().orElseThrow());
         userPrefsStorage.saveUserPrefs(new UserPrefs());
         assertEquals(new UserPrefs(), userPrefsStorage.readUserPrefs().orElseThrow());
+    }
+
+    @Test
+    public void managedHome_rootLevelAddressBook_returnsFilesystemRoot() {
+        Path root = Path.of("/").toAbsolutePath().normalize();
+        assertEquals(root, JsonAddressBookStorage.managedHome(root.resolve("addressbook.json")));
+    }
+
+    @Test
+    public void hasRedirectedPath_rejectsTargetsOutsideOrEqualToTrustedRoot() throws Exception {
+        Path appHome = Files.createDirectory(testFolder.resolve("trusted-home"));
+        Path outside = Files.createDirectory(testFolder.resolve("outside-home")).resolve("addressbook.json");
+
+        assertTrue(FileUtil.hasRedirectedPath(appHome, outside));
+        assertTrue(FileUtil.hasRedirectedPath(appHome, appHome));
+        assertFalse(FileUtil.hasRedirectedPath(appHome, appHome.resolve("data/addressbook.json")));
     }
 
     @Test

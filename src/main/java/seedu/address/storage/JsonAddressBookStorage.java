@@ -134,7 +134,7 @@ public class JsonAddressBookStorage {
         Files.move(source, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
     }
 
-    private static Path managedHome(Path filePath) {
+    static Path managedHome(Path filePath) {
         Path dataDirectory = filePath.toAbsolutePath().normalize().getParent();
         return dataDirectory.getParent() != null ? dataDirectory.getParent() : dataDirectory;
     }

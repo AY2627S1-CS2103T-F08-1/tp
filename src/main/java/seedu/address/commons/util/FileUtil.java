@@ -59,14 +59,20 @@ public class FileUtil {
     public static boolean hasRedirectedPath(Path trustedRoot, Path file) throws IOException {
         Path root = trustedRoot.toAbsolutePath().normalize();
         Path target = file.toAbsolutePath().normalize();
-        if (!target.startsWith(root) || target.equals(root)) {
+        if (!target.startsWith(root)) {
+            return true;
+        }
+        if (target.equals(root)) {
             return true;
         }
         for (Path current = target; !current.equals(root); current = current.getParent()) {
             try {
                 BasicFileAttributes attributes = Files.readAttributes(current, BasicFileAttributes.class,
                         LinkOption.NOFOLLOW_LINKS);
-                if (attributes.isSymbolicLink() || attributes.isOther()) {
+                if (attributes.isSymbolicLink()) {
+                    return true;
+                }
+                if (attributes.isOther()) {
                     return true;
                 }
             } catch (NoSuchFileException ignored) {
