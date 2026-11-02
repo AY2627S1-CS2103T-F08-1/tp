@@ -18,15 +18,14 @@ title: Developer Guide
   * @BoonHow97 used OpenAI Codex to assist with implementation, debugging, testing, and documentation.
   * @chocoHacks33 used OpenAI Codex for implementation and refactoring, debugging, test design and execution,
     preliminary pull-request reviews, and drafting and revising the guides and project portfolio.
+  * @nje14 used OpenAI Codex to assist with implementation, design, testing, debugging, and documentation,
+    including the export fix and the [contact, preview, and export verification](testing/edison-contact-preview-export-verification.md).
 * OSPS is based on [AddressBook-Level3](https://github.com/se-edu/addressbook-level3) by the
   [SE-EDU initiative](https://se-education.org). The original project structure, documentation layout, and selected
   diagrams were adapted for OSPS.
 * The project uses [JavaFX](https://openjfx.io/) for its graphical interface,
   [Jackson](https://github.com/FasterXML/jackson) for JSON persistence, and
   [JUnit 5](https://junit.org/junit5/) for automated testing.
-* Edison used OpenAI Codex for implementation, design, testing, debugging and documentation assistance
-  failure, draft the export fix, tests, and documentation, and run the recorded automated checks. The corresponding
-  [verification record](testing/edison-contact-preview-export-verification.md) describes the work and its limits.
 
 --------------------------------------------------------------------------------------------------------------------
 

@@ -9,7 +9,8 @@ The 30 October research was checked against upstream `master` at
 `58361c4c2072c88be125c901436867db5291e1d8`. Existing contact/preview workflow tests and export tests were retained.
 The guide already described persistent IDs, contact-window boundaries, preview isolation, UTF-8 reports and
 non-overwriting exports. This change clarifies side effects, view replacement/order, and report recovery rather
-than adding features. No release, tag, milestone or team acknowledgement was changed.
+than adding features. The Developer Guide also acknowledges Edison's reported AI use. No release, tag or milestone
+was changed; acknowledgements for other members are outside this PR's scope.
 
 ## Reproduced defect and correction
 
@@ -36,6 +37,22 @@ approximately 105-line ceiling. Tests and documentation account for the remainin
   Rebuilding from changed source requires recording the new checksum and rerunning the relevant checks.
 
 ## Checks and results
+
+### Follow-up on 2 November 2026
+
+After merging team `master` `b75aeb30` into this branch, the combined source at merge commit
+`e7453267ae69faf6a242956f73c5ecf7a05a96cf` was built and checked again on Debian 13 amd64 with Oracle JDK
+25.0.5 and Xvfb. The locally built JAR SHA-256 was
+`c2ab71ed3e13b9acdb122ac7b8b5931e278d90784fdbde415d3ce289da154d13`. Subsequent edits to this record and the
+AI acknowledgement are documentation only. This remains a branch candidate, not the team's final release.
+
+The same Gradle and repository checks below passed: **819 passed, 1 skipped, 0 failures/errors** out of 820
+discovered tests. The skipped test was `PackagedWorklistRenderingTest`; all four packaged-JAR tests, six export
+tests, four contact workflow tests and the preview workflow test ran and passed. The packaged driver used the
+same command-field action mechanism described below, not physical keyboard input. Human beta testing, an
+independent review, and checks of the final candidate on the supported platforms remain outstanding.
+
+### Original 1 November run
 
 Run from the repository root with JDK 25 activated:
 
