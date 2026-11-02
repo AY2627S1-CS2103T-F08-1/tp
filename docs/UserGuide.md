@@ -170,7 +170,8 @@ A debtor can have any number of tags, including zero.
 * Email local parts may contain an apostrophe, such as `o'connor@example.com`, but not at the start or end.
 * Email addresses accept ASCII Punycode domain labels such as `person@xn--bcher-kva.de`. Domain labels may
   contain consecutive internal hyphens but must start and end with letters or digits.
-* Addresses must not be blank, including addresses containing only Unicode spaces.
+* Addresses must not be blank, including addresses containing only Unicode spaces, control characters, or invisible
+  formatting characters.
 * Email duplicate checks ignore domain case: `alice@example.com` and `alice@EXAMPLE.COM` identify the same contact.
   Local-part case remains significant: `Alice@example.com` and `alice@example.com` are different addresses.
   Aliases such as `alice+work@example.com` are not matched to `alice@example.com`.

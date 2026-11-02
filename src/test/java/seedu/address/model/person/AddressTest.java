@@ -45,6 +45,15 @@ public class AddressTest {
     }
 
     @Test
+    public void isValidAddress_invisibleFormattingCharacters_rejectsBlankAddresses() {
+        for (String blank : new String[] {"\u200b", "\ufeff", "\u0000", "\u200b\ufeff"}) {
+            assertFalse(Address.isValidAddress(blank));
+            assertThrows(IllegalArgumentException.class, () -> new Address(blank));
+        }
+        assertTrue(Address.isValidAddress("Block\u200b123"));
+    }
+
+    @Test
     public void equals() {
         Address address = new Address("Valid Address");
 

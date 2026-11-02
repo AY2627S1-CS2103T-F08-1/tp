@@ -34,7 +34,14 @@ public class Address {
      * Returns true if a given string is a valid address.
      */
     public static boolean isValidAddress(String test) {
-        return test.matches(VALIDATION_REGEX);
+        requireNonNull(test);
+        if (!test.matches(VALIDATION_REGEX)) {
+            return false;
+        }
+        return test.codePoints().anyMatch(character -> switch (Character.getType(character)) {
+            case Character.CONTROL, Character.FORMAT -> false;
+            default -> !Character.isWhitespace(character) && !Character.isSpaceChar(character);
+        });
     }
 
     @Override
