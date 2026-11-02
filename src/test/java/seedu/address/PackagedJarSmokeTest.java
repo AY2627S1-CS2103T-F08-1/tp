@@ -101,6 +101,7 @@ public class PackagedJarSmokeTest {
             List<Path> profiles = exports.toList();
             assertEquals(1, profiles.size(), "Exactly one profile must be exported in JAR home");
             assertTrue(Files.readString(profiles.getFirst()).contains("Packaged Smoke"));
+            assertTrue(Files.readString(profiles.getFirst()).contains("Preferred contact method: sms"));
         }
         for (String name : List.of("data", "preferences.json", "osps.log.0", "exports")) {
             assertFalse(Files.exists(launchFolder.resolve(name)), "App output escaped into launch folder: " + name);

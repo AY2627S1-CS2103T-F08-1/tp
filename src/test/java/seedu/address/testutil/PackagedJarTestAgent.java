@@ -101,8 +101,27 @@ public final class PackagedJarTestAgent {
         check(saved.getName().fullName.equals("Packaged Smoke"), "Saved debtor was not restored");
         check(saved.getOutstandingAmount().toString().equals("25.00"), "Saved amount was not restored");
         if ("save".equals(mode)) {
+            execute(main, "preview edit 1 o/50");
+            execute(main, "preview delete 1");
+            check(list.getItems().size() == 1 && list.getItems().getFirst().equals(saved),
+                    "Preview changed the saved debtor");
+            execute(main, "contact --id " + saved.getDebtorId() + " --method sms --hours 09:00-17:30");
+            execute(main, "undo");
+            check(((Person) list.getItems().getFirst()).getContactPreferences().getMethod() == null,
+                    "Undo did not restore contact preferences");
+            execute(main, "redo");
+            execute(main, "contactable --at 17:30 --method sms");
+            check(list.getItems().isEmpty(), "Contact window must exclude its end");
+            execute(main, "contactable --at 09:00 --method sms");
+            check(list.getItems().size() == 1, "Contact window must include its start");
             execute(main, "export --id " + saved.getDebtorId());
+            TextField rejected = submit(main, "export --id " + saved.getDebtorId());
+            check(rejected.getStyleClass().contains("error"), "Repeated export must not overwrite a report");
         }
+        Person current = (Person) list.getItems().getFirst();
+        check("sms".equals(current.getContactPreferences().getMethod())
+                && "09:00-17:30".equals(current.getContactPreferences().getHours()),
+                "Contact preferences did not survive redo/restart");
     }
 
     private static void exerciseUnreadableData(Stage main) {
