@@ -3,6 +3,8 @@ package seedu.address.model.person;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 
+import java.util.Set;
+
 /**
  * Represents a Person's address in the address book.
  * Guarantees: immutable; is valid as declared in {@link #isValidAddress(String)}
@@ -16,6 +18,8 @@ public class Address {
      * otherwise " " (a blank string) becomes a valid input.
      */
     public static final String VALIDATION_REGEX = "(?U)[^\\s].*";
+
+    private static final Set<Integer> INVISIBLE_FILLERS = Set.of(0x115f, 0x1160, 0x2800, 0x3164, 0xffa0);
 
     public final String value;
 
@@ -34,7 +38,35 @@ public class Address {
      * Returns true if a given string is a valid address.
      */
     public static boolean isValidAddress(String test) {
+        requireNonNull(test);
         return test.matches(VALIDATION_REGEX);
+    }
+
+    /**
+     * Returns true if a new address has valid syntax and at least one visible base character.
+     * This is stricter than {@link #isValidAddress(String)} so legacy stored addresses remain loadable.
+     */
+    public static boolean isValidUserInput(String test) {
+        requireNonNull(test);
+        return isValidAddress(test) && test.codePoints().anyMatch(Address::isVisibleBaseCharacter);
+    }
+
+    private static boolean isVisibleBaseCharacter(int character) {
+        if (Character.isWhitespace(character)) {
+            return false;
+        }
+        if (Character.isSpaceChar(character)) {
+            return false;
+        }
+        if (INVISIBLE_FILLERS.contains(character)) {
+            return false;
+        }
+        int type = Character.getType(character);
+        return switch (type) {
+            case Character.CONTROL, Character.FORMAT, Character.NON_SPACING_MARK,
+                    Character.COMBINING_SPACING_MARK, Character.ENCLOSING_MARK -> false;
+            default -> true;
+        };
     }
 
     @Override

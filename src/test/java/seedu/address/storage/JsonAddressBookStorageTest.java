@@ -156,6 +156,19 @@ public class JsonAddressBookStorageTest {
     }
 
     @Test
+    public void readAddressBook_legacyInvisibleAddress_loadsAllRecordsWithoutChangingFile() throws Exception {
+        Path filePath = TEST_DATA_FOLDER.resolve("legacyInvisibleAddressAddressBook.json");
+        String originalContents = Files.readString(filePath);
+
+        ReadOnlyAddressBook restored = new JsonAddressBookStorage(filePath).readAddressBook().orElseThrow();
+
+        assertEquals(2, restored.getPersonList().size());
+        assertEquals("\u200b", restored.getPersonList().get(0).getAddress().toString());
+        assertEquals("2 Visible Street", restored.getPersonList().get(1).getAddress().toString());
+        assertEquals(originalContents, Files.readString(filePath));
+    }
+
+    @Test
     public void readAddressBook_invalidRecoveryStage_throwsWithoutOverwritingFile() throws Exception {
         Path filePath = TEST_DATA_FOLDER.resolve("invalidRecoveryStageAddressBook.json");
         String originalContents = Files.readString(filePath);

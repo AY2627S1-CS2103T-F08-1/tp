@@ -1,0 +1,16 @@
+{
+  "persons": [
+    {
+      "name": "Legacy Invisible Address",
+      "phone": "91234567",
+      "email": "legacy@example.com",
+      "address": "\u200b"
+    },
+    {
+      "name": "Valid Address",
+      "phone": "92345678",
+      "email": "valid@example.com",
+      "address": "2 Visible Street"
+    }
+  ]
+}
