@@ -45,7 +45,7 @@ public class Name {
         requireNonNull(test);
         String normalizedName = Normalizer.normalize(test, Normalizer.Form.NFC);
         return normalizedName.matches(VALIDATION_REGEX)
-                && !INVISIBLE_FILLERS.contains(normalizedName.codePointAt(0));
+                && normalizedName.codePoints().noneMatch(INVISIBLE_FILLERS::contains);
     }
 
 
