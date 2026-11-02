@@ -42,8 +42,12 @@ public class JsonUserPrefsStorage {
      * @throws DataLoadingException if the file format is not as expected.
      */
     public Optional<UserPrefs> readUserPrefs(Path prefsFilePath) throws DataLoadingException {
-        if (FileUtil.hasSymbolicLink(prefsFilePath)) {
-            throw new DataLoadingException(new IOException("Refusing symbolic link in managed path: " + prefsFilePath));
+        try {
+            if (FileUtil.hasRedirectedPath(prefsFilePath)) {
+                throw new IOException("Refusing redirected managed path: " + prefsFilePath);
+            }
+        } catch (IOException e) {
+            throw new DataLoadingException(e);
         }
         Optional<UserPrefs> preferences = JsonUtil.readJsonFile(prefsFilePath, UserPrefs.class);
         // Jackson populates fields directly, so explicit JSON null bypasses the non-null setter.
@@ -61,8 +65,8 @@ public class JsonUserPrefsStorage {
      * @throws IOException if there was any problem writing to the file.
      */
     public void saveUserPrefs(ReadOnlyUserPrefs userPrefs) throws IOException {
-        if (FileUtil.hasSymbolicLink(filePath)) {
-            throw new IOException("Refusing symbolic link in managed path: " + filePath);
+        if (FileUtil.hasRedirectedPath(filePath)) {
+            throw new IOException("Refusing redirected managed path: " + filePath);
         }
         JsonUtil.saveJsonFile(userPrefs, filePath);
     }

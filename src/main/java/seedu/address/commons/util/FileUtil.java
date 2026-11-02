@@ -1,8 +1,14 @@
 package seedu.address.commons.util;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
 
 /**
  * Writes and reads files
@@ -40,14 +46,22 @@ public class FileUtil {
      * Assumes file exists
      */
     public static String readFromFile(Path file) throws IOException {
-        return new String(Files.readAllBytes(file), CHARSET);
+        try (InputStream input = Files.newInputStream(file, LinkOption.NOFOLLOW_LINKS)) {
+            return new String(input.readAllBytes(), CHARSET);
+        }
     }
 
-    /** Returns whether a managed file path or any of its parent directories is a symbolic link. */
-    public static boolean hasSymbolicLink(Path file) {
+    /** Returns whether any existing component of a managed path is a link or a special reparse entry. */
+    public static boolean hasRedirectedPath(Path file) throws IOException {
         for (Path current = file.toAbsolutePath(); current != null; current = current.getParent()) {
-            if (Files.isSymbolicLink(current)) {
-                return true;
+            try {
+                BasicFileAttributes attributes = Files.readAttributes(current, BasicFileAttributes.class,
+                        LinkOption.NOFOLLOW_LINKS);
+                if (attributes.isSymbolicLink() || attributes.isOther()) {
+                    return true;
+                }
+            } catch (NoSuchFileException ignored) {
+                // Continue upwards so existing parents are still checked for redirection.
             }
         }
         return false;
@@ -58,7 +72,10 @@ public class FileUtil {
      * Will create the file if it does not exist yet.
      */
     public static void writeToFile(Path file, String content) throws IOException {
-        Files.write(file, content.getBytes(CHARSET));
+        try (OutputStream output = Files.newOutputStream(file, StandardOpenOption.CREATE,
+                StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE, LinkOption.NOFOLLOW_LINKS)) {
+            output.write(content.getBytes(CHARSET));
+        }
     }
 
 }

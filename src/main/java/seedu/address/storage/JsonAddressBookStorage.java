@@ -56,8 +56,12 @@ public class JsonAddressBookStorage {
     public Optional<ReadOnlyAddressBook> readAddressBook(Path filePath) throws DataLoadingException {
         requireNonNull(filePath);
 
-        if (FileUtil.hasSymbolicLink(filePath)) {
-            throw new DataLoadingException(new IOException("Refusing symbolic link in managed path: " + filePath));
+        try {
+            if (FileUtil.hasRedirectedPath(filePath)) {
+                throw new IOException("Refusing redirected managed path: " + filePath);
+            }
+        } catch (IOException e) {
+            throw new DataLoadingException(e);
         }
 
         Optional<JsonSerializableAddressBook> jsonAddressBook = JsonUtil.readJsonFile(
@@ -91,8 +95,8 @@ public class JsonAddressBookStorage {
     public void saveAddressBook(ReadOnlyAddressBook addressBook, Path filePath) throws IOException {
         requireNonNull(addressBook);
         requireNonNull(filePath);
-        if (FileUtil.hasSymbolicLink(filePath)) {
-            throw new IOException("Refusing symbolic link in managed path: " + filePath);
+        if (FileUtil.hasRedirectedPath(filePath)) {
+            throw new IOException("Refusing redirected managed path: " + filePath);
         }
 
         Path target = filePath.toAbsolutePath();
@@ -103,7 +107,7 @@ public class JsonAddressBookStorage {
         Path temporaryFile = Files.createTempFile(parent, target.getFileName().toString() + ".", ".tmp");
         try {
             try (FileChannel channel = FileChannel.open(temporaryFile, StandardOpenOption.WRITE,
-                    StandardOpenOption.TRUNCATE_EXISTING)) {
+                    StandardOpenOption.TRUNCATE_EXISTING, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
                 ByteBuffer buffer = ByteBuffer.wrap(jsonBytes);
                 while (buffer.hasRemaining()) {
                     channel.write(buffer);
