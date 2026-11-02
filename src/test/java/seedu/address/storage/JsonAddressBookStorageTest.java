@@ -227,14 +227,14 @@ public class JsonAddressBookStorageTest {
         Path appHome = Files.createDirectory(aliasParent.resolve("app-home"));
         Path dataDirectory = Files.createDirectory(appHome.resolve("data"));
         Path addressBook = Files.writeString(dataDirectory.resolve("addressbook.json"), "{\"persons\":[]}");
-        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(addressBook, appHome);
+        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(addressBook);
 
         assertEquals(new AddressBook(), new AddressBook(addressBookStorage.readAddressBook().orElseThrow()));
         addressBookStorage.saveAddressBook(new AddressBook());
         assertEquals(new AddressBook(), new AddressBook(addressBookStorage.readAddressBook().orElseThrow()));
 
         Path preferences = Files.writeString(appHome.resolve("preferences.json"), "{}");
-        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(preferences, appHome);
+        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(preferences);
         assertEquals(new UserPrefs(), userPrefsStorage.readUserPrefs().orElseThrow());
         userPrefsStorage.saveUserPrefs(new UserPrefs());
         assertEquals(new UserPrefs(), userPrefsStorage.readUserPrefs().orElseThrow());

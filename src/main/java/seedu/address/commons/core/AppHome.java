@@ -25,11 +25,6 @@ public final class AppHome {
         return HOME.resolve(Path.of(first, more));
     }
 
-    /** Returns the trusted root for application-managed files. */
-    public static Path directory() {
-        return HOME;
-    }
-
     /**
      * Returns the folder containing the JAR at {@code codeSource}, or {@code workingDirectory} if {@code codeSource}
      * is missing, is not a {@code file:} location or is not a JAR file.
