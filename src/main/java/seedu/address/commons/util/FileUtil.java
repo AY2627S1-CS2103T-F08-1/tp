@@ -51,9 +51,18 @@ public class FileUtil {
         }
     }
 
-    /** Returns whether any existing component of a managed path is a link or a special reparse entry. */
-    public static boolean hasRedirectedPath(Path file) throws IOException {
-        for (Path current = file.toAbsolutePath(); current != null; current = current.getParent()) {
+    /**
+     * Returns whether an existing component below {@code trustedRoot} is a link or special reparse entry.
+     * The trusted root and its ancestors are not inspected, so filesystem aliases outside the managed directory
+     * do not make ordinary files unusable.
+     */
+    public static boolean hasRedirectedPath(Path trustedRoot, Path file) throws IOException {
+        Path root = trustedRoot.toAbsolutePath().normalize();
+        Path target = file.toAbsolutePath().normalize();
+        if (!target.startsWith(root) || target.equals(root)) {
+            return true;
+        }
+        for (Path current = target; !current.equals(root); current = current.getParent()) {
             try {
                 BasicFileAttributes attributes = Files.readAttributes(current, BasicFileAttributes.class,
                         LinkOption.NOFOLLOW_LINKS);
@@ -61,7 +70,7 @@ public class FileUtil {
                     return true;
                 }
             } catch (NoSuchFileException ignored) {
-                // Continue upwards so existing parents are still checked for redirection.
+                // Continue towards the trusted root so existing managed parents are still checked.
             }
         }
         return false;

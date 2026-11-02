@@ -16,10 +16,17 @@ import seedu.address.model.UserPrefs;
  */
 public class JsonUserPrefsStorage {
 
-    private Path filePath;
+    private final Path filePath;
+    private final Path trustedRoot;
 
     public JsonUserPrefsStorage(Path filePath) {
+        this(filePath, null);
+    }
+
+    /** Creates a storage accessor that validates managed paths below {@code trustedRoot}. */
+    public JsonUserPrefsStorage(Path filePath, Path trustedRoot) {
         this.filePath = filePath;
+        this.trustedRoot = trustedRoot;
     }
 
     public Path getUserPrefsFilePath() {
@@ -43,7 +50,7 @@ public class JsonUserPrefsStorage {
      */
     public Optional<UserPrefs> readUserPrefs(Path prefsFilePath) throws DataLoadingException {
         try {
-            if (FileUtil.hasRedirectedPath(prefsFilePath)) {
+            if (FileUtil.hasRedirectedPath(rootFor(prefsFilePath), prefsFilePath)) {
                 throw new IOException("Refusing redirected managed path: " + prefsFilePath);
             }
         } catch (IOException e) {
@@ -65,10 +72,18 @@ public class JsonUserPrefsStorage {
      * @throws IOException if there was any problem writing to the file.
      */
     public void saveUserPrefs(ReadOnlyUserPrefs userPrefs) throws IOException {
-        if (FileUtil.hasRedirectedPath(filePath)) {
+        if (FileUtil.hasRedirectedPath(rootFor(filePath), filePath)) {
             throw new IOException("Refusing redirected managed path: " + filePath);
         }
         JsonUtil.saveJsonFile(userPrefs, filePath);
+    }
+
+    private static Path managedHome(Path filePath) {
+        return filePath.toAbsolutePath().normalize().getParent();
+    }
+
+    private Path rootFor(Path path) {
+        return trustedRoot != null ? trustedRoot : managedHome(path);
     }
 
 }

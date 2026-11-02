@@ -220,6 +220,27 @@ public class JsonAddressBookStorageTest {
     }
 
     @Test
+    @EnabledOnOs({OS.LINUX, OS.MAC})
+    public void readAndSave_storageUnderSymbolicLinkAncestor_allowed() throws Exception {
+        Path realParent = Files.createDirectory(testFolder.resolve("real-parent"));
+        Path aliasParent = Files.createSymbolicLink(testFolder.resolve("alias-parent"), realParent);
+        Path appHome = Files.createDirectory(aliasParent.resolve("app-home"));
+        Path dataDirectory = Files.createDirectory(appHome.resolve("data"));
+        Path addressBook = Files.writeString(dataDirectory.resolve("addressbook.json"), "{\"persons\":[]}");
+        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(addressBook, appHome);
+
+        assertEquals(new AddressBook(), new AddressBook(addressBookStorage.readAddressBook().orElseThrow()));
+        addressBookStorage.saveAddressBook(new AddressBook());
+        assertEquals(new AddressBook(), new AddressBook(addressBookStorage.readAddressBook().orElseThrow()));
+
+        Path preferences = Files.writeString(appHome.resolve("preferences.json"), "{}");
+        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(preferences, appHome);
+        assertEquals(new UserPrefs(), userPrefsStorage.readUserPrefs().orElseThrow());
+        userPrefsStorage.saveUserPrefs(new UserPrefs());
+        assertEquals(new UserPrefs(), userPrefsStorage.readUserPrefs().orElseThrow());
+    }
+
+    @Test
     @EnabledOnOs(OS.WINDOWS)
     public void readAndSave_storageDirectoryJunctions_rejected() throws Exception {
         Path appHome = Files.createDirectory(testFolder.resolve("junction-home"));

@@ -27,10 +27,17 @@ public class JsonAddressBookStorage {
 
     private static final Logger logger = LogsCenter.getLogger(JsonAddressBookStorage.class);
 
-    private Path filePath;
+    private final Path filePath;
+    private final Path trustedRoot;
 
     public JsonAddressBookStorage(Path filePath) {
+        this(filePath, null);
+    }
+
+    /** Creates a storage accessor that validates managed paths below {@code trustedRoot}. */
+    public JsonAddressBookStorage(Path filePath, Path trustedRoot) {
         this.filePath = filePath;
+        this.trustedRoot = trustedRoot;
     }
 
     public Path getAddressBookFilePath() {
@@ -57,7 +64,7 @@ public class JsonAddressBookStorage {
         requireNonNull(filePath);
 
         try {
-            if (FileUtil.hasRedirectedPath(filePath)) {
+            if (FileUtil.hasRedirectedPath(rootFor(filePath), filePath)) {
                 throw new IOException("Refusing redirected managed path: " + filePath);
             }
         } catch (IOException e) {
@@ -95,7 +102,7 @@ public class JsonAddressBookStorage {
     public void saveAddressBook(ReadOnlyAddressBook addressBook, Path filePath) throws IOException {
         requireNonNull(addressBook);
         requireNonNull(filePath);
-        if (FileUtil.hasRedirectedPath(filePath)) {
+        if (FileUtil.hasRedirectedPath(rootFor(filePath), filePath)) {
             throw new IOException("Refusing redirected managed path: " + filePath);
         }
 
@@ -132,6 +139,15 @@ public class JsonAddressBookStorage {
     /** Replaces the destination only when the file system supports an atomic move. */
     void moveAtomically(Path source, Path target) throws IOException {
         Files.move(source, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    private static Path managedHome(Path filePath) {
+        Path dataDirectory = filePath.toAbsolutePath().normalize().getParent();
+        return dataDirectory != null && dataDirectory.getParent() != null ? dataDirectory.getParent() : dataDirectory;
+    }
+
+    private Path rootFor(Path path) {
+        return trustedRoot != null ? trustedRoot : managedHome(path);
     }
 
 }
