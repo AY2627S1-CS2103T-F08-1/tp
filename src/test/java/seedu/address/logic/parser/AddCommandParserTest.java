@@ -144,6 +144,21 @@ public class AddCommandParserTest {
     }
 
     @Test
+    public void parse_internationalName_success() {
+        Person expectedPerson = new PersonBuilder(BOB).withName("José 陈").withTags().build();
+        Person expectedPersonWithTypographicApostrophe = new PersonBuilder(BOB).withName("O’Connor")
+                .withTags().build();
+        Person expectedPersonWithCombiningMarks = new PersonBuilder(BOB).withName("குமார்").withTags().build();
+
+        assertParseSuccess(parser, " n/Jose\u0301 陈" + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB,
+                new AddCommand(expectedPerson));
+        assertParseSuccess(parser, " n/O’Connor" + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB,
+                new AddCommand(expectedPersonWithTypographicApostrophe));
+        assertParseSuccess(parser, " n/குமார்" + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB,
+                new AddCommand(expectedPersonWithCombiningMarks));
+    }
+
+    @Test
     public void parse_outstandingAmount_success() {
         Person expectedPerson = new PersonBuilder(BOB).withOutstandingAmount("S$1,250.00").withTags().build();
         assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB + " "

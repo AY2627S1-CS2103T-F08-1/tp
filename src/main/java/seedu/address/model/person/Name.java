@@ -3,6 +3,9 @@ package seedu.address.model.person;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 
+import java.text.Normalizer;
+import java.util.Set;
+
 /**
  * Represents a Person's name in the address book.
  * Guarantees: immutable; is valid as declared in {@link #isValidName(String)}
@@ -10,13 +13,17 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
 public class Name {
 
     public static final String MESSAGE_CONSTRAINTS =
-            "Names must start and end with an alphanumeric character, and may contain spaces, hyphens, or apostrophes";
+            "Names must start with an alphanumeric character, and may contain Unicode letters, numbers, combining "
+                    + "marks, spaces, hyphens, or apostrophes";
 
     /*
-     * The first and last characters of the name must be alphanumeric.
-     * Spaces, hyphens, and apostrophes are allowed within the name.
+     * The name must start with an alphanumeric character. Combining marks may follow an alphanumeric character,
+     * including at the end of a name. Spaces, hyphens, and apostrophes may separate alphanumeric sequences.
      */
-    public static final String VALIDATION_REGEX = "[\\p{Alnum}](?:[\\p{Alnum} '-]*[\\p{Alnum}])?";
+    public static final String VALIDATION_REGEX =
+            "(?U)\\p{Alnum}\\p{M}*(?:(?:\\p{Alnum}|[ '’-]+\\p{Alnum})\\p{M}*)*";
+
+    private static final Set<Integer> INVISIBLE_FILLERS = Set.of(0x115f, 0x1160, 0x3164, 0xffa0);
 
     public final String fullName;
 
@@ -28,14 +35,17 @@ public class Name {
     public Name(String name) {
         requireNonNull(name);
         checkArgument(isValidName(name), MESSAGE_CONSTRAINTS);
-        fullName = name;
+        fullName = Normalizer.normalize(name, Normalizer.Form.NFC);
     }
 
     /**
      * Returns true if a given string is a valid name.
      */
     public static boolean isValidName(String test) {
-        return test.matches(VALIDATION_REGEX);
+        requireNonNull(test);
+        String normalizedName = Normalizer.normalize(test, Normalizer.Form.NFC);
+        return normalizedName.matches(VALIDATION_REGEX)
+                && normalizedName.codePoints().noneMatch(INVISIBLE_FILLERS::contains);
     }
 
 
