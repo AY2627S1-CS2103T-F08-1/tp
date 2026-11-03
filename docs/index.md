@@ -12,12 +12,9 @@ title: Orchestration and Scheduling of Payment Scheme
 manage debtor details, outstanding balances, and interaction histories.** Its graphical interface and keyboard-driven
 commands support fast case-management workflows.
 
-> **v1.6 candidate documentation.** These pages describe the current source. Use the
-> [candidate instructions](UserGuide.html#quick-start) and the source commit/JAR SHA-256 recorded in
-> [#221](https://github.com/AY2627S1-CS2103T-F08-1/tp/issues/221) to identify the build you are testing.
-> Published downloads are listed on [GitHub Releases](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases).
-> The published v1.5 JAR has a separate guide linked at the top of the User Guide; it does not contain every
-> candidate fix described here.
+> **v1.6 is available.** Download the JAR and check its source commit and SHA-256 in the
+> [v1.6 release notes](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.6). These pages follow the
+> current source; the User Guide links to version-specific documentation for published releases.
 
 OSPS can add, edit, list, find, and delete debtors, show complete debtor profiles, and append timestamped interaction
 notes. Persistent debtor IDs are used by `show` and `note`; the displayed one-based list index is used by `edit` and

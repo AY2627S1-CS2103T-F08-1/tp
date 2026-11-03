@@ -2,15 +2,15 @@
 layout: page
 title: Developer Guide
 ---
-> **v1.6 candidate/development documentation.** This page describes the current source, including fixes not present
-> in the published v1.5 JAR; it does not announce a v1.6 release. For the refreshed v1.5 download, use the
+> **v1.6 documentation.** The published [v1.6 release](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.6)
+> identifies its source commit and JAR SHA-256. This page follows the current source, which may change after release.
+> For the refreshed v1.5 download, use the
 > [Developer Guide pinned to its source commit](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/e5c7066959164fb720843a8b06c6d9f4080b6089/docs/DeveloperGuide.md)
 > and verify the source commit and JAR SHA-256 in the
 > [release notes](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5).
 > For an older JAR saved before that refresh, use the
 > [original Developer Guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/DeveloperGuide.md).
-> The candidate's source commit, JAR SHA-256 and verification results are tracked in
-> [#221](https://github.com/AY2627S1-CS2103T-F08-1/tp/issues/221); a v1.6 title alone does not identify a build.
+> A version title alone does not identify a build; compare the JAR SHA-256 with the release notes.
 
 * Table of Contents
 {:toc}
