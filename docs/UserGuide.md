@@ -7,14 +7,14 @@ Orchestration and Scheduling of Payment Scheme (OSPS) is a **desktop application
 It manages debtor contact details, outstanding balances, and interaction histories through keyboard-driven commands
 while retaining the benefits of a graphical user interface (GUI).
 
-> **v1.6 candidate/development guide.** This page describes the current source, including fixes that are not in the
-> published v1.5 JAR. It does not announce a v1.6 release. For the refreshed v1.5 download, use the
+> **v1.6 guide.** The published [v1.6 release](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.6)
+> identifies its source commit and JAR SHA-256. This page follows the current source, which may change after release.
+> For the refreshed v1.5 download, use the
 > [guide pinned to its source commit](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/e5c7066959164fb720843a8b06c6d9f4080b6089/docs/UserGuide.md)
 > and verify the JAR SHA-256 in the [v1.5 release notes](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5).
 > For an older JAR saved before that refresh, use the
 > [original v1.5 guide](https://github.com/AY2627S1-CS2103T-F08-1/tp/blob/v1.5/docs/UserGuide.md).
-> The v1.6 window title identifies the version, not the exact build. Candidate source commits, JAR SHA-256
-> checksums and verification results are tracked in [#221](https://github.com/AY2627S1-CS2103T-F08-1/tp/issues/221).
+> The window title identifies the version, not the exact build. Check the release notes when verifying a JAR.
 
 * Table of Contents
 {:toc}
@@ -26,13 +26,10 @@ while retaining the benefits of a graphical user interface (GUI).
 1. Ensure that Java `25` or later is installed on your computer.<br>
    **Mac users:** Ensure you have the precise JDK version prescribed [here](https://se-education.org/guides/tutorials/javaInstallationMac.html).
 
-1. To follow this candidate guide, use a JAR built from its matching source revision. Follow
+1. Download `osps.jar` from the [v1.6 release](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.6).
+   Verify its SHA-256 against the release notes. If you build from source instead, follow
    [the setup guide](SettingUp.md) and run `gradlew.bat shadowJar` on Windows or `./gradlew shadowJar` on macOS/Linux;
-   the output is `build/libs/osps.jar`. Record the source commit and the JAR's SHA-256 when sharing a candidate,
-   or compare a shared candidate with the exact identity recorded in
-   [#221](https://github.com/AY2627S1-CS2103T-F08-1/tp/issues/221). Do not mix test results from different JARs.
-   If you prefer the published [v1.5 download](https://github.com/AY2627S1-CS2103T-F08-1/tp/releases/tag/v1.5), follow
-   its pinned guide linked above and verify its SHA-256 against the release notes instead.
+   the output is `build/libs/osps.jar`. Record the source commit and JAR SHA-256 when sharing your build.
    Keep a backup of your existing data before replacing an older JAR. To try the app without existing records,
    put the JAR in a new, writable folder.
 
