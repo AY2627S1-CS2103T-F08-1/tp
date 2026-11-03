@@ -114,6 +114,29 @@ public class NoteHistoryWorkflowTest {
     }
 
     @Test
+    public void execute_undoAndRedo_restoreInteractionNoteOutcome() throws Exception {
+        Model model = new ModelManager();
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        Logic logic = createLogic(model, storage);
+        logic.execute("add n/Alice Tan p/91234567 e/alice@example.com a/Main Street");
+        int debtorId = model.getAddressBook().getPersonList().getFirst().getDebtorId();
+
+        logic.execute("note --id " + debtorId + " --outcome reached --text Confirmed identity.");
+        InteractionNote savedNote = model.getAddressBook().getPersonList().getFirst()
+                .getInteractionNotes().getFirst();
+        assertEquals(ContactOutcome.REACHED, savedNote.getOutcome().orElseThrow());
+
+        logic.execute("undo");
+        assertTrue(model.getAddressBook().getPersonList().getFirst().getInteractionNotes().isEmpty());
+
+        logic.execute("redo");
+        assertEquals(List.of(savedNote), model.getAddressBook().getPersonList().getFirst().getInteractionNotes());
+        Model restartedModel = new ModelManager(storage.readAddressBook().orElseThrow(), new UserPrefs());
+        assertEquals(List.of(savedNote), restartedModel.getAddressBook().getPersonList()
+                .getFirst().getInteractionNotes());
+    }
+
+    @Test
     public void execute_invalidOutcome_doesNotAddNoteOrSaveMutation() throws Exception {
         Model model = new ModelManager();
         Person debtor = model.addPerson(new PersonBuilder().build());
