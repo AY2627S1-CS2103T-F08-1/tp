@@ -99,6 +99,35 @@ class FollowUpHistoryWorkflowTest {
     }
 
     @Test
+    void execute_undoAndRedo_restoreFollowUpDateAndHistory() throws Exception {
+        Model model = new ModelManager();
+        Person debtor = model.addPerson(new PersonBuilder().build());
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        Logic logic = createLogic(model, storage);
+        int debtorId = debtor.getDebtorId();
+
+        logic.execute("followup --id " + debtorId + " --date 2026-11-03");
+        logic.execute("followup --id " + debtorId + " --date 2026-11-05");
+        Person rescheduled = model.getAddressBook().getPersonList().getFirst();
+        assertEquals(FOLLOW_UP_DATE.plusDays(2), rescheduled.getFollowUpDate().orElseThrow());
+        assertEquals(List.of(FollowUpEvent.Action.SCHEDULED, FollowUpEvent.Action.RESCHEDULED),
+                rescheduled.getFollowUpHistory().stream().map(FollowUpEvent::getAction).toList());
+
+        logic.execute("undo");
+        Person restored = model.getAddressBook().getPersonList().getFirst();
+        assertEquals(FOLLOW_UP_DATE, restored.getFollowUpDate().orElseThrow());
+        assertEquals(List.of(FollowUpEvent.Action.SCHEDULED),
+                restored.getFollowUpHistory().stream().map(FollowUpEvent::getAction).toList());
+
+        logic.execute("redo");
+        Model restartedModel = new ModelManager(storage.readAddressBook().orElseThrow(), new UserPrefs());
+        Person redone = restartedModel.getAddressBook().getPersonList().getFirst();
+        assertEquals(FOLLOW_UP_DATE.plusDays(2), redone.getFollowUpDate().orElseThrow());
+        assertEquals(List.of(FollowUpEvent.Action.SCHEDULED, FollowUpEvent.Action.RESCHEDULED),
+                redone.getFollowUpHistory().stream().map(FollowUpEvent::getAction).toList());
+    }
+
+    @Test
     void read_legacyJsonWithoutFollowUpFields_defaultsToEmpty() throws Exception {
         Path legacyPath = Path.of("src/test/data/JsonSerializableAddressBookTest/typicalPersonsAddressBook.json");
         var legacyBook = new JsonAddressBookStorage(legacyPath).readAddressBook().orElseThrow();
